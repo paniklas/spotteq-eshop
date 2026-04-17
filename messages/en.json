@@ -1,0 +1,11 @@
+{
+    "Navigation":{
+        "Home": "Home",
+        "About": "Company",
+        "Projects": "Projects",
+        "Contact": "Contact",
+        "Greek": "Greek",
+        "English": "English",
+        "AddressCity": "Agioi Theodoroi 200 03, Greece"
+    }
+}
