@@ -6,10 +6,11 @@ import { useState } from "react";
 const FooterNewsletter = () => {
   const [email, setEmail] = useState("");
 
-  function handleSubmit() {
+  function handleSubmit(e) {
+    e.preventDefault();
     // For demo purposes, we'll just alert the email. In a real app, you'd send this to your backend.
     alert(`Subscribed with email: ${email}`);
-    setEmail(""); // Clear the input after submission
+    setEmail("");
   }
 
   return (

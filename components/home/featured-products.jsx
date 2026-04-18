@@ -14,7 +14,7 @@ const products = [
         image: PROTEIN_STRAWBERRY,
         inStock: true,
         detail1: "23,4g Protein",
-        detail2: "5,6g BCCAs",
+        detail2: "5,6g BCAAs",
         detail3: "1Kg",
         detail4: "1 - Month Supply",
         badge: null,

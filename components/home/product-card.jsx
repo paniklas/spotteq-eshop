@@ -59,7 +59,7 @@ const ProductCard = ({ product, priority = false }) => {
                     {product.name}
                 </h3>
                 {/* Price */}
-                <span className="font-tt text-[24px] text-black-custom fond-semibold">{product.price}</span>
+                <span className="font-tt text-[24px] text-black-custom font-semibold">{product.price}</span>
             </div>
 
             {/* Divider */}

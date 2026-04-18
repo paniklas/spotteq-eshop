@@ -19,12 +19,12 @@ const Navbar = () => {
             <div className="max-w-[1920px] mx-auto h-full flex items-center justify-between page-x">
                 {/* Logo */}
                 <button
-                    aria-label="Account"
+                    aria-label="Home"
                     className="hidden md:flex items-center"
                 >
                     <Image
                         src="/icons/logo-white.svg"
-                        alt="User Icon"
+                        alt="SPOTTEQ logo"
                         width={220}
                         height={50}
                         className="h-full w-auto"

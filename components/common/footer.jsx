@@ -34,11 +34,6 @@ const paymentMethods = [
 ];
 
 const Footer = () => {
-
-    function scrollToTop() {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
     return (
         <footer className="w-full bg-white pt-20 xl:pt-42">
             {/* Top section: Newsletter (left) + Links (right) + Back-to-top */}
