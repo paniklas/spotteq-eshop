@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/sonner";
 import LocaleLanguageSetter from "@/components/common/locale-lng-setter";
 import SmoothScrolling from "@/utils/SmoothScrolling";
 import Navbar from '@/components/common/navbar';
-// import Footer from '@/components/common/footer';
+import Footer from '@/components/common/footer';
 // import { VisualEditing } from "next-sanity/visual-editing";
 // import { DisableDraftMode } from "../../components/sanity/DisableDraftMode";
 // import { draftMode } from "next/headers";
@@ -33,11 +33,13 @@ export default async function LocaleLayout({ children, params }) {
         <NextIntlClientProvider messages={messages} locale={locale}>
             <SmoothScrolling>
                 <LocaleLanguageSetter locale={locale} />
+                <div className="max-w-[1920px] mx-auto h-full">
                     <Navbar />
                     <main>
                         {children}
                     </main>
-                    {/* <Footer locale={locale} /> */}
+                    <Footer />
+                </div>
             </SmoothScrolling>
             <Toaster richColors toastOptions={{
                 duration: 5000,

@@ -14,12 +14,12 @@ export default async function RootLayout({ children }) {
   }
 
   return (
-    <html lang={locale}>
+    <html lang={locale} data-scroll-behavior="smooth">
       <body
           className={`
             ${aeonikProRegular.variable}
             ${ttNormsProLight.variable}
-            antialiased`
+            antialiased bg-black-custom`
           }
       >
         {children}
