@@ -1,12 +1,7 @@
-import LoadingProject from "@/components/Loading/loadding-project";
+import { redirect } from 'next/navigation';
 
-
-const Home = () => {
-  return (
-    <div className="flex items-center justify-center h-screen text-2xl">
-      <LoadingProject />
-    </div>
-  )
+// The proxy (proxy.js) handles locale detection and redirect for all requests.
+// This page is a fallback for edge cases where the proxy does not intercept.
+export default function RootPage() {
+    redirect('/el');
 }
-
-export default Home

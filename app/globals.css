@@ -5,6 +5,30 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+    /* Custom Fonts */
+  --font-aeonik: var(--font-aeonik-pro-regular);
+  --font-tt: var(--font-tt-norms-pro-light);
+    
+  /* Breakpoints */
+  --breakpoint-xxs: 360px;
+  --breakpoint-xs: 480px;
+  --breakpoint-ss: 640px;
+  --breakpoint-sm: 768px;
+  --breakpoint-md: 1024px;
+  --breakpoint-lg: 1280px;
+  --breakpoint-xl: 1536px;
+  --breakpoint-2xl: 1792px;
+  --breakpoint-3xl: 1920px;
+  
+  /* Colors custom */
+  --color-black-custom: #000000;
+  --color-white-custom: #FFFFFF;
+  --color-gray-light: #f7f7f7;
+  --color-gray-mint: #d9d9d9;
+  --color-gray-soft: #f0f0f0;
+  --color-orange-accent: #f9955a;
+  
+  /* Colors shadcn */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
