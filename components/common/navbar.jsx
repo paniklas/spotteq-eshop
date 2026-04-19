@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { useLocale } from "next-intl";
 import MenuOverlay from "./navbar-menu-overlay";
 import { useHeaderStyles } from "@/hooks/use-header-styles";
 
 
 const Navbar = () => {
+    const locale = useLocale();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [burgerHovered, setBurgerHovered] = useState(false);
@@ -46,7 +48,7 @@ const Navbar = () => {
                 <div className={`max-w-[1920px] mx-auto h-full flex items-center justify-between page-x transition-all duration-300 ${innerBg}`}>
 
                     {/* Logo — crossfade between black and white versions */}
-                    <Link href="/" className="relative flex items-center" aria-label="SPOTTEQ home">
+                    <Link href={`/${locale}`} className="relative flex items-center" aria-label="SPOTTEQ home">
                         <div className="relative" style={{ width: 185, height: 40 }}>
                             <motion.div
                                 animate={{ opacity: isLightIcons ? 0 : 1 }}

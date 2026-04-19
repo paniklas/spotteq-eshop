@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useLocale } from "next-intl";
 
 
 const SHOP_BY_SERIES = [
@@ -49,6 +50,8 @@ const BRAND_SUPPORT = [
 
 
 const MenuOverlay = ({ isOpen, isOnClose }) => {
+    const locale = useLocale();
+    const l = (path) => `/${locale}${path}`;
 
     const fade = (delay) => ({
         opacity: isOpen ? 1 : 0,
@@ -60,6 +63,7 @@ const MenuOverlay = ({ isOpen, isOnClose }) => {
             role="dialog"
             aria-label="Site navigation"
             aria-modal="true"
+            aria-hidden={!isOpen}
             className={`fixed inset-0 z-40 bg-gray-menu-overlay overflow-y-auto transition-transform duration-500 ease-in-out ${
             isOpen ? "translate-y-0 pointer-events-auto" : "-translate-y-full pointer-events-none"
             }`}
@@ -72,14 +76,14 @@ const MenuOverlay = ({ isOpen, isOnClose }) => {
         
                     {/* Top 3-column grid */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-8">
-                        <NavColumn title="Shop by Series" links={SHOP_BY_SERIES} isOpen={isOpen} delay={100} onClose={isOnClose} />
-                        <NavColumn title="Shop by Goal"   links={SHOP_BY_GOAL}   isOpen={isOpen} delay={140} onClose={isOnClose} />
-                        <NavColumn title="Bundles"         links={BUNDLES}         isOpen={isOpen} delay={180} onClose={isOnClose} />
+                        <NavColumn title="Shop by Series" links={SHOP_BY_SERIES.map(i => ({ ...i, href: l(i.href) }))} isOpen={isOpen} delay={100} onClose={isOnClose} />
+                        <NavColumn title="Shop by Goal"   links={SHOP_BY_GOAL.map(i => ({ ...i, href: l(i.href) }))}   isOpen={isOpen} delay={140} onClose={isOnClose} />
+                        <NavColumn title="Bundles"         links={BUNDLES.map(i => ({ ...i, href: l(i.href) }))}         isOpen={isOpen} delay={180} onClose={isOnClose} />
 
                          {/* View all products */}
                         <div className="mt-6 col-start-3 flex justify-start" style={fade(240)}>
                             <Link
-                                href="/shop"
+                                href={l("/shop")}
                                 onClick={isOnClose}
                                 tabIndex={isOpen ? 0 : -1}
                                 className="inline-flex items-center font-aeonik text-[20px] text-black-custom"
@@ -101,7 +105,7 @@ const MenuOverlay = ({ isOpen, isOnClose }) => {
                             {BRAND_SUPPORT.map(({ label, sub, href }) => (
                                 <div key={label}>
                                     <Link
-                                        href={href}
+                                        href={l(href)}
                                         onClick={isOnClose}
                                         tabIndex={isOpen ? 0 : -1}
                                         className="font-aeonik text-[15px] xl:text-[20px] text-black-custom hover:opacity-50 transition-opacity leading-snug"
@@ -149,7 +153,7 @@ const MenuOverlay = ({ isOpen, isOnClose }) => {
                         <div className="absolute inset-x-10 top-16 bottom-28 z-[1] flex items-center justify-center">
                             <Image
                                 src="/images/products/liposomal-magnesium-3.png"
-                                alt="Product"
+                                alt="Liposomal Magnesium"
                                 fill
                                 sizes="440px"
                                 className="object-contain"
@@ -157,7 +161,7 @@ const MenuOverlay = ({ isOpen, isOnClose }) => {
                         </div>
 
                         <Link
-                            href="/shop"
+                            href={l("/shop")}
                             onClick={isOnClose}
                             tabIndex={isOpen ? 0 : -1}
                             className="relative z-10 bg-white text-foreground font-tt text-xs font-medium uppercase tracking-[0.15em] px-10 py-3 rounded-full hover:bg-foreground hover:text-white transition-colors duration-200"

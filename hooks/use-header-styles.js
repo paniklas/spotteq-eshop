@@ -114,7 +114,6 @@ export const useHeaderStyles = () => {
         return () => {
             observer.disconnect();
             map.clear();
-            setCurrentStyles(null);
         };
     }, [pathname]);
 
