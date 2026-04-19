@@ -70,12 +70,14 @@ const ProductCard = ({ product, priority = false }) => {
                 {/* Details */}
                 <div className="flex justify-between opacity-100 transition-opacity duration-500 ease-in-out group-hover/card:opacity-0 group-hover/card:pointer-events-none">
                     <div className="font-tt font-light text-[18px] text-black-custom leading-[1.2]">
-                        <p>{product.detail1}</p>
-                        <p>{product.detail2}</p>
+                        {product.attributes?.map((attr) => (
+                            <p key={attr.label}>{attr.label}</p>
+                        ))}
                     </div>
                     <div className="font-tt font-light text-[18px] text-black-custom text-right leading-[1.2]">
-                        <p>{product.detail3}</p>
-                        <p>{product.detail4}</p>
+                        {product.attributes?.map((attr) => (
+                            <p key={attr.value}>{attr.value}</p>
+                        ))}
                     </div>
                 </div>
 
