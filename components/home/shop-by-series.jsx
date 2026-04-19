@@ -21,7 +21,10 @@ const series = [
 
 const ShopBySeries = () => {
     return (
-        <section className="w-full bg-white-custom py-10 xl:py-14">
+        <section
+            id="shop-by-series-section"
+            className="w-full bg-white-custom py-10 xl:py-14"
+        >
             <div className="max-w-[1920px] mx-auto page-x">
                 <h2 className="font-aeonik text-black text-[28px] xl:text-[35px] leading-[1.45] mb-8">
                     Shop by series

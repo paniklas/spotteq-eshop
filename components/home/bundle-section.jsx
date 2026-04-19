@@ -47,7 +47,10 @@ const bundles = [
 
 const BundleSection = () => {
     return (
-         <section className="w-full bg-gray-light py-16 xl:py-24">
+         <section
+            id="bundle-section"
+            className="w-full bg-gray-light py-16 xl:py-24"
+        >
             <div className="max-w-[1920px] mx-auto page-x">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-20">

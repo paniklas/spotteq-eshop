@@ -5,7 +5,10 @@ const ATHLETE_IMG = "/images/certified-quality.webp";
 
 const QualitySection = () => {
     return (
-        <section className="w-full bg-gray-light overflow-hidden">
+        <section
+            id="quality-section-section"
+            className="w-full bg-gray-light overflow-hidden"
+        >
             <div className="max-w-[1920px] mx-auto grid grid-cols-1 xl:grid-cols-2 page-x">
                 {/* Text side */}
                 <div className="py-16 xl:py-20 flex flex-col justify-center gap-8">

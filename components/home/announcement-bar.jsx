@@ -13,6 +13,7 @@ const AnnouncementBar = () => {
     return (
         <>
             <button
+                id="announcement-bar-section"
                 className="block w-full bg-gray-mint h-[52px] overflow-hidden cursor-pointer"
                 aria-label={PROMO_TEXT}
                 onClick={() => setIsModalOpen(true)}

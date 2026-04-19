@@ -3,7 +3,9 @@ import Link from "next/link";
 
 const HeroSection = () => {
     return (
-        <section className="relative w-full min-h-[1020px] overflow-hidden flex flex-col">
+        <section
+            id="hero-section"
+            className="relative w-full min-h-[1020px] overflow-hidden flex flex-col">
             {/* Background video */}
             <video
                 className="absolute inset-0 w-full h-full object-cover z-0"
@@ -31,6 +33,7 @@ const HeroSection = () => {
                     width={380}
                     height={520}
                     sizes="(min-width: 1536px) 560px, 400px"
+                    unoptimized={true}
                     quality={100}
                     className="relative w-[400px] xl:w-[560px] aspect-[380/520] object-contain drop-shadow-[0_0_60px_rgba(255,255,255,0.25)]"
                     priority

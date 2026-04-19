@@ -13,7 +13,11 @@ const SpotteqImage = () => {
     const y = useTransform(scrollYProgress, [0, 1], ["-15%", "15%"]);
 
     return (
-        <section ref={containerRef} className="w-full h-[400px] xl:h-[650px] relative overflow-hidden">
+        <section
+            id="spotteq-image-section"
+            ref={containerRef}
+            className="w-full h-[400px] xl:h-[650px] relative overflow-hidden"
+        >
             <motion.div style={{ y }} className="absolute inset-0 scale-[1.35]">
                 <Image
                     src="/images/packs.webp"

@@ -118,7 +118,7 @@ const Footer = () => {
                     © 2026 SPOTTEQ. All Rights Reserved.
                 </p>
                 <p className="font-aeonik text-[12px] text-black opacity-70">
-                    Crafted by pecora nera design studio + Coded by Impruves
+                    Designed by pecora nera design studio + Coded by Impruves Web Dev
                 </p>
             </div>
 
