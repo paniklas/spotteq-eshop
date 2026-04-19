@@ -3,6 +3,12 @@ import Image from "next/image";
 const LOVE_ICON = "/icons/love-icon.svg";
 
 const ProductCard = ({ product, priority = false }) => {
+    // Support both new `attributes` shape and legacy `detail1`–`detail4` shape
+    const attrs = product.attributes ?? [
+        { label: product.detail1, value: product.detail3 },
+        { label: product.detail2, value: product.detail4 },
+    ].filter(a => a.label || a.value);
+
     return (
         <div className="group/card flex flex-col gap-4 relative">
 
@@ -70,12 +76,12 @@ const ProductCard = ({ product, priority = false }) => {
                 {/* Details */}
                 <div className="flex justify-between opacity-100 transition-opacity duration-500 ease-in-out group-hover/card:opacity-0 group-hover/card:pointer-events-none">
                     <div className="font-tt font-light text-[18px] text-black-custom leading-[1.2]">
-                        {product.attributes?.map((attr) => (
+                        {attrs.map((attr) => (
                             <p key={attr.label}>{attr.label}</p>
                         ))}
                     </div>
                     <div className="font-tt font-light text-[18px] text-black-custom text-right leading-[1.2]">
-                        {product.attributes?.map((attr) => (
+                        {attrs.map((attr) => (
                             <p key={attr.value}>{attr.value}</p>
                         ))}
                     </div>

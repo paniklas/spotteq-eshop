@@ -115,11 +115,11 @@ const GOAL_FILTERS = [
 const CategoryPageBySlug = () => {
     return (
         <>
-            <section className="pt-24 min-h-screen bg-white-custom pb-10 xl:pb-42">
+            <section className="pt-24 min-h-screen bg-white-custom pb-10 xl:pb-[10.5rem]">
                 <div className="max-w-[1920px] mx-auto page-x">
-                    <div className="flex gap-16 xl:gap-24 py-16">
+                    <div className="flex flex-col md:flex-row gap-16 xl:gap-24 py-16">
                         {/* ── Sidebar ── */}
-                        <aside className="w-[240px] xl:w-[420px] flex-shrink-0 sticky top-28 self-start relative">
+                        <aside className="w-full md:w-[240px] xl:w-[420px] flex-shrink-0 md:sticky md:top-28 md:self-start relative">
                             {/* Glow — inside the sticky sidebar so it scrolls with it */}
                             <div className="shop-glow" />
                             <h1 className="font-aeonik text-[35px] leading-tight text-black-custom mb-4">
@@ -132,11 +132,9 @@ const CategoryPageBySlug = () => {
                                 your body and training.
                             </p>
 
-                            <button
-                                className="mb-12 font-aeonik text-[14px] xl:text-[18px] uppercase text-black-custom border-b-2 border-black-custom"
-                            >
+                            <p className="mb-12 font-aeonik text-[14px] xl:text-[18px] uppercase text-black-custom border-b-2 border-black-custom">
                                 {products.length} Results
-                            </button>
+                            </p>
 
                             {/* Shop By Series */}
                             <div className="mt-8">
@@ -179,7 +177,7 @@ const CategoryPageBySlug = () => {
                         </aside>
 
                         {/* ── Product Grid ── */}
-                        <div className="flex-1 grid grid-cols-2 gap-x-8 gap-y-16">
+                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-16">
                             {products.map((product) => (
                                 <ProductCard key={product.id} product={product} />
                             ))}
