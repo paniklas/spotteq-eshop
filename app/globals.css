@@ -157,6 +157,18 @@
   .page-x {
     @apply px-10 xl:px-[160px];
   }
+
+  .shop-glow {
+    position: absolute;
+    width: 515px;
+    height: 512px;
+    left: -260px;
+    top: 350px;
+    background: rgba(221, 107, 165, 0.2);
+    filter: blur(110px);
+    border-radius: 9999px;
+    pointer-events: none;
+  }
 }
 
 @layer base {
