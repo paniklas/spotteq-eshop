@@ -45,7 +45,10 @@ const products = [
 
 const FeaturedProducts = () => {
     return (
-        <section className="w-full bg-white py-16 xl:py-24">
+        <section
+            id="featured-products-section"
+            className="w-full bg-white py-16 xl:py-24"
+        >
             <div className="max-w-[1920px] mx-auto page-x">
                 
                 {/* Header */}
@@ -98,7 +101,8 @@ const FeaturedProducts = () => {
                         <div className="w-[89px] border-t border-black/50" />
                     </div>
                 </div>
-
+                
+                {/* "Shop All" button */}
                 <div className="mt-10 flex justify-center xl:hidden">
                     <Link
                         href="/shop"

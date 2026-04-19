@@ -1,6 +1,9 @@
 const AboutSection = () => {
     return (
-        <section className="relative w-full bg-white py-16 xl:py-32 page-x">
+        <section
+            id="about-section"
+            className="relative w-full bg-white py-16 xl:py-32 page-x"
+        >
             <p className="font-aeonik text-black text-[20px] md:text-[28px] xl:text-[30px] leading-[1.2] max-w-[1261px]">
                 SPOTTEQ is a performance nutrition brand created for athletes who care
                 about what goes into their body. Each formula is science-driven, clean

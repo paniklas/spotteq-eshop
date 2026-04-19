@@ -28,6 +28,9 @@
   --color-gray-soft: #f0f0f0;
   --color-orange-accent: #f9955a;
   --color-teal-accent: #44FF0C;
+  --color-gray-text: #646464;
+  --color-gray-language: #C8C8C8;
+  --color-gray-menu-overlay: #EEEEEE;
   
   /* Colors shadcn */
   --color-background: var(--background);

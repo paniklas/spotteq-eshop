@@ -6,7 +6,10 @@ const TRAINING_IMG = "/images/training-banner.webp";
 
 const TrainingBanner = () => {
     return (
-        <section className="bg-white-custom py-16 xl:py-24">
+        <section
+            id="training-banner-section"
+            className="bg-white-custom py-16 xl:py-24"
+        >
             <div className="max-w-[1920px] mx-auto page-x">
                 <Link
                     href="/series/training"
