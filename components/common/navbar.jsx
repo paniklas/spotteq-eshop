@@ -4,16 +4,20 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useLocale } from "next-intl";
+import { usePathname } from "next/navigation";
 import MenuOverlay from "./navbar-menu-overlay";
 import { useHeaderStyles } from "@/hooks/use-header-styles";
+import { getStylesForCurrentPage } from "@/hooks/get-header-styles-current-page";
 
 
 const Navbar = () => {
     const locale = useLocale();
+    const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [burgerHovered, setBurgerHovered] = useState(false);
-    const sectionStyles = useHeaderStyles(); // { color, scrollBg } | null
+    const sectionStyles = useHeaderStyles(); // { color, scrollBg } | null — section-level (home page only)
+    const pageStyles = getStylesForCurrentPage(pathname, locale); // page-level fallback
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 10);
@@ -30,8 +34,8 @@ const Navbar = () => {
     }, [isMenuOpen]);
 
     // Menu open → always dark icons (light gray overlay)
-    // Otherwise → use the section observer color, fall back to dark
-    const iconColor = isMenuOpen ? "#000000" : (sectionStyles?.color ?? "#000000");
+    // Otherwise → section observer color (home page) → page-level color → dark fallback
+    const iconColor = isMenuOpen ? "#000000" : (sectionStyles?.color ?? pageStyles.color);
     const isLightIcons = iconColor === "#ffffff";
 
     // Full-width bg only when menu is open (matches overlay color)

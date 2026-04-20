@@ -10,10 +10,13 @@ import StoriesThatMove from "@/components/home/stories-that-move"
 import TrainingBanner from "@/components/home/training-banner"
 
 
-const Home = () => {
+const Home = async ({ params }) => {
+
+  const { locale } = await params;
+
   return (
     <>
-      <HeroSection />
+      <HeroSection locale={locale} />
       <AnnouncementBar />
       <AboutSection />
       <ShopBySeries />
