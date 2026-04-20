@@ -114,7 +114,7 @@ const GOAL_FILTERS = [
 
 const CategoryPageBySlug = async ({ params }) => {
 
-    const { locale, slug } = await params;
+    const { locale } = await params;
 
     return (
         <>

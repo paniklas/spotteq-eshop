@@ -95,7 +95,7 @@ const ProductCard = ({ product, priority = false, locale }) => {
                         ADD TO BAG
                     </button>
                     <Link
-                        href={`/${locale}/shop/product/${product.slug}`}
+                        href={`/${locale}/shop/product/${product.slug ?? product.id}`}
                         className="flex-1 h-[45px] bg-gray-soft rounded-[20px] font-aeonik text-black-custom text-[16px] cursor-pointer hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out flex items-center justify-center"
                     >
                         VIEW DETAILS
