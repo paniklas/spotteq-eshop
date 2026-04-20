@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation"
 import ProductInteractive from "@/components/shop/product-interactive"
+import QualitySection from "@/components/home/quality-section";
+import SpotteqImage from "@/components/home/spotteq-image";
 
 const PRODUCTS = {
     "hyperfuel-green-apple": {
@@ -209,7 +211,13 @@ const ProductPage = async ({ params }) => {
 
     if (!product) notFound()
 
-    return <ProductInteractive product={product} relatedProducts={RELATED_PRODUCTS} />
+    return (
+        <>
+            <ProductInteractive product={product} relatedProducts={RELATED_PRODUCTS} />
+            <QualitySection />
+            <SpotteqImage />
+        </>
+    )   
 }
 
 export default ProductPage
