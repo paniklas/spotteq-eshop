@@ -112,7 +112,10 @@ const GOAL_FILTERS = [
     "Immunity & Everyday Health",
 ];
 
-const CategoryPageBySlug = () => {
+const CategoryPageBySlug = async ({ params }) => {
+
+    const { locale, slug } = await params;
+
     return (
         <>
             <section className="pt-24 min-h-screen bg-white-custom pb-10 xl:pb-[10.5rem]">
@@ -179,7 +182,7 @@ const CategoryPageBySlug = () => {
                         {/* ── Product Grid ── */}
                         <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-16">
                             {products.map((product) => (
-                                <ProductCard key={product.id} product={product} />
+                                <ProductCard key={product.id} product={product} locale={locale} />
                             ))}
                         </div>
                     </div>

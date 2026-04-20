@@ -21,21 +21,7 @@ export const getStylesForCurrentPage = (pathname, locale, backgroundColor = null
 
     if (pathname === `/${locale}` || pathname === `/${locale}/`) {
         return {
-            text: 'text-black-custom',
-            burger: 'bg-black-custom',
-            textHover: 'hover:text-black-custom',
-            border: 'border-black-custom',
-            borderHover: 'hover:border-teal-custom',
-            background: 'bg-transparent',
-            backgroundHover: 'hover:bg-teal-custom',
-            textHoverPlano: 'hover:text-white-custom',
-            backgroundHoverPlano: 'hover:bg-black-custom'
-        };
-    }
-    
-    // For about page
-    if (pathname.includes('/about')) {
-        return {
+            color: '#000000',
             text: 'text-black-custom',
             burger: 'bg-black-custom',
             textHover: 'hover:text-black-custom',
@@ -48,9 +34,26 @@ export const getStylesForCurrentPage = (pathname, locale, backgroundColor = null
         };
     }
 
-     // For projects page
-     if (pathname.includes('/projects') && !pathname.match(/\/projects\/[^/]+$/)) {
+    // For about page
+    if (pathname.includes('/about')) {
         return {
+            color: '#000000',
+            text: 'text-black-custom',
+            burger: 'bg-black-custom',
+            textHover: 'hover:text-black-custom',
+            border: 'border-black-custom',
+            borderHover: 'hover:border-teal-custom',
+            background: 'bg-transparent',
+            backgroundHover: 'hover:bg-teal-custom',
+            textHoverPlano: 'hover:text-white-custom',
+            backgroundHoverPlano: 'hover:bg-black-custom'
+        };
+    }
+
+    // For projects page
+    if (pathname.includes('/projects') && !pathname.match(/\/projects\/[^/]+$/)) {
+        return {
+            color: '#000000',
             text: 'text-black-custom',
             burger: 'bg-black-custom',
             textHover: 'hover:text-black-custom',
@@ -66,6 +69,7 @@ export const getStylesForCurrentPage = (pathname, locale, backgroundColor = null
     // For individual project page (projects/[slug])
     if (pathname.match(/\/projects\/[^/]+$/)) {
         return {
+            color: '#ffffff',
             text: 'text-white-custom',
             burger: 'bg-white-custom',
             textHover: 'hover:text-white-custom',
@@ -81,6 +85,7 @@ export const getStylesForCurrentPage = (pathname, locale, backgroundColor = null
     // For contact page
     if (pathname.includes('/contact')) {
         return {
+            color: '#000000',
             text: 'text-black-custom',
             burger: 'bg-black-custom',
             textHover: 'hover:text-black-custom',
@@ -93,8 +98,25 @@ export const getStylesForCurrentPage = (pathname, locale, backgroundColor = null
         };
     }
 
-    // Default fallback - you can set either one as your default
+    // For shop pages
+    if (pathname.includes('/shop')) {
+        return {
+            color: '#000000',
+            text: 'text-black-custom',
+            burger: 'bg-black-custom',
+            textHover: 'hover:text-black-custom',
+            border: 'border-black-custom',
+            borderHover: 'hover:border-teal-custom',
+            background: 'bg-transparent',
+            backgroundHover: 'hover:bg-teal-custom',
+            textHoverPlano: 'hover:text-white-custom',
+            backgroundHoverPlano: 'hover:bg-black-custom'
+        };
+    }
+
+    // Default fallback
     return {
+        color: '#000000',
         text: 'text-black-custom',
         burger: 'bg-black-custom',
         textHover: 'hover:text-teal-custom',

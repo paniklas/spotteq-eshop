@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 
-const HeroSection = () => {
+
+const HeroSection = ({ locale }) => {
+
     return (
         <section
             id="hero-section"
@@ -52,7 +54,7 @@ const HeroSection = () => {
                 </p>
                 <div>
                     <Link
-                        href="/shop"
+                        href={`/${locale}/shop/category/supplements`}
                         className="inline-flex items-center justify-center h-[41px] w-[159px] bg-white-custom rounded-[21px] font-aeonik text-black-custom text-[14px] tracking-wide hover:bg-black-custom hover:text-white-custom transition-colors duration-700"
                     >
                         SHOP NOW

@@ -1,8 +1,10 @@
 import Image from "next/image";
+import Link from "next/link";
+
 
 const LOVE_ICON = "/icons/love-icon.svg";
 
-const ProductCard = ({ product, priority = false }) => {
+const ProductCard = ({ product, priority = false, locale }) => {
     // Support both new `attributes` shape and legacy `detail1`–`detail4` shape
     const attrs = product.attributes ?? [
         { label: product.detail1, value: product.detail3 },
@@ -92,9 +94,12 @@ const ProductCard = ({ product, priority = false }) => {
                     <button className="flex-1 h-[45px] bg-black-custom rounded-[20px] font-aeonik text-white-custom text-[16px] cursor-pointer hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out">
                         ADD TO BAG
                     </button>
-                    <button className="flex-1 h-[45px] bg-gray-soft rounded-[20px] font-aeonik text-black-custom text-[16px] cursor-pointer hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out">
+                    <Link
+                        href={`/${locale}/shop/product/${product.slug}`}
+                        className="flex-1 h-[45px] bg-gray-soft rounded-[20px] font-aeonik text-black-custom text-[16px] cursor-pointer hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out flex items-center justify-center"
+                    >
                         VIEW DETAILS
-                    </button>
+                    </Link>
                 </div>
             </div>
         </div>

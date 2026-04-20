@@ -64,6 +64,14 @@ export const useHeaderStyles = () => {
     const [currentStyles, setCurrentStyles] = useState(null);
     const pathname = usePathname();
 
+    // Reset stale styles during render when the pathname changes — this is the
+    // canonical React pattern for derived state and avoids a cascading effect render.
+    const [prevPathname, setPrevPathname] = useState(pathname);
+    if (prevPathname !== pathname) {
+        setPrevPathname(pathname);
+        setCurrentStyles(null);
+    }
+
     // Persists across callbacks — tracks all sections currently inside the detection zone.
     // Keyed by element id, value is the latest intersectionRatio.
     const intersectingMap = useRef(new Map());
