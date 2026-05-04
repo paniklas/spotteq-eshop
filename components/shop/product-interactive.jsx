@@ -56,17 +56,17 @@ const ProductInteractive = ({ product, relatedProducts }) => {
     const decrement = () => setQuantity((q) => Math.max(1, q - 1))
     const increment = () => setQuantity((q) => q + 1)
 
-    const addToCart = (item) => {
+    const addToCart = (item, qty = 1) => {
         setCartItems((prev) => {
             const existing = prev.find(
                 (i) => i.id === item.id && i.flavour === item.flavour
             )
             if (existing) {
                 return prev.map((i) =>
-                    i.cartId === existing.cartId ? { ...i, qty: i.qty + 1 } : i
+                    i.cartId === existing.cartId ? { ...i, qty: i.qty + qty } : i
                 )
             }
-            return [...prev, { ...item, qty: 1, cartId: ++cartIdRef.current }]
+            return [...prev, { ...item, qty, cartId: ++cartIdRef.current }]
         })
         setCartOpen(true)
     }
@@ -286,14 +286,17 @@ const ProductInteractive = ({ product, relatedProducts }) => {
                         {/* CTA buttons */}
                         <div className="flex gap-3">
                             <button
-                                onClick={() => addToCart({
-                                    id: product.id ?? product.name,
-                                    name: product.name,
-                                    subtitle: product.subtitle,
-                                    price: product.price,
-                                    image: product.images[0],
-                                    flavour: selectedFlavour,
-                                })}
+                                onClick={() => {
+                                    addToCart({
+                                        id: product.id ?? product.name,
+                                        name: product.name,
+                                        subtitle: product.subtitle,
+                                        price: product.price,
+                                        image: product.images[0],
+                                        flavour: selectedFlavour,
+                                    }, quantity)
+                                    setQuantity(1)
+                                }}
                                 className="flex-1 h-12 bg-black-custom rounded-full font-aeonik text-[12px] xl:text-[16px] uppercase text-white-custom hover:bg-gray-text transition-colors duration-300 cursor-pointer"
                             >
                                 ADD TO BAG
