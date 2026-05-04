@@ -8,7 +8,7 @@ const StoriesThatMove = () => {
             id="stories-that-move-section"
             className="w-full bg-gray-light"
         >
-            <div className="max-w-[1920px] mx-auto page-x">
+            <div className="max-w-480 mx-auto page-x">
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-12 items-center">
                     {/* Text */}
                     <div className="flex flex-col justify-between h-full py-6 xl:py-12">

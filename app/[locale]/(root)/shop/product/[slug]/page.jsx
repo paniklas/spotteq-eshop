@@ -2,6 +2,9 @@ import { notFound } from "next/navigation"
 import ProductInteractive from "@/components/shop/product-interactive"
 import QualitySection from "@/components/home/quality-section";
 import SpotteqImage from "@/components/home/spotteq-image";
+import FeaturedProducts from "@/components/home/featured-products";
+import KeyFeatures from "@/components/product/key-features";
+
 
 const PRODUCTS = {
     "hyperfuel-green-apple": {
@@ -16,7 +19,7 @@ const PRODUCTS = {
             "With Caffeine, Green Tea & Vitamins",
         ],
         price: 40,
-        flavours: ["Green Apple", "Orange", "Tropical"],
+        flavours: ["Green Apple", "Orange", "Lemon & Lime", "Mango & Maracuja"],
         images: [
             "/images/products/group-84.png",
             "/images/products/group-87.png",
@@ -41,7 +44,7 @@ const PRODUCTS = {
             "With Caffeine, Green Tea & Vitamins",
         ],
         price: 40,
-        flavours: ["Green Apple", "Orange", "Tropical"],
+        flavours: ["Green Apple", "Orange", "Lemon & Lime", "Mango & Maracuja"],
         images: [
             "/images/products/group-87.png",
             "/images/products/group-84.png",
@@ -66,7 +69,7 @@ const PRODUCTS = {
             "No fillers or artificial colours",
         ],
         price: 40,
-        flavours: ["Chocolate", "Strawberry"],
+        flavours: ["Green Apple", "Orange", "Lemon & Lime", "Mango & Maracuja"],
         images: ["/images/products/group-86.png"],
         inStock: true,
         ingredients:
@@ -88,7 +91,7 @@ const PRODUCTS = {
             "No fillers or artificial colours",
         ],
         price: 40,
-        flavours: ["Chocolate", "Strawberry"],
+        flavours: ["Green Apple", "Orange", "Lemon & Lime", "Mango & Maracuja"],
         images: ["/images/products/group-88.png"],
         inStock: true,
         ingredients:
@@ -110,8 +113,8 @@ const PRODUCTS = {
             "EU GMP certified",
         ],
         price: 40,
-        flavours: [],
-        images: ["/images/products/liposomal-magnesium-1.png"],
+        flavours: ["Green Apple", "Orange", "Lemon & Lime", "Mango & Maracuja"],
+        images: ["/images/products/liposomal-magnesium-1.webp"],
         inStock: true,
         ingredients:
             "Magnesium Bisglycinate, Phosphatidylcholine (Sunflower Lecithin), Hydroxypropyl Methylcellulose (capsule), Microcrystalline Cellulose.",
@@ -132,8 +135,8 @@ const PRODUCTS = {
             "EU GMP certified",
         ],
         price: 40,
-        flavours: [],
-        images: ["/images/products/liposomal-magnesium-2.png"],
+        flavours: ["Green Apple", "Orange", "Lemon & Lime", "Mango & Maracuja"],
+        images: ["/images/products/liposomal-magnesium-2.webp"],
         inStock: true,
         ingredients:
             "Magnesium Bisglycinate, Phosphatidylcholine (Sunflower Lecithin), Hydroxypropyl Methylcellulose (capsule), Microcrystalline Cellulose.",
@@ -154,8 +157,8 @@ const PRODUCTS = {
             "EU GMP certified",
         ],
         price: 40,
-        flavours: [],
-        images: ["/images/products/liposomal-magnesium-3.png"],
+        flavours: ["Green Apple", "Orange", "Lemon & Lime", "Mango & Maracuja"],
+        images: ["/images/products/liposomal-magnesium-3.webp"],
         inStock: true,
         ingredients:
             "Magnesium Bisglycinate, Phosphatidylcholine (Sunflower Lecithin), Hydroxypropyl Methylcellulose (capsule), Microcrystalline Cellulose.",
@@ -176,8 +179,8 @@ const PRODUCTS = {
             "Vegan capsules",
         ],
         price: 40,
-        flavours: [],
-        images: ["/images/products/liposomal-magnesium-3.png"],
+        flavours: ["Green Apple", "Orange", "Lemon & Lime", "Mango & Maracuja"],
+        images: ["/images/products/liposomal-magnesium-3.webp"],
         inStock: true,
         ingredients:
             "Ascorbic Acid, Phosphatidylcholine (Sunflower Lecithin), Hydroxypropyl Methylcellulose (capsule), Microcrystalline Cellulose.",
@@ -201,7 +204,7 @@ const RELATED_PRODUCTS = [
         name: "Creatine Monohydrate",
         variant: "200 mesh",
         price: 40,
-        image: "/images/products/liposomal-magnesium-1.png",
+        image: "/images/products/liposomal-magnesium-1.webp",
     },
 ]
 
@@ -214,6 +217,8 @@ const ProductPage = async ({ params }) => {
     return (
         <>
             <ProductInteractive product={product} relatedProducts={RELATED_PRODUCTS} />
+            <KeyFeatures />
+            <FeaturedProducts compact />
             <QualitySection />
             <SpotteqImage />
         </>

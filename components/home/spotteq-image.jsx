@@ -16,7 +16,7 @@ const SpotteqImage = () => {
         <section
             id="spotteq-image-section"
             ref={containerRef}
-            className="w-full h-[400px] xl:h-[650px] relative overflow-hidden"
+            className="w-full h-100 xl:h-162.5 relative overflow-hidden"
         >
             <motion.div style={{ y }} className="absolute inset-0 scale-[1.35]">
                 <Image
@@ -26,7 +26,7 @@ const SpotteqImage = () => {
                     unoptimized={true}
                     quality={100}
                     sizes="100vw"
-                    className="object-cover"
+                    // className="object-cover"
                 />
             </motion.div>
         </section>

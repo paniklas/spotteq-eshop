@@ -152,7 +152,7 @@ const MenuOverlay = ({ isOpen, isOnClose }) => {
                         {/* Product image — sharp, above the blurred background */}
                         <div className="absolute inset-x-10 top-16 bottom-28 z-[1] flex items-center justify-center">
                             <Image
-                                src="/images/products/liposomal-magnesium-3.png"
+                                src="/images/products/liposomal-magnesium-3.webp"
                                 alt="Liposomal Magnesium"
                                 fill
                                 sizes="440px"
@@ -174,10 +174,10 @@ const MenuOverlay = ({ isOpen, isOnClose }) => {
 
             {/* Language switcher */}
             <div
-                className="max-w-[1920px] mx-auto page-x pb-10 flex justify-end"
+                className="max-w-480 mx-auto page-x pb-10 flex justify-end"
                 style={fade(300)}
                 >
-                <div className="flex items-center gap-3 font-tt text-[12px] xl:text-[16px] font-aeonik">
+                <div className="flex items-center gap-3 font-tt text-[12px] xl:text-[16px]">
                     <span className="text-gray-language hover:text-foreground cursor-pointer transition-colors">
                         English
                     </span>

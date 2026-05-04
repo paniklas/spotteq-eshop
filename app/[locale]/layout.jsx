@@ -33,13 +33,11 @@ export default async function LocaleLayout({ children, params }) {
         <NextIntlClientProvider messages={messages} locale={locale}>
             <SmoothScrolling>
                 <LocaleLanguageSetter locale={locale} />
-                <div className="max-w-[1920px] mx-auto h-full">
-                    <Navbar />
-                    <main>
-                        {children}
-                    </main>
-                    <Footer />
-                </div>
+                <Navbar />
+                <main>
+                    {children}
+                </main>
+                <Footer />
             </SmoothScrolling>
             <Toaster richColors toastOptions={{
                 duration: 5000,

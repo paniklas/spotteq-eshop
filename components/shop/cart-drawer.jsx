@@ -1,0 +1,152 @@
+"use client"
+
+import { useState } from "react"
+import Image from "next/image"
+import { Trash2, Check } from "lucide-react"
+
+const FREE_SHIPPING_THRESHOLD = 95.50
+
+const CartDrawer = ({ open, onClose, items, onRemove, onUpdateQty }) => {
+    const [coupon, setCoupon] = useState("")
+
+    const total = items.reduce((sum, item) => sum + item.price * item.qty, 0)
+    const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - total)
+
+    return (
+        <>
+            {/* Overlay */}
+            <div
+                className={`fixed inset-0 z-40 bg-black/20 backdrop-blur-sm transition-opacity duration-500 ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+                onClick={onClose}
+            />
+
+            {/* Drawer */}
+            <div
+                className={`fixed top-0 right-0 z-50 h-full w-full max-w-200 bg-white flex flex-col transform transition-transform duration-500 ease-in-out ${open ? "translate-x-0" : "translate-x-full"}`}
+            >
+                {/* Header */}
+                <div className="px-8 pt-8 pb-0">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-baseline gap-3">
+                            <h2 className="font-aeonik text-[28px] xl:text-[35px] text-black-custom">Your bag</h2>
+                            <span className="font-aeonik text-[13px] xl:text-[18px] text-black-custom underline">
+                                {items.length} {items.length === 1 ? "ITEM" : "ITEMS"}
+                            </span>
+                        </div>
+                        <button onClick={onClose} className="p-1 hover:opacity-60 transition-opacity duration-200 cursor-pointer">
+                            <Image src="/icons/X.svg" alt="Close" width={20} height={20} />
+                        </button>
+                    </div>
+                    <hr className="border-black-custom mt-5" />
+                </div>
+
+                {/* Free shipping banner */}
+                <div className="px-8 py-4">
+                    <p className="font-aeonik text-[13px] xl:text-[22px] text-black-custom">
+                        {remaining > 0
+                            ? `You are ${remaining.toFixed(2).replace(".", ",")}€ away from FREE SHIPPING!`
+                            : "You've unlocked FREE SHIPPING!"}
+                    </p>
+                </div>
+
+                {/* Items */}
+                <div className="flex-1 overflow-y-auto px-8">
+                    {items.length === 0 && (
+                        <p className="font-aeonik text-[14px] xl:text-[22px] text-gray-text text-center mt-12">Your bag is empty.</p>
+                    )}
+                    {items.map((item, i) => (
+                        <div key={item.cartId}>
+                            {i > 0 && <hr className="border-gray-mint" />}
+                            <div className="flex gap-4 py-5">
+                                {/* Image */}
+                                <div className="relative w-24 h-28 shrink-0 flex items-center justify-center">
+                                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full aspect-375/572 bg-gray-soft rounded-full z-0" />
+                                    <Image
+                                        src={item.image}
+                                        alt={item.name}
+                                        width={80}
+                                        height={80}
+                                        unoptimized
+                                        className="w-[75%] h-[75%] object-contain relative z-1"
+                                    />
+                                </div>
+
+                                {/* name left — price + qty + remove stacked on the right */}
+                                <div className="flex-1 flex justify-between items-start gap-4">
+                                    <div>
+                                        <p className="font-aeonik text-[15px] xl:text-[24px] text-black-custom">{item.name}</p>
+                                        {item.subtitle?.map((line) => (
+                                            <p key={line} className="font-aeonik text-[12px] xl:text-[16px] text-black-custom leading-snug">{line}</p>
+                                        ))}
+                                        {item.flavour && (
+                                            <p className="font-aeonik text-[12px] xl:text-[16px] text-gray-text">{item.flavour}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="flex flex-col items-end gap-6 shrink-0">
+                                        <span className="font-tt text-[15px] xl:text-[22px] text-black-custom">{item.price}€</span>
+                                        <div className="flex items-center border border-black-custom rounded-full px-1">
+                                            <button
+                                                onClick={() => onUpdateQty(item.cartId, -1)}
+                                                className="w-7 h-7 flex items-center justify-center text-black-custom hover:opacity-60 transition-opacity cursor-pointer font-tt text-[18px]"
+                                            >
+                                                −
+                                            </button>
+                                            <span className="w-6 text-center font-aeonik text-[14px] text-black-custom">{item.qty}</span>
+                                            <button
+                                                onClick={() => onUpdateQty(item.cartId, 1)}
+                                                className="w-7 h-7 flex items-center justify-center text-black-custom hover:opacity-60 transition-opacity cursor-pointer font-tt text-[18px]"
+                                            >
+                                                +
+                                            </button>
+                                        </div>
+                                        <button
+                                            onClick={() => onRemove(item.cartId)}
+                                            className="flex items-center gap-1.5 font-aeonik text-[11px] xl:text-[14px] uppercase tracking-wide text-black-custom hover:opacity-60 transition-opacity cursor-pointer"
+                                        >
+                                            REMOVE
+                                            <Trash2 size={16} strokeWidth={1.5} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Footer */}
+                <div className="px-8 pb-8 pt-5 border-t border-gray-mint">
+                    {/* Coupon */}
+                    <div className="flex items-center gap-4 mb-6">
+                        <span className="font-aeonik text-[11px] xl:text-[14px] uppercase text-black-custom leading-tight shrink-0">
+                            COUPON CODE /<br />GIFT CARD
+                        </span>
+                        <div className="flex-1 flex items-center border border-gray-mint rounded-sm">
+                            <input
+                                value={coupon}
+                                onChange={(e) => setCoupon(e.target.value)}
+                                className="flex-1 px-3 py-2.5 font-tt text-[13px] text-black-custom outline-none bg-transparent"
+                            />
+                            <button className="px-3 py-2.5 hover:opacity-60 transition-opacity cursor-pointer">
+                                <Check size={15} strokeWidth={1.5} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Total */}
+                    <div className="flex items-center justify-between mb-5">
+                        <span className="font-aeonik text-[13px] xl:text-[14px] uppercase text-black-custom">TOTAL</span>
+                        <span className="font-aeonik text-[30px] font-bold text-black-custom">{total}€</span>
+                    </div>
+
+                    {/* Checkout */}
+                    <button className="w-full h-14 bg-black-custom font-aeonik text-[13px] xl:text-[16px] uppercase text-white-custom rounded-[18px] hover:bg-gray-text transition-colors duration-300 cursor-pointer">
+                        PROCEED TO CHECKOUT
+                    </button>
+                </div>
+            </div>
+        </>
+    )
+}
+
+export default CartDrawer
