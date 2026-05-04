@@ -181,7 +181,7 @@
     filter: blur(110px);
     border-radius: 9999px;
     pointer-events: none;
-    z-index: 9999;
+    z-index: 0;
   }
 
   .product-page-glow {
@@ -194,7 +194,7 @@
     filter: blur(110px);
     border-radius: 9999px;
     pointer-events: none;
-    z-index: 9999;
+    z-index: 0;
   }
 
 @layer base {

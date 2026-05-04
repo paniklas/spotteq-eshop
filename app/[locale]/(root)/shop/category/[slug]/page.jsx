@@ -41,7 +41,7 @@ const products = [
         imgBg: "#ffffff",
     },
     {
-        id: "hyperfuel-orange-c",
+        id: "liposomal-vitamin-c",
         name: "Liposomal Vitamin C",
         price: 40,
         inStock: true,

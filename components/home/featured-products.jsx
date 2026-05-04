@@ -43,7 +43,7 @@ const products = [
     },
 ];
 
-const FeaturedProducts = ({ compact = false }) => {
+const FeaturedProducts = ({ compact = false, locale }) => {
     return (
         <section
             id="featured-products-section"
@@ -77,7 +77,7 @@ const FeaturedProducts = ({ compact = false }) => {
                 {/* Products grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 xl:gap-12">
                     {products.map((p, i) => (
-                        <ProductCard key={p.name} product={p} priority={i === 0} />
+                        <ProductCard key={p.name} product={p} priority={i === 0} locale={locale} />
                     ))}
                 </div>
 

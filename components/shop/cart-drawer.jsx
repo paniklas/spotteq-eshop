@@ -136,7 +136,7 @@ const CartDrawer = ({ open, onClose, items, onRemove, onUpdateQty }) => {
                     {/* Total */}
                     <div className="flex items-center justify-between mb-5">
                         <span className="font-aeonik text-[13px] xl:text-[14px] uppercase text-black-custom">TOTAL</span>
-                        <span className="font-aeonik text-[30px] font-bold text-black-custom">{total}€</span>
+                        <span className="font-aeonik text-[30px] font-bold text-black-custom">{total.toFixed(2).replace(".", ",")}€</span>
                     </div>
 
                     {/* Checkout */}

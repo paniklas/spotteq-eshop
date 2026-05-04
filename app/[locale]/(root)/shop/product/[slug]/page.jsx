@@ -209,7 +209,7 @@ const RELATED_PRODUCTS = [
 ]
 
 const ProductPage = async ({ params }) => {
-    const { slug } = await params
+    const { slug, locale } = await params
     const product = PRODUCTS[slug]
 
     if (!product) notFound()
@@ -218,7 +218,7 @@ const ProductPage = async ({ params }) => {
         <>
             <ProductInteractive product={product} relatedProducts={RELATED_PRODUCTS} />
             <KeyFeatures />
-            <FeaturedProducts compact />
+            <FeaturedProducts compact locale={locale} />
             <QualitySection />
             <SpotteqImage />
         </>
