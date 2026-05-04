@@ -10,10 +10,10 @@ const TrainingBanner = () => {
             id="training-banner-section"
             className="bg-white-custom py-16 xl:py-24"
         >
-            <div className="max-w-[1920px] mx-auto page-x">
+            <div className="max-w-480 mx-auto page-x">
                 <Link
                     href="/series/training"
-                    className="group relative block max-w-[1100px] h-[400px] xl:h-[560px] overflow-hidden"
+                    className="group relative block max-w-275 h-100 xl:h-140 overflow-hidden"
                 >
                     <Image
                         src={TRAINING_IMG}

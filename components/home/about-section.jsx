@@ -4,14 +4,16 @@ const AboutSection = () => {
             id="about-section"
             className="relative w-full bg-white py-16 xl:py-32 page-x"
         >
-            <p className="font-aeonik text-black text-[20px] md:text-[28px] xl:text-[30px] leading-[1.2] max-w-[1261px]">
-                SPOTTEQ is a performance nutrition brand created for athletes who care
-                about what goes into their body. Each formula is science-driven, clean
-                and clearly labelled, and part of a small, carefully curated line of
-                products designed to support strength, recovery and everyday health in
-                one focused system – like a trusted spotter that&rsquo;s always there,
-                even when no one else is.
-            </p>
+            <div className="max-w-[1920px] mx-auto page-x">
+                <p className="font-aeonik text-black text-[20px] md:text-[28px] xl:text-[30px] leading-[1.2] max-w-[1261px]">
+                    SPOTTEQ is a performance nutrition brand created for athletes who care
+                    about what goes into their body. Each formula is science-driven, clean
+                    and clearly labelled, and part of a small, carefully curated line of
+                    products designed to support strength, recovery and everyday health in
+                    one focused system – like a trusted spotter that&rsquo;s always there,
+                    even when no one else is.
+                </p>
+            </div>
 
             <svg width="315" height="643" viewBox="0 0 315 643" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute right-0 top-90 -translate-y-1/2 z-10 pointer-events-none">
                 <path d="M194.06 130.458C230.264 130.458 259.614 101.254 259.614 65.2288C259.614 29.2039 230.264 0 194.06 0C157.855 0 128.505 29.2039 128.505 65.2288C128.505 101.254 157.855 130.458 194.06 130.458Z" fill="#D9D9D9" fillOpacity="0.4"/>

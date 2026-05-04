@@ -21,7 +21,7 @@ const Home = async ({ params }) => {
       <AboutSection />
       <ShopBySeries />
       <BundleSection />
-      <FeaturedProducts />
+      <FeaturedProducts locale={locale} />
       <StoriesThatMove />
       <TrainingBanner />
       <QualitySection />

@@ -8,7 +8,7 @@ const products = [
         name: "Liposomal Magnesium",
         price: 40,
         inStock: true,
-        image: "/images/products/liposomal-magnesium-1.png",
+        image: "/images/products/liposomal-magnesium-1.webp",
         attributes: [
             { label: "93.6 mg 25% NRV", value: "60 caps" },
             { label: "Vegan", value: "1 - Month Supply" },
@@ -21,7 +21,7 @@ const products = [
         name: "Liposomal Magnesium",
         price: 40,
         inStock: true,
-        image: "/images/products/liposomal-magnesium-2.png",
+        image: "/images/products/liposomal-magnesium-2.webp",
         attributes: [
             { label: "93.6 mg 25% NRV", value: "60 caps" },
             { label: "Vegan", value: "1 - Month Supply" },
@@ -45,7 +45,7 @@ const products = [
         name: "Liposomal Vitamin C",
         price: 40,
         inStock: true,
-        image: "/images/products/liposomal-magnesium-3.png",
+        image: "/images/products/hyperfuel-orange.webp",
         attributes: [
             { label: "93.6 mg 25% NRV", value: "60 caps" },
             { label: "Vegan", value: "1 - Month Supply" },
@@ -82,7 +82,7 @@ const products = [
         name: "Liposomal Magnesium",
         price: 40,
         inStock: true,
-        image: "/images/products/liposomal-magnesium-3.png",
+        image: "/images/products/liposomal-magnesium-3.webp",
         attributes: [
             { label: "93.6 mg 25% NRV", value: "60 caps" },
             { label: "Vegan", value: "1 - Month Supply" },
@@ -118,11 +118,12 @@ const CategoryPageBySlug = async ({ params }) => {
 
     return (
         <>
-            <section className="pt-24 min-h-screen bg-white-custom pb-10 xl:pb-[10.5rem]">
-                <div className="max-w-[1920px] mx-auto page-x">
+            <section className="pt-24 min-h-screen bg-white-custom pb-10 xl:pb-[10.5rem] relative overflow-hidden">
+                <div className="product-glow" style={{ top: '35%', right: '130px', transform: 'translateY(-50%)' }} />
+                <div className="max-w-480 mx-auto page-x">
                     <div className="flex flex-col md:flex-row gap-16 xl:gap-24 py-16">
                         {/* ── Sidebar ── */}
-                        <aside className="w-full md:w-[240px] xl:w-[420px] flex-shrink-0 md:sticky md:top-28 md:self-start relative">
+                        <aside className="w-full md:w-60 xl:w-105 shrink-0 md:sticky md:top-28 md:self-start relative">
                             {/* Glow — inside the sticky sidebar so it scrolls with it */}
                             <div className="shop-glow" />
                             <h1 className="font-aeonik text-[35px] leading-tight text-black-custom mb-4">

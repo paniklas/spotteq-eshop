@@ -12,7 +12,7 @@ const BundleCard = ({
 
     if (variant === "vertical") {
         return (
-            <div className="group relative rounded-[190px] p-8 xl:p-10 overflow-hidden flex flex-col min-h-[520px]">
+            <div className="group relative rounded-[190px] p-8 xl:p-10 overflow-hidden flex flex-col min-h-130">
                 {/* Background — blurs on hover */}
                 <div className="absolute inset-0 bg-gray-mint transition-[filter,opacity] duration-300 group-hover:bg-gray-mint/80 group-hover:blur-[7.5px]" />
 
@@ -28,7 +28,7 @@ const BundleCard = ({
                             sizes="200px"
                             unoptimized={true}
                             quality={100}
-                            className="object-contain h-[300px] xl:h-[380px] w-auto"
+                            className="object-contain h-75 xl:h-95 w-auto"
                             style={{
                                 marginLeft: i > 0 ? "-2rem" : 0,
                                 zIndex: images.length - i,

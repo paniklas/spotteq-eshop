@@ -2,9 +2,9 @@ import Link from "next/link";
 import ProductCard from "./product-card";
 
 
-const PROTEIN_STRAWBERRY = "/images/products/liposomal-magnesium-1.png";
-const MAGNESIUM = "/images/products/liposomal-magnesium-2.png";
-const MAGNESIUM_3 = "/images/products/liposomal-magnesium-3.png";
+const PROTEIN_STRAWBERRY = "/images/products/liposomal-magnesium-1.webp";
+const MAGNESIUM = "/images/products/liposomal-magnesium-2.webp";
+const MAGNESIUM_3 = "/images/products/liposomal-magnesium-3.webp";
 
 
 const products = [
@@ -43,39 +43,41 @@ const products = [
     },
 ];
 
-const FeaturedProducts = () => {
+const FeaturedProducts = ({ compact = false, locale }) => {
     return (
         <section
             id="featured-products-section"
             className="w-full bg-white py-16 xl:py-24"
         >
-            <div className="max-w-[1920px] mx-auto page-x">
-                
+            <div className="max-w-480 mx-auto page-x pt-20">
+
                 {/* Header */}
-                <div className="flex items-start justify-between mb-6">
-                    <h2 className="font-aeonik text-black-custom text-[28px] xl:text-[35px] leading-none">
-                        Featured Products
-                    </h2>
+                {!compact && (
+                    <div className="flex items-start justify-between mb-6">
+                        <h2 className="font-aeonik text-black-custom text-[28px] xl:text-[35px] leading-none">
+                            Featured Products
+                        </h2>
 
-                    {/* Description */}
-                    <p className="font-aeonik text-black-custom text-[16px] xl:text-[18px] leading-[1.45] max-w-[652px] mb-12">
-                        A focused line of science-driven formulas for strength, performance,
-                        recovery and everyday health. Explore all our series, flavours and
-                        formats to build the system that works for your body and training.
-                    </p>
+                        {/* Description */}
+                        <p className="font-aeonik text-black-custom text-[16px] xl:text-[18px] leading-[1.45] max-w-163 mb-12">
+                            A focused line of science-driven formulas for strength, performance,
+                            recovery and everyday health. Explore all our series, flavours and
+                            formats to build the system that works for your body and training.
+                        </p>
 
-                    <Link
-                        href="/shop"
-                        className="hidden xl:inline-flex items-center justify-center h-[41px] w-[140px] bg-black rounded-[20.5px] font-aeonik text-white text-[14px] hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out shrink-0 self-center"
-                    >
-                        SHOP ALL
-                    </Link>
-                </div>
+                        <Link
+                            href="/shop"
+                            className="hidden xl:inline-flex items-center justify-center h-10.25 w-35 bg-black rounded-[20.5px] font-aeonik text-white text-[14px] hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out shrink-0 self-center"
+                        >
+                            SHOP ALL
+                        </Link>
+                    </div>
+                )}
 
                 {/* Products grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 xl:gap-12">
                     {products.map((p, i) => (
-                        <ProductCard key={p.name} product={p} priority={i === 0} />
+                        <ProductCard key={p.name} product={p} priority={i === 0} locale={locale} />
                     ))}
                 </div>
 
@@ -103,14 +105,16 @@ const FeaturedProducts = () => {
                 </div>
                 
                 {/* "Shop All" button */}
-                <div className="mt-10 flex justify-center xl:hidden">
-                    <Link
-                        href="/shop"
-                        className="inline-flex items-center justify-center h-[41px] w-[140px] bg-black rounded-[21px] font-aeonik text-white text-[14px] hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out"
-                    >
-                        SHOP ALL
-                    </Link>
-                </div>
+                {!compact && (
+                    <div className="mt-10 flex justify-center xl:hidden">
+                        <Link
+                            href="/shop"
+                            className="inline-flex items-center justify-center h-10.25 w-35 bg-black rounded-[21px] font-aeonik text-white text-[14px] hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out"
+                        >
+                            SHOP ALL
+                        </Link>
+                    </div>
+                )}
             </div>
         </section>
     )

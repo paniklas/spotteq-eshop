@@ -25,7 +25,7 @@ const ShopBySeries = () => {
             id="shop-by-series-section"
             className="w-full bg-white-custom py-10 xl:py-14"
         >
-            <div className="max-w-[1920px] mx-auto page-x">
+            <div className="max-w-480 mx-auto page-x">
                 <h2 className="font-aeonik text-black text-[28px] xl:text-[35px] leading-[1.45] mb-8">
                     Shop by series
                 </h2>
@@ -62,7 +62,7 @@ const ShopBySeries = () => {
                                         {s.title}
                                         <span className="absolute bottom-0 left-0 h-px w-0 bg-white-custom group-hover:w-full transition-all duration-500 ease-out" />
                                     </span>
-                                    <p className="font-aeonik text-white-custom text-[14px] xl:text-[18px] max-w-[480px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-150">
+                                    <p className="font-aeonik text-white-custom text-[14px] xl:text-[18px] max-w-120 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-150">
                                         {s.description}
                                     </p>
                                 </div>

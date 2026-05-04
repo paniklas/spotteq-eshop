@@ -171,6 +171,32 @@
   }
 }
 
+  .product-glow {
+    position: absolute;
+    width: 515px;
+    height: 512px;
+    right: -260px;
+    top: 0px;
+    background: rgba(235, 171, 66, 0.2);
+    filter: blur(110px);
+    border-radius: 9999px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .product-page-glow {
+    position: absolute;
+    width: 515px;
+    height: 512px;
+    right: -260px;
+    top: 0px;
+    background: rgba(95, 172, 149, 0.2);
+    filter: blur(110px);
+    border-radius: 9999px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
 @layer base {
   * {
     padding: 0;
