@@ -5,7 +5,7 @@ import { Link } from "@/i18n/navigation";
 
 
 const SHIPPING_METHODS = [
-    { id: "geniki", name: "ΓΕΝΙΚΗ ΤΑΧΥΔΡΟΜΙΚΗ", eta: "Τα Διαθέσιμα προϊόντα παραδίδονται σε 1−3 εργάσιμες ημέρες στην πόρτα σου, Δωρεάν για παραγγελίες άνω των 100€.\n(εξαιρούνται οι δυσπρόσιτες περιοχές και παραγγελίες άνω των 10kg για Αττική και άνω των 5kg για την υπόλοιπη Ελλάδα.)", price: 5 },
+    { id: "geniki", name: "ΓΕΝΙΚΗ ΤΑΧΥΔΡΟΜΙΚΗ", eta: "Τα Διαθέσιμα προϊόντα παραδίδονται σε 1−3 εργάσιμες ημέρες στην πόρτα σου, Δωρεάν για παραγγελίες άνω των 95,50€.\n(εξαιρούνται οι δυσπρόσιτες περιοχές και παραγγελίες άνω των 10kg για Αττική και άνω των 5kg για την υπόλοιπη Ελλάδα.)", price: 5 },
     { id: "box", name: "Παραλαβή απο BOX NOW - LOCKER", eta: "", price: 2.50 },
     // { id: "free", name: "Free Shipping", eta: "5-7 business days", price: 0 },
 ]
@@ -86,7 +86,7 @@ const CheckoutForm = () => {
         billingPostalCode: "",
         billingCity: "",
         billingPhone: "",
-        shippingMethod: "standard",
+        shippingMethod: "geniki",
         agreeTerms: false,
     })
 
