@@ -216,7 +216,11 @@ const ProductPage = async ({ params }) => {
 
     return (
         <>
-            <ProductInteractive product={product} relatedProducts={RELATED_PRODUCTS} />
+            <ProductInteractive
+                product={product}
+                relatedProducts={RELATED_PRODUCTS}
+                locale={locale}
+            />
             <KeyFeatures />
             <FeaturedProducts compact locale={locale} />
             <QualitySection />

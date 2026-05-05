@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import MenuOverlay from "./navbar-menu-overlay";
 import { useHeaderStyles } from "@/hooks/use-header-styles";
 import { getStylesForCurrentPage } from "@/hooks/get-header-styles-current-page";
+import { useCart } from "@/context/cart-context";
 
 
 const Navbar = () => {
@@ -16,6 +17,7 @@ const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [burgerHovered, setBurgerHovered] = useState(false);
+    const { setCartOpen } = useCart();
     const sectionStyles = useHeaderStyles(); // { color, scrollBg } | null — section-level (home page only)
     const pageStyles = getStylesForCurrentPage(pathname, locale); // page-level fallback
 
@@ -48,8 +50,8 @@ const Navbar = () => {
             {/* Menu overlay */}
             <MenuOverlay isOpen={isMenuOpen} isOnClose={() => setIsMenuOpen(false)} />
 
-            <header className={`fixed top-0 left-0 right-0 z-50 h-24 transition-all duration-300 ${headerBg}`}>
-                <div className={`max-w-[1920px] mx-auto h-full flex items-center justify-between page-x transition-all duration-300 ${innerBg}`}>
+            <header className={`fixed top-0 left-0 right-0 z-50 h-24 transition-all duration-300 ${headerBg} ${innerBg}`}>
+                <div className={`max-w-480 mx-auto h-full flex items-center justify-between page-x`}>
 
                     {/* Logo — crossfade between black and white versions */}
                     <Link href={`/${locale}`} className="relative flex items-center" aria-label="SPOTTEQ home">
@@ -112,7 +114,7 @@ const Navbar = () => {
                             transition={{ duration: 0.3 }}
                         >
                             {/* User account */}
-                            <button aria-label="Account" className="hidden md:flex items-center">
+                            <button aria-label="Account" className="hidden md:flex items-center cursor-pointer">
                                 <svg width="18" height="21" viewBox="0 0 18 21" fill="none">
                                     <path
                                         d="M16.8636 20.5V18.2778C16.8636 17.099 16.4039 15.9686 15.5856 15.1351C14.7672 14.3016 13.6573 13.8333 12.5 13.8333H4.86364C3.70633 13.8333 2.59642 14.3016 1.77808 15.1351C0.959739 15.9686 0.5 17.099 0.5 18.2778V20.5M13.0455 4.94444C13.0455 7.39904 11.0918 9.38889 8.68182 9.38889C6.27185 9.38889 4.31818 7.39904 4.31818 4.94444C4.31818 2.48985 6.27185 0.5 8.68182 0.5C11.0918 0.5 13.0455 2.48985 13.0455 4.94444Z"
@@ -124,7 +126,7 @@ const Navbar = () => {
                             </button>
 
                             {/* Search */}
-                            <button aria-label="Search" className="hidden md:flex items-center">
+                            <button aria-label="Search" className="hidden md:flex items-center cursor-pointer">
                                 <svg width="25" height="25" viewBox="0 0 25 25" fill="none">
                                     <circle
                                         cx="12.0208"
@@ -138,7 +140,7 @@ const Navbar = () => {
                             </button>
 
                             {/* Cart */}
-                            <button aria-label="Cart" className="relative flex items-center">
+                            <button aria-label="Cart" onClick={() => setCartOpen(true)} className="relative flex items-center cursor-pointer">
                                 <svg width="31" height="46" viewBox="0 0 31 46" fill="none">
                                     <path
                                         d="M23 18.5V7.5C23 3.63401 19.866 0.5 16 0.5C12.134 0.5 9 3.63401 9 7.5V18.5"
