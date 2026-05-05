@@ -51,7 +51,7 @@ const BundleSection = () => {
             id="bundle-section"
             className="w-full bg-gray-light py-16 xl:py-24"
         >
-            <div className="max-w-[1920px] mx-auto page-x">
+            <div className="max-w-480 mx-auto page-x">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-20">
                     <h2 className="font-aeonik text-black text-[28px] xl:text-[35px] leading-[1.45]">

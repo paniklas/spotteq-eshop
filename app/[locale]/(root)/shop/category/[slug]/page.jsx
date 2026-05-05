@@ -118,8 +118,10 @@ const CategoryPageBySlug = async ({ params }) => {
 
     return (
         <>
-            <section className="pt-24 min-h-screen bg-white-custom pb-10 xl:pb-[10.5rem] relative overflow-hidden">
-                <div className="product-glow" style={{ top: '35%', right: '130px', transform: 'translateY(-50%)' }} />
+            <section className="pt-24 min-h-screen bg-white-custom pb-10 xl:pb-[10.5rem] relative">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="product-glow" style={{ top: '35%', right: '130px', transform: 'translateY(-50%)' }} />
+                </div>
                 <div className="max-w-480 mx-auto page-x">
                     <div className="flex flex-col md:flex-row gap-16 xl:gap-24 py-16">
                         {/* ── Sidebar ── */}

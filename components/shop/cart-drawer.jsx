@@ -2,15 +2,80 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { Trash2, Check } from "lucide-react"
+import { Trash2, Check, X } from "lucide-react";
+import { Link } from "@/i18n/navigation";
+import { useRouter } from "next/navigation";
+
 
 const FREE_SHIPPING_THRESHOLD = 95.50
 
+const CheckoutModal = ({ onClose, onGuest }) => (
+    <>
+        {/* Modal overlay */}
+        <div
+            className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
+            onClick={onClose}
+        />
+
+        {/* Modal card */}
+        <div className="fixed inset-0 z-[70] flex items-center justify-center px-6">
+            <div className="bg-white-custom rounded-2xl p-8 w-full max-w-md shadow-xl">
+                {/* Close */}
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="font-aeonik text-[22px] text-black-custom">Before you continue</h3>
+                    <button onClick={onClose} className="p-1 hover:opacity-60 transition-opacity cursor-pointer">
+                        <X size={20} strokeWidth={1.5} />
+                    </button>
+                </div>
+
+                <p className="font-aeonik text-[14px] text-gray-text mb-8 leading-relaxed">
+                    Sign in or create a free account to track your orders, save your details, and enjoy a faster checkout next time.
+                </p>
+
+                <div className="flex flex-col gap-3">
+                    {/* Sign in / Create account */}
+                    <Link
+                        href="/login"
+                        onClick={onClose}
+                        className="w-full h-14 bg-black-custom font-aeonik text-[13px] xl:text-[15px] uppercase text-white-custom rounded-[18px] hover:bg-gray-text transition-colors duration-300 flex items-center justify-center"
+                    >
+                        Sign in / Create account
+                    </Link>
+
+                    {/* Continue as guest */}
+                    <button
+                        onClick={onGuest}
+                        className="w-full h-14 border border-black-custom font-aeonik text-[13px] xl:text-[15px] uppercase text-black-custom rounded-[18px] hover:bg-gray-soft transition-colors duration-300 cursor-pointer"
+                    >
+                        Continue as guest
+                    </button>
+                </div>
+            </div>
+        </div>
+    </>
+)
+
 const CartDrawer = ({ open, onClose, items, onRemove, onUpdateQty }) => {
     const [coupon, setCoupon] = useState("")
+    const [showModal, setShowModal] = useState(false)
+    const router = useRouter()
 
     const total = items.reduce((sum, item) => sum + item.price * item.qty, 0)
     const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - total)
+
+    const handleCheckoutClick = () => {
+        setShowModal(true)
+    }
+
+    const handleGuest = () => {
+        setShowModal(false)
+        onClose()
+        router.push("/checkout")
+    }
+
+    const handleModalClose = () => {
+        setShowModal(false)
+    }
 
     return (
         <>
@@ -140,11 +205,22 @@ const CartDrawer = ({ open, onClose, items, onRemove, onUpdateQty }) => {
                     </div>
 
                     {/* Checkout */}
-                    <button className="w-full h-14 bg-black-custom font-aeonik text-[13px] xl:text-[16px] uppercase text-white-custom rounded-[18px] hover:bg-gray-text transition-colors duration-300 cursor-pointer">
+                    <button
+                        onClick={handleCheckoutClick}
+                        className="w-full h-14 bg-black-custom font-aeonik text-[13px] xl:text-[16px] uppercase text-white-custom rounded-[18px] hover:bg-gray-text transition-colors duration-300 cursor-pointer flex items-center justify-center"
+                    >
                         PROCEED TO CHECKOUT
                     </button>
                 </div>
             </div>
+
+            {/* Guest / Account modal */}
+            {showModal && (
+                <CheckoutModal
+                    onClose={handleModalClose}
+                    onGuest={handleGuest}
+                />
+            )}
         </>
     )
 }
