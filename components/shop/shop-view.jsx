@@ -76,7 +76,7 @@ const ShopView = ({ children, categories = [], bundles = [], total = 0, activeSl
                                     SHOP BY BUNDLE
                                 </p>
                                 <ul className="mt-4 flex flex-col">
-                                    {bundles.map((bundle) => (
+                                    {bundles.filter(b => b.title && b.slug).map((bundle) => (
                                         <li key={bundle._id}>
                                             <Link
                                                 href={`/shop/bundle/${bundle.slug}`}

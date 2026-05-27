@@ -8,7 +8,7 @@ export async function getShopBundles(locale) {
       _id,
       "title": title[language == $locale][0].value,
       "slug": slugs[$locale].current,
-      "productIds": products[].product->._id
+      "productIds": products[].product->._id[@ != null]
     }
   `)
 

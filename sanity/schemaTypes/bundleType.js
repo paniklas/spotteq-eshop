@@ -119,7 +119,7 @@ export const bundleType = defineType({
       type: 'number',
       description: 'Must be lower than the regular bundle price',
       validation: Rule =>
-        Rule.custom((saleBundlePrice, context) => {
+        Rule.positive().custom((saleBundlePrice, context) => {
           const bundlePrice = context.document?.bundlePrice
           if (saleBundlePrice !== undefined && bundlePrice !== undefined && saleBundlePrice >= bundlePrice) {
             return 'Sale bundle price must be lower than the regular bundle price'
