@@ -36,16 +36,14 @@ const ProductCard = ({ product, priority = false }) => {
                     quality={100}
                     className="relative z-1 w-full h-full object-contain p-24"
                 />
-
             </div>
 
-            {product.badge && (
-                <span className="w-fit bg-orange-accent text-white text-[12px] xl:text-[14px] font-aeonik px-3 py-1 rounded-full">
-                    {product.badge}
-                </span>
-            )}
-
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center relative">
+                {product.badge && (
+                    <span className="absolute -top-10 right-0 bg-orange-accent text-white text-[12px] xl:text-[14px] font-aeonik px-3 py-1 rounded-full leading-none">
+                        {product.badge}
+                    </span>
+                )}
                 {/* Stock indicator */}
                 <div className="flex items-center gap-2">
                     <span className="w-3 h-3 rounded-full bg-teal-accent shrink-0" />

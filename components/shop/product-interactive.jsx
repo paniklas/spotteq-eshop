@@ -305,7 +305,7 @@ const ProductInteractive = ({ product, relatedProducts = [] }) => {
                                 <div className="flex gap-4">
                                     {relatedProducts.map((rp) => (
                                         <div key={rp._id} className="flex-1 flex flex-col gap-3">
-                                            <div className="relative aspect-square flex flex-col items-center justify-center gap-1">
+                                            <div className="relative aspect-square flex flex-col items-center justify-end gap-1 pb-3">
                                                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[65%] aspect-375/572 bg-gray-soft rounded-full z-0" />
                                                 {rp.imageUrl && (
                                                     <Image
@@ -313,7 +313,7 @@ const ProductInteractive = ({ product, relatedProducts = [] }) => {
                                                         alt={rp.title}
                                                         width={200}
                                                         height={200}
-                                                        className="w-[58%] h-[58%] object-contain relative z-1"
+                                                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[58%] h-[58%] object-contain z-1"
                                                     />
                                                 )}
                                                 <p className="relative z-1 font-aeonik text-[13px] xl:text-[16px] text-black-custom leading-tight text-center">

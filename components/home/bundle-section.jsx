@@ -1,53 +1,12 @@
 import Link from "next/link";
 import BundleCard from "./bundle-card";
+import { getAllBundles } from "@/sanity/getData/getAllBundles";
 
+const BundleSection = async ({ locale }) => {
+    const bundles = await getAllBundles(locale)
 
-const VITAMIN_C = "/images/products/group-84.png";
-const PROTEIN_CHOCOLATE = "/images/products/group-86.png";
-const PROTEIN_STRAWBERRY = "/images/products/group-87.png";
-const PROTEIN_COOKIE = "/images/products/group-88.png";
-
-
-const bundles = [
-    {
-        title: "Recovery & Protection",
-        products: "Liposomal Magnesium · Liposomal Vitamin C",
-        description:
-        "Supports muscle function, recovery and everyday immune protection.",
-        price: "40€",
-        images: [VITAMIN_C],
-    },
-    {
-        title: "Performance Complete",
-        products: "Whey Protein 80% · Creatine Monohydrate · Hyperfuel®",
-        description:
-        "Three core formulas working together to fuel intensity, build strength and support recovery.",
-        price: "40€",
-        images: [PROTEIN_CHOCOLATE],
-    },
-    {
-        title: "Strength & Growth",
-        products: "Whey Protein 80% · Creatine Monohydrate",
-        description:
-        "Clean protein paired with micronized creatine to support muscle growth, strength and consistent training performance.",
-        price: "40€",
-        images: [PROTEIN_STRAWBERRY],
-    },
-    {
-        title: "Total System",
-        products:
-        "Whey Protein 80% · Hyperfuel® · Creatine Monohydrate · Liposomal Vitamin C · Liposomal Magnesium",
-        description:
-        "The complete SPOTTEQ system. Five formulas covering performance, recovery and everyday protection in one set.",
-        price: "40€",
-        images: [PROTEIN_COOKIE],
-    },
-];
-
-
-const BundleSection = () => {
     return (
-         <section
+        <section
             id="bundle-section"
             className="w-full bg-gray-light py-16 xl:py-24"
         >
@@ -76,17 +35,23 @@ const BundleSection = () => {
                     performance, recovery and everyday health.
                 </p>
 
-                {/* Row 1: two equal cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <BundleCard {...bundles[0]} />
-                    <BundleCard {...bundles[1]} />
-                </div>
+                {bundles.length > 0 && (
+                    <>
+                        {/* Row 1: two equal cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {bundles[0] && <BundleCard {...bundles[0]} />}
+                            {bundles[1] && <BundleCard {...bundles[1]} />}
+                        </div>
 
-                {/* Row 2: vertical card narrower, horizontal card wider */}
-                <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-6 mt-6">
-                    <BundleCard {...bundles[2]} variant="vertical" />
-                    <BundleCard {...bundles[3]} />
-                </div>
+                        {/* Row 2: vertical card narrower, horizontal card wider */}
+                        {(bundles[2] || bundles[3]) && (
+                            <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-6 mt-6">
+                                {bundles[2] && <BundleCard {...bundles[2]} variant="vertical" />}
+                                {bundles[3] && <BundleCard {...bundles[3]} />}
+                            </div>
+                        )}
+                    </>
+                )}
 
                 <div className="mt-8 flex justify-center xl:hidden">
                     <Link

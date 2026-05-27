@@ -10,6 +10,7 @@ import SpotteqImage from "@/components/home/spotteq-image"
 import StoriesThatMove from "@/components/home/stories-that-move"
 import TrainingBanner from "@/components/home/training-banner"
 import ShopBySeriesSkeleton from "@/components/skeletons/shop-by-series-skeleton"
+import BundleSectionSkeleton from "@/components/skeletons/bundle-section-skeleton"
 
 export const dynamic = "force-static";
 export const revalidate = 86400;
@@ -25,7 +26,9 @@ const Home = async ({ params }) => {
       <Suspense fallback={<ShopBySeriesSkeleton />}>
         <ShopBySeries locale={locale} />
       </Suspense>
-      <BundleSection />
+      <Suspense fallback={<BundleSectionSkeleton />}>
+        <BundleSection locale={locale} />
+      </Suspense>
       <FeaturedProducts locale={locale} />
       <StoriesThatMove />
       <TrainingBanner />

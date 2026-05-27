@@ -6,6 +6,34 @@ const getLocalizedTitle = (doc, lang) => {
   return doc.title.find(item => item.language === lang)?.value || ''
 }
 
+const getLocalizedFlavour = (doc, lang) => {
+  if (!Array.isArray(doc.flavourName)) return ''
+  return doc.flavourName.find(item => item.language === lang)?.value || ''
+}
+
+const slugSource = (lang) => (doc) => {
+  const title = getLocalizedTitle(doc, lang)
+  const flavour = getLocalizedFlavour(doc, lang)
+  const suffix = flavour || doc.sku || ''
+  return [title, suffix].filter(Boolean).join(' ')
+}
+
+const makeIsUnique = (slugPath) => async (slug, context) => {
+  const { document, getClient } = context
+  if (typeof getClient !== 'function') return true
+  try {
+    const client = getClient({ apiVersion: '2024-01-01' })
+    const id = document._id.replace(/^drafts\./, '')
+    const count = await client.fetch(
+      `count(*[_type == "product" && ${slugPath} == $slug && !(_id in [$pub, $draft])])`,
+      { slug, pub: id, draft: `drafts.${id}` }
+    )
+    return count === 0
+  } catch {
+    return true
+  }
+}
+
 export const productType = defineType({
   name: 'product',
   title: 'Product',
@@ -51,7 +79,8 @@ export const productType = defineType({
           type: 'slug',
           options: {
             maxLength: 96,
-            source: (doc) => getLocalizedTitle(doc, 'en'),
+            source: slugSource('en'),
+            isUnique: makeIsUnique('slugs.en.current'),
           },
           validation: Rule => Rule.required(),
         }),
@@ -61,8 +90,9 @@ export const productType = defineType({
           type: 'slug',
           options: {
             maxLength: 96,
-            source: (doc) => getLocalizedTitle(doc, 'el'),
+            source: slugSource('el'),
             slugify: greekSlugify,
+            isUnique: makeIsUnique('slugs.el.current'),
           },
           validation: Rule => Rule.required(),
         }),
@@ -211,7 +241,16 @@ export const productType = defineType({
         defineArrayMember({
           type: 'reference',
           to: [{ type: 'product' }],
-          options: { disableNew: true },
+          options: {
+            disableNew: true,
+            filter: ({ document }) => ({
+              filter: '!(_id in [$id, $draftId])',
+              params: {
+                id: document._id.replace(/^drafts\./, ''),
+                draftId: `drafts.${document._id.replace(/^drafts\./, '')}`,
+              },
+            }),
+          },
         }),
       ],
       description: 'Products shown in the "Complete Your Routine" section (max 3)',

@@ -6,6 +6,7 @@ import QualitySection from "@/components/home/quality-section";
 import SpotteqImage from "@/components/home/spotteq-image";
 import { getAllProducts } from "@/sanity/getData/getAllProducts";
 import { getAllCategories } from "@/sanity/getData/getAllcategories";
+import { getShopBundles } from "@/sanity/getData/getShopBundles";
 
 
 export default async function ShopAll({ params }) {
@@ -22,13 +23,14 @@ export default async function ShopAll({ params }) {
 }
 
 async function ShopAllContent({ locale }) {
-    const [{ products, total }, categories] = await Promise.all([
+    const [{ products, total }, categories, bundles] = await Promise.all([
         getAllProducts(locale),
         getAllCategories(locale),
+        getShopBundles(locale),
     ])
 
     return (
-        <ShopView categories={categories} total={total} heading="Shop All">
+        <ShopView categories={categories} bundles={bundles} total={total} heading="Shop All">
             <ProductGrid initialProducts={products} total={total} locale={locale} />
         </ShopView>
     )

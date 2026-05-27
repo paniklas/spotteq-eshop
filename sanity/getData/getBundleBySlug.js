@@ -1,15 +1,18 @@
-import { client } from '../lib/client'
+import { defineQuery } from 'next-sanity'
+import { sanityFetch } from '../lib/live'
 import { urlFor } from '../lib/image'
 
 export async function getBundleBySlug(slug, locale) {
-  const query = `
-    *[_type == "bundle" && slugs[$locale].current == $slug][0] {
+  const QUERY = defineQuery(`
+    *[_type == "bundle" && slugs[$locale].current == $slug && status == true][0] {
       _id,
       "title": title[language == $locale][0].value,
       "description": description[language == $locale][0].value,
       "slug": slugs[$locale].current,
+      "productIds": products[].product->._id,
       image,
       bundlePrice,
+      saleBundlePrice,
       badge,
       status,
       products[] {
@@ -25,25 +28,25 @@ export async function getBundleBySlug(slug, locale) {
         }
       }
     }
-  `
+  `)
 
-  const bundle = await client.fetch(
-    query,
-    { slug, locale },
-    { next: { tags: [`bundle:${slug}`], revalidate: 3600 } }
-  )
+  try {
+    const result = await sanityFetch({ query: QUERY, params: { slug, locale } })
+    const bundle = result.data
+    if (!bundle) return null
 
-  if (!bundle) return null
-
-  return {
-    ...bundle,
-    imageUrl: bundle.image ? urlFor(bundle.image).url() : null,
-    products: bundle.products?.map(item => ({
-      ...item,
-      product: {
-        ...item.product,
-        imageUrl: item.product?.image ? urlFor(item.product.image).url() : null,
-      },
-    })) ?? [],
+    return {
+      ...bundle,
+      imageUrl: bundle.image ? urlFor(bundle.image).width(600).url() : null,
+      products: bundle.products?.map(item => ({
+        ...item,
+        product: item.product
+          ? { ...item.product, imageUrl: item.product.image ? urlFor(item.product.image).width(300).url() : null }
+          : null,
+      })) ?? [],
+    }
+  } catch (error) {
+    console.error('Error fetching bundle by slug', error)
+    return null
   }
 }
