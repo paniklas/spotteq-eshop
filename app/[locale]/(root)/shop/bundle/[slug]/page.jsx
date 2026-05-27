@@ -6,17 +6,18 @@ import ProductGrid from "@/components/shop/product-grid";
 import QualitySection from "@/components/home/quality-section";
 import SpotteqImage from "@/components/home/spotteq-image";
 import { getAllProducts } from "@/sanity/getData/getAllProducts";
-import { getAllCategories, getCategoryBySlug } from "@/sanity/getData/getAllcategories";
+import { getAllCategories } from "@/sanity/getData/getAllcategories";
 import { getShopBundles } from "@/sanity/getData/getShopBundles";
+import { getBundleBySlug } from "@/sanity/getData/getBundleBySlug";
 
 export const dynamic = "force-dynamic";
 
-export default async function CategoryPageBySlug({ params }) {
+export default async function BundlePage({ params }) {
     const { locale, slug } = await params;
     return (
         <>
             <Suspense fallback={<ShopSkeleton />}>
-                <CategoryContent locale={locale} slug={slug} />
+                <BundleContent locale={locale} slug={slug} />
             </Suspense>
             <QualitySection />
             <SpotteqImage />
@@ -24,31 +25,32 @@ export default async function CategoryPageBySlug({ params }) {
     )
 }
 
-async function CategoryContent({ locale, slug }) {
-    const [category, categories, bundles] = await Promise.all([
-        getCategoryBySlug(slug, locale),
+async function BundleContent({ locale, slug }) {
+    const [bundle, categories, bundles] = await Promise.all([
+        getBundleBySlug(slug, locale),
         getAllCategories(locale),
         getShopBundles(locale),
     ])
 
-    if (!category) notFound()
+    if (!bundle) notFound()
 
-    const { products, total } = await getAllProducts(locale, { categoryIds: [category._id] })
+    const productIds = bundle.productIds ?? []
+    const { products, total } = await getAllProducts(locale, { productIds })
 
     return (
         <ShopView
             categories={categories}
             bundles={bundles}
             total={total}
-            activeSlug={slug}
-            heading={category.title}
-            description={category.description}
+            activeBundleSlug={slug}
+            heading={bundle.title}
+            description={bundle.description}
         >
             <ProductGrid
                 initialProducts={products}
                 total={total}
                 locale={locale}
-                categoryIds={[category._id]}
+                productIds={productIds}
             />
         </ShopView>
     )

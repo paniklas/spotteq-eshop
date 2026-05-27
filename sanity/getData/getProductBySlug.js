@@ -58,12 +58,12 @@ export async function getProductBySlug(slug, locale) {
         return {
             ...product,
             imageUrl: product.image ? urlFor(product.image).width(800).url() : null,
-            galleryImageUrls: product.galleryImages?.map(img => urlFor(img).width(800).url()) ?? [],
-            flavours: product.flavours?.map(f => ({
+            galleryImageUrls: product.galleryImages?.filter(img => img?.asset?._ref).map(img => urlFor(img).width(800).url()) ?? [],
+            flavours: product.flavours?.filter(Boolean).map(f => ({
                 ...f,
                 imageUrl: f.image ? urlFor(f.image).width(200).url() : null,
             })) ?? [],
-            relatedProducts: product.relatedProducts?.map(rp => ({
+            relatedProducts: product.relatedProducts?.filter(Boolean).map(rp => ({
                 ...rp,
                 imageUrl: rp.image ? urlFor(rp.image).width(300).url() : null,
             })) ?? [],

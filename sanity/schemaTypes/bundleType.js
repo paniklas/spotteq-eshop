@@ -109,8 +109,23 @@ export const bundleType = defineType({
       name: 'bundlePrice',
       title: 'Bundle Price (€)',
       type: 'number',
-      description: 'Discounted price for the full bundle',
+      description: 'Regular price for the full bundle',
       validation: Rule => Rule.required().positive(),
+    }),
+    // Sale Bundle Price Field
+    defineField({
+      name: 'saleBundlePrice',
+      title: 'Sale Bundle Price (€)',
+      type: 'number',
+      description: 'Must be lower than the regular bundle price',
+      validation: Rule =>
+        Rule.positive().custom((saleBundlePrice, context) => {
+          const bundlePrice = context.document?.bundlePrice
+          if (saleBundlePrice !== undefined && bundlePrice !== undefined && saleBundlePrice >= bundlePrice) {
+            return 'Sale bundle price must be lower than the regular bundle price'
+          }
+          return true
+        }),
     }),
     // Badge Field
     defineField({
@@ -118,6 +133,14 @@ export const bundleType = defineType({
       title: 'Badge',
       type: 'string',
       description: 'Optional badge, e.g. "SAVE 20%"',
+    }),
+    // Show on Home Page Flag
+    defineField({
+      name: 'showOnHomePage',
+      title: 'Show on Home Page',
+      type: 'boolean',
+      description: 'Display this bundle in the home page section (max 4 shown)',
+      initialValue: false,
     }),
     // Status Field
     defineField({
@@ -203,12 +226,13 @@ export const bundleType = defineType({
     }),
   ],
   preview: {
-    select: { titles: 'title', bundlePrice: 'bundlePrice', media: 'image', status: 'status' },
-    prepare({ titles, bundlePrice, media, status }) {
+    select: { titles: 'title', bundlePrice: 'bundlePrice', saleBundlePrice: 'saleBundlePrice', media: 'image', status: 'status' },
+    prepare({ titles, bundlePrice, saleBundlePrice, media, status }) {
       const title = Array.isArray(titles) ? titles.find(t => t._key === 'el')?.value || titles[0]?.value : ''
+      const priceLabel = saleBundlePrice ? `€${saleBundlePrice} (was €${bundlePrice})` : bundlePrice ? `€${bundlePrice}` : ''
       return {
         title,
-        subtitle: `${bundlePrice ? '€' + bundlePrice : ''} ${status ? '✓ Active' : '✗ Inactive'}`,
+        subtitle: `${priceLabel} ${status ? '✓ Active' : '✗ Inactive'}`,
         media,
       }
     },

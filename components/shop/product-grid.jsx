@@ -4,7 +4,7 @@ import { useState, useTransition } from "react"
 import ProductCard from "@/components/home/product-card"
 import { loadMoreProducts } from "@/app/actions/products"
 
-const ProductGrid = ({ initialProducts, total, locale, categoryIds = [] }) => {
+const ProductGrid = ({ initialProducts, total, locale, categoryIds = [], productIds = [] }) => {
     const [extraProducts, setExtraProducts] = useState([])
     const [isPending, startTransition] = useTransition()
     const products = [...initialProducts, ...extraProducts]
@@ -12,7 +12,7 @@ const ProductGrid = ({ initialProducts, total, locale, categoryIds = [] }) => {
 
     const handleLoadMore = () => {
         startTransition(async () => {
-            const more = await loadMoreProducts(locale, products.length, categoryIds)
+            const more = await loadMoreProducts(locale, products.length, categoryIds, productIds)
             setExtraProducts(prev => [...prev, ...more])
         })
     }

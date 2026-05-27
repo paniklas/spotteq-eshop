@@ -4,12 +4,13 @@ import { sanityFetch } from '../lib/live'
 const PAGE_SIZE = 12
 
 export async function getAllProducts(locale, options = {}) {
-  const { limit = PAGE_SIZE, offset = 0, categoryIds = [], minPrice, maxPrice } = options
+  const { limit = PAGE_SIZE, offset = 0, categoryIds = [], productIds = [], minPrice, maxPrice } = options
 
   const filters = [
     `_type == "product"`,
     `status == true`,
     categoryIds.length > 0 ? `count((categories[]._ref)[@ in $categoryIds]) > 0` : null,
+    productIds.length > 0 ? `_id in $productIds` : null,
     minPrice !== undefined ? `price >= $minPrice` : null,
     maxPrice !== undefined ? `price <= $maxPrice` : null,
   ]
@@ -49,6 +50,7 @@ export async function getAllProducts(locale, options = {}) {
     offset,
     endIndex,
     categoryIds,
+    productIds,
     minPrice: minPrice ?? 0,
     maxPrice: maxPrice ?? 99999,
   }

@@ -1,6 +1,6 @@
 import { Link } from "@/i18n/navigation";
 
-const ShopView = ({ children, categories = [], total = 0, activeSlug, heading = "Shop All", description }) => {
+const ShopView = ({ children, categories = [], bundles = [], total = 0, activeSlug, activeBundleSlug, heading = "Shop All", description }) => {
     const grouped = categories.reduce((acc, cat) => {
         const key = cat.group || "other"
         if (!acc[key]) acc[key] = { title: cat.groupTitle || key, sortOrder: cat.groupSortOrder ?? 999, items: [] }
@@ -39,7 +39,7 @@ const ShopView = ({ children, categories = [], total = 0, activeSlug, heading = 
                             <Link
                                 href="/shop/shop-all"
                                 className={`font-aeonik text-[12px] xl:text-[15px] transition-colors duration-300 ${
-                                    !activeSlug ? "text-orange-accent font-semibold" : "text-black-custom hover:text-panBlack"
+                                    !activeSlug && !activeBundleSlug ? "text-orange-accent font-semibold" : "text-black-custom hover:text-panBlack"
                                 }`}
                             >
                                 All Products
@@ -69,9 +69,33 @@ const ShopView = ({ children, categories = [], total = 0, activeSlug, heading = 
                                 </ul>
                             </div>
                         ))}
+
+                        {bundles.length > 0 && (
+                            <div className="mt-12">
+                                <p className="font-aeonik text-[12px] xl:text-[14px] uppercase text-black-custom">
+                                    SHOP BY BUNDLE
+                                </p>
+                                <ul className="mt-4 flex flex-col">
+                                    {bundles.filter(b => b.title && b.slug).map((bundle) => (
+                                        <li key={bundle._id}>
+                                            <Link
+                                                href={`/shop/bundle/${bundle.slug}`}
+                                                className={`font-aeonik text-[12px] xl:text-[15px] transition-colors duration-300 ${
+                                                    activeBundleSlug === bundle.slug
+                                                        ? "text-orange-accent font-semibold"
+                                                        : "text-black-custom hover:text-panBlack"
+                                                }`}
+                                            >
+                                                {bundle.title}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
                     </aside>
 
-                    {/* Product Grid — rendered by ProductGrid client component */}
+                    {/* Product Grid */}
                     <div className="flex-1">
                         {children}
                     </div>
