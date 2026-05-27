@@ -3,6 +3,10 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig = {
+    serverExternalPackages: ['sanity'],
+    experimental: {
+        prefetchInlining: true,
+    },
     images: {
         qualities: [75, 90, 100],
         remotePatterns: [

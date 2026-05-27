@@ -9,6 +9,8 @@ const routing = defineRouting({
 const handleI18nRouting = createMiddleware(routing);
 
 export function proxy(request) {
+    const { pathname } = request.nextUrl;
+    if (pathname.startsWith('/studio-spotteq')) return;
     return handleI18nRouting(request);
 }
 
@@ -18,7 +20,7 @@ export const config = {
         '/',
         // Apply locale prefix to all locale-prefixed routes
         '/(el|en)/:path*',
-        // Apply to all routes except internal Next.js paths and static files
-        '/((?!_next|_vercel|.*\\..*).*)',
+        // Apply to all routes except internal Next.js paths, static files, and the studio
+        '/((?!_next|_vercel|studio-spotteq|.*\\..*).*)',
     ],
 };

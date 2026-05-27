@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import AboutSection from "@/components/home/about-section"
 import AnnouncementBar from "@/components/home/announcement-bar"
 import BundleSection from "@/components/home/bundle-section"
@@ -8,10 +9,12 @@ import ShopBySeries from "@/components/home/shop-by-series"
 import SpotteqImage from "@/components/home/spotteq-image"
 import StoriesThatMove from "@/components/home/stories-that-move"
 import TrainingBanner from "@/components/home/training-banner"
+import ShopBySeriesSkeleton from "@/components/skeletons/shop-by-series-skeleton"
 
+export const dynamic = "force-static";
+export const revalidate = 86400;
 
 const Home = async ({ params }) => {
-
   const { locale } = await params;
 
   return (
@@ -19,7 +22,9 @@ const Home = async ({ params }) => {
       <HeroSection locale={locale} />
       <AnnouncementBar />
       <AboutSection />
-      <ShopBySeries />
+      <Suspense fallback={<ShopBySeriesSkeleton />}>
+        <ShopBySeries locale={locale} />
+      </Suspense>
       <BundleSection />
       <FeaturedProducts locale={locale} />
       <StoriesThatMove />

@@ -5,11 +5,15 @@ import LocaleLanguageSetter from "@/components/common/locale-lng-setter";
 import SmoothScrolling from "@/utils/SmoothScrolling";
 import Navbar from '@/components/common/navbar';
 import { CartProvider } from '@/context/cart-context';
-// import { VisualEditing } from "next-sanity/visual-editing";
-// import { DisableDraftMode } from "../../components/sanity/DisableDraftMode";
-// import { draftMode } from "next/headers";
-// import { SanityLive } from "../../sanity/lib/live";
+import { routing } from '@/i18n/routing';
+import { SanityLive } from "../../sanity/lib/live";
+import { VisualEditing } from "next-sanity/visual-editing";
+import { DisableDraftMode } from "../../components/sanity/DisableDraftMode";
+import { draftMode } from "next/headers";
 
+export function generateStaticParams() {
+    return routing.locales.map((locale) => ({ locale }));
+}
 
 export const metadata = {
   title: "Create Next App",
@@ -22,30 +26,29 @@ export default async function LocaleLayout({ children, params }) {
     const messages = (await import(`../../messages/${locale}.json`)).default;
 
   return (
-    // <>
-    //     {(await draftMode()).isEnabled && (
-    //         <>
-    //             <DisableDraftMode />
-    //             <VisualEditing />
-    //         </>
-    //     )}
-
-        <NextIntlClientProvider messages={messages} locale={locale}>
-            <CartProvider>
-            <SmoothScrolling>
-                <LocaleLanguageSetter locale={locale} />
-                <Navbar />
-                <main>
-                    {children}
-                </main>
-            </SmoothScrolling>
-            </CartProvider>
-            <Toaster richColors toastOptions={{
-                duration: 5000,
-                closeButton: true
-            }} />
-        </NextIntlClientProvider>
-    //     <SanityLive />
-    // </>
-  );
+        <>
+            {(await draftMode()).isEnabled && (
+                <>
+                    <DisableDraftMode />
+                    <VisualEditing />
+                </>
+            )}
+            <NextIntlClientProvider messages={messages} locale={locale}>
+                <CartProvider>
+                <SmoothScrolling>
+                    <LocaleLanguageSetter locale={locale} />
+                    <Navbar />
+                    <main>
+                        {children}
+                    </main>
+                </SmoothScrolling>
+                </CartProvider>
+                <Toaster richColors toastOptions={{
+                    duration: 5000,
+                    closeButton: true
+                }} />
+            </NextIntlClientProvider>
+            <SanityLive />
+        </>
+    );
 }
