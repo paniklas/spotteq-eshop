@@ -1,15 +1,22 @@
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { urlFor } from "@/sanity/lib/image";
 
 
 const LOVE_ICON = "/icons/love-icon.svg";
 
-const ProductCard = ({ product, priority = false, locale }) => {
-    // Support both new `attributes` shape and legacy `detail1`–`detail4` shape
+const ProductCard = ({ product, priority = false }) => {
     const attrs = product.attributes ?? [
-        { label: product.detail1, value: product.detail3 },
-        { label: product.detail2, value: product.detail4 },
+        { label: product.subtitleLine1, value: product.size },
+        { label: product.flavourName, value: product.tagline },
     ].filter(a => a.label || a.value);
+
+    const imageSrc = typeof product.image === 'string'
+        ? product.image
+        : product.image ? urlFor(product.image).width(600).url() : null
+
+    const productName = product.name ?? product.title
+    const productSlug = product.slug ?? product.id
 
     return (
         <div className="group/card flex flex-col gap-4 relative">
@@ -19,8 +26,8 @@ const ProductCard = ({ product, priority = false, locale }) => {
                 {/* Hover oval background */}
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[75%] aspect-375/572 bg-gray-soft rounded-full opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 ease-in-out z-0" />
                 <Image
-                    src={product.image}
-                    alt={product.name}
+                    src={imageSrc}
+                    alt={productName}
                     width={300}
                     height={380}
                     unoptimized={true}
@@ -63,10 +70,10 @@ const ProductCard = ({ product, priority = false, locale }) => {
             <div className="flex justify-between items-center">
                 {/* Product name */}
                 <h3 className="font-aeonik text-[20px] text-black-custom leading-[1.45]">
-                    {product.name}
+                    {productName}
                 </h3>
                 {/* Price */}
-                <span className="font-tt text-[24px] text-black-custom font-semibold">{product.price}</span>
+                <span className="font-tt text-[24px] text-black-custom font-semibold">{product.price}€</span>
             </div>
 
             {/* Divider */}
@@ -77,25 +84,25 @@ const ProductCard = ({ product, priority = false, locale }) => {
                 {/* Details */}
                 <div className="flex justify-between opacity-100 transition-opacity duration-500 ease-in-out group-hover/card:opacity-0 group-hover/card:pointer-events-none">
                     <div className="font-tt font-light text-[18px] text-black-custom leading-[1.2]">
-                        {attrs.map((attr) => (
-                            <p key={attr.label}>{attr.label}</p>
+                        {attrs.map((attr, i) => (
+                            <p key={i}>{attr.label}</p>
                         ))}
                     </div>
                     <div className="font-tt font-light text-[18px] text-black-custom text-right leading-[1.2]">
-                        {attrs.map((attr) => (
-                            <p key={attr.value}>{attr.value}</p>
+                        {attrs.map((attr, i) => (
+                            <p key={i}>{attr.value}</p>
                         ))}
                     </div>
                 </div>
 
                 {/* Buttons */}
                 <div className="absolute inset-0 flex gap-3 opacity-0 translate-y-2 group-hover/card:opacity-100 group-hover/card:translate-y-0 transition-all duration-500 ease-in-out">
-                    <button className="flex-1 h-[45px] bg-black-custom rounded-[20px] font-aeonik text-white-custom text-[16px] cursor-pointer hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out">
+                    <button className="flex-1 h-11.25 bg-black-custom rounded-[20px] font-aeonik text-white-custom text-[16px] cursor-pointer hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out">
                         ADD TO BAG
                     </button>
                     <Link
-                        href={`/${locale}/shop/product/${product.slug ?? product.id}`}
-                        className="flex-1 h-[45px] bg-gray-soft rounded-[20px] font-aeonik text-black-custom text-[16px] cursor-pointer hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out flex items-center justify-center"
+                        href={`/shop/product/${productSlug}`}
+                        className="flex-1 h-11.25 bg-gray-soft rounded-[20px] font-aeonik text-black-custom text-[16px] cursor-pointer hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out flex items-center justify-center"
                     >
                         VIEW DETAILS
                     </Link>

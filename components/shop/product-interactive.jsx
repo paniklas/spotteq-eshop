@@ -5,36 +5,44 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ChevronDown, Plus, Minus, Heart } from "lucide-react";
 import { useCart } from "@/context/cart-context";
+import { PortableText } from "@portabletext/react";
 
 
 const AccordionItem = ({ label, children }) => {
     const [open, setOpen] = useState(false)
     return (
-        <div className="border border-gray-mint rounded-full overflow-hidden">
+        <div
+            className={`border border-gray-mint overflow-hidden ${open ? "rounded-3xl" : "rounded-full"}`}
+            style={!open ? { transition: "border-radius 0ms 300ms" } : undefined}
+        >
             <button
                 onClick={() => setOpen((v) => !v)}
                 className="w-full flex items-center justify-between px-6 py-4 font-aeonik text-[13px] xl:text-[16px] uppercase tracking-wide text-black-custom"
             >
                 {label}
-                <Plus
+                <ChevronDown
                     size={18}
                     strokeWidth={1.5}
-                    className={`shrink-0 transition-transform duration-300 ${open ? "rotate-45" : ""}`}
+                    className={`shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
                 />
             </button>
-            {open && (
-                <div className="px-6 pb-5 font-tt text-[14px] xl:text-[16px] text-gray-text leading-relaxed rounded-b-[24px]">
-                    {children}
+            <div className={`grid transition-all duration-300 ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
+                <div className="overflow-hidden">
+                    <div className="px-6 pb-5 pt-2 border-t border-gray-mint/40 font-tt text-[14px] xl:text-[16px] text-gray-text leading-relaxed [&_p]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5">
+                        {children}
+                    </div>
                 </div>
-            )}
+            </div>
         </div>
     )
 }
 
-const ProductInteractive = ({ product, relatedProducts }) => {
+const ProductInteractive = ({ product, relatedProducts = [] }) => {
     const router = useRouter()
     const [quantity, setQuantity] = useState(1)
-    const [selectedFlavour, setSelectedFlavour] = useState("")
+    const [selectedFlavour, setSelectedFlavour] = useState(
+        product.flavours?.find(f => f.slug === product.slug)?.flavourName ?? ""
+    )
     const [flavourOpen, setFlavourOpen] = useState(false)
     const [wishlisted, setWishlisted] = useState(false)
     const [currentImage, setCurrentImage] = useState(0)
@@ -90,7 +98,7 @@ const ProductInteractive = ({ product, relatedProducts }) => {
                                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[75%] aspect-375/572 bg-gray-soft rounded-full z-0" />
                                 <Image
                                     src={product.images[currentImage]}
-                                    alt={product.name}
+                                    alt={product.title}
                                     width={420}
                                     height={420}
                                     unoptimized={true}
@@ -122,10 +130,12 @@ const ProductInteractive = ({ product, relatedProducts }) => {
                             />
                         </div>
 
-                        {/* Tagline */}
-                        <p className="font-aeonik text-[28px] xl:text-[35px] leading-normal text-black-custom">
-                            {product.tagline}
-                        </p>
+                        {/* Additional information */}
+                        {product.productDetails?.additionalInfo?.length > 0 && (
+                            <div className="font-aeonik text-[28px] xl:text-[35px] leading-normal text-black-custom [&_p]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5">
+                                <PortableText value={product.productDetails.additionalInfo} />
+                            </div>
+                        )}
                     </div>
 
                     {/* ── RIGHT: Product details ── */}
@@ -141,33 +151,33 @@ const ProductInteractive = ({ product, relatedProducts }) => {
                         {/* Name + size */}
                         <div className="flex items-baseline gap-4 flex-wrap">
                             <h1 className="font-aeonik text-[48px] xl:text-[50px] leading-none text-black-custom">
-                                {product.name}
+                                {product.title}
                             </h1>
                             <span className="font-tt text-[14px] xl:text-[18px] text-black-custom">
-                                {product.size}
+                                {product.size} / {product.tagline}
                             </span>
                         </div>
 
-                        {/* Subtitle */}
-                        <div className="font-aeonik text-[16px] xl:text-[24px] text-black-custom leading-tight">
-                            {product.subtitle.map((line) => (
-                                <p key={line}>{line}</p>
-                            ))}
-                        </div>
+                        {/* Description */}
+                        {product.description?.length > 0 && (
+                            <div className="font-aeonik text-[16px] xl:text-[24px] text-black-custom leading-tight [&_p]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5">
+                                <PortableText value={product.description} />
+                            </div>
+                        )}
 
                         {/* Highlights */}
-                        <div className="font-aeonik text-[14px] xl:text-[18px] text-black-custom leading-normal">
-                            {product.highlights.map((line) => (
-                                <p key={line}>{line}</p>
-                            ))}
-                        </div>
+                        {product.highlights?.length > 0 && (
+                            <div className="font-aeonik text-[14px] xl:text-[18px] text-black-custom leading-normal [&_p]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5">
+                                <PortableText value={product.highlights} />
+                            </div>
+                        )}
 
                         {/* Flavour selector */}
                         {product.flavours?.length > 0 && (
                             <div className="relative">
                                 <button
                                     onClick={() => setFlavourOpen((v) => !v)}
-                                    className="w-full flex items-center justify-between border border-gray-mint rounded-full px-6 py-4 font-aeonik text-[13px] xl:text-[16px] uppercase tracking-wide text-black-custom"
+                                    className="w-full flex items-center justify-between border border-gray-mint rounded-full px-6 py-2 font-aeonik text-[13px] xl:text-[16px] tracking-wide text-black-custom"
                                 >
                                     {selectedFlavour || "FLAVOUR"}
                                     <ChevronDown
@@ -180,14 +190,15 @@ const ProductInteractive = ({ product, relatedProducts }) => {
                                     <div className="absolute top-full left-0 right-0 mt-2 bg-white-custom border border-gray-mint rounded-2xl z-20 overflow-hidden shadow-sm">
                                         {product.flavours.map((f) => (
                                             <button
-                                                key={f}
+                                                key={f._id}
                                                 onClick={() => {
-                                                    setSelectedFlavour(f)
+                                                    setSelectedFlavour(f.flavourName)
                                                     setFlavourOpen(false)
+                                                    router.push(`/shop/product/${f.slug}`)
                                                 }}
                                                 className="w-full text-left px-6 py-3 font-aeonik text-[13px] text-black-custom hover:bg-gray-soft transition-colors duration-200"
                                             >
-                                                {f}
+                                                {f.flavourName}
                                             </button>
                                         ))}
                                     </div>
@@ -249,8 +260,8 @@ const ProductInteractive = ({ product, relatedProducts }) => {
                             <button
                                 onClick={() => {
                                     addToCart({
-                                        id: product.id ?? product.name,
-                                        name: product.name,
+                                        id: product._id,
+                                        name: product.title,
                                         subtitle: product.subtitle,
                                         price: product.price,
                                         image: product.images[0],
@@ -269,12 +280,20 @@ const ProductInteractive = ({ product, relatedProducts }) => {
 
                         {/* Accordions */}
                         <div className="flex flex-col gap-3 pt-2">
-                            <AccordionItem label="Ingredients">
-                                {product.ingredients}
-                            </AccordionItem>
-                            <AccordionItem label="Direction for Use">
-                                {product.directions}
-                            </AccordionItem>
+                            {product.productDetails?.ingredients?.length > 0 && (
+                                <AccordionItem label="Ingredients">
+                                    <div className="[&_p]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 text-black-custom">
+                                        <PortableText value={product.productDetails.ingredients} />
+                                    </div>
+                                </AccordionItem>
+                            )}
+                            {product.productDetails?.directions?.length > 0 && (
+                                <AccordionItem label="Direction for Use">
+                                    <div className="[&_p]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 text-black-custom">
+                                        <PortableText value={product.productDetails.directions} />
+                                    </div>
+                                </AccordionItem>
+                            )}
                         </div>
 
                         {/* Complete Your Routine */}
@@ -285,31 +304,35 @@ const ProductInteractive = ({ product, relatedProducts }) => {
                                 </p>
                                 <div className="flex gap-4">
                                     {relatedProducts.map((rp) => (
-                                        <div key={rp.id} className="flex-1 flex flex-col gap-3">
+                                        <div key={rp._id} className="flex-1 flex flex-col gap-3">
                                             <div className="relative aspect-square flex flex-col items-center justify-center gap-1">
                                                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[65%] aspect-375/572 bg-gray-soft rounded-full z-0" />
-                                                <Image
-                                                    src={rp.image}
-                                                    alt={rp.name}
-                                                    width={200}
-                                                    height={200}
-                                                    unoptimized={true}
-                                                    className="w-[58%] h-[58%] object-contain relative z-1"
-                                                />
+                                                {rp.imageUrl && (
+                                                    <Image
+                                                        src={rp.imageUrl}
+                                                        alt={rp.title}
+                                                        width={200}
+                                                        height={200}
+                                                        className="w-[58%] h-[58%] object-contain relative z-1"
+                                                    />
+                                                )}
                                                 <p className="relative z-1 font-aeonik text-[13px] xl:text-[16px] text-black-custom leading-tight text-center">
-                                                    {rp.name}
+                                                    {rp.title}
                                                 </p>
-                                                <p className="relative z-1 font-tt text-[12px] xl:text-[14px] text-black-custom/90 text-center">
-                                                    {rp.variant}
-                                                </p>
+                                                {rp.flavourName && (
+                                                    <p className="relative z-1 font-tt text-[12px] xl:text-[14px] text-black-custom/90 text-center">
+                                                        {rp.flavourName}
+                                                    </p>
+                                                )}
                                             </div>
                                             <div className="flex justify-center items-center gap-3">
                                                 <span className="font-aeonik text-[15px] xl:text-[24px] text-black-custom">
                                                     {rp.price}€
                                                 </span>
                                                 <button
-                                                    onClick={() => addToCart({ id: rp.id, name: rp.name, subtitle: [rp.variant], price: rp.price, image: rp.image })}
-                                                    className="px-8 h-9 bg-black-custom rounded-full font-aeonik text-[12px] xl:text-[16px] uppercase text-white-custom hover:bg-gray-text transition-colors duration-300 cursor-pointer">
+                                                    onClick={() => addToCart({ id: rp._id, name: rp.title, subtitle: rp.flavourName ? [rp.flavourName] : [], price: rp.price, image: rp.imageUrl })}
+                                                    className="px-8 h-9 bg-black-custom rounded-full font-aeonik text-[12px] xl:text-[16px] uppercase text-white-custom hover:bg-gray-text transition-colors duration-300 cursor-pointer"
+                                                >
                                                     ADD TO BAG
                                                 </button>
                                             </div>
