@@ -1,11 +1,19 @@
+"use client"
+
+import { useState } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { urlFor } from "@/sanity/lib/image";
+import { toast } from "sonner";
+import { useCartStore, makeCartId } from "@/store/cart-store";
 
 
 const LOVE_ICON = "/icons/love-icon.svg";
 
 const ProductCard = ({ product, priority = false }) => {
+    const [isAdding, setIsAdding] = useState(false)
+    const { addToCart, cartItems } = useCartStore()
+
     const attrs = product.attributes ?? [
         { label: product.subtitleLine1, value: product.size },
         { label: product.flavourName, value: product.tagline },
@@ -17,6 +25,32 @@ const ProductCard = ({ product, priority = false }) => {
 
     const productName = product.name ?? product.title
     const productSlug = product.slug ?? product.id
+
+    const cartId = makeCartId(product._id)
+    const cartQty = cartItems.find((i) => i.cartId === cartId)?.qty ?? 0
+    const atMax = product.inventory != null && cartQty >= product.inventory
+
+    const handleAddToCart = async () => {
+        if (atMax) return
+        setIsAdding(true)
+        const result = await addToCart({
+            id: product._id,
+            name: productName,
+            slug: product.slug ?? productSlug,
+            subtitle: [product.subtitleLine1].filter(Boolean),
+            price: product.price,
+            image: imageSrc,
+            flavour: product.flavourName || "",
+        })
+        setIsAdding(false)
+        if (result?.error === "out_of_stock") {
+            toast.error("This product is out of stock.")
+        } else if (result?.error === "max_quantity") {
+            toast.error("Maximum available quantity reached.")
+        } else if (result?.error === "failed") {
+            toast.error("Failed to add to bag. Please try again.")
+        }
+    }
 
     return (
         <div className="group/card flex flex-col gap-4 relative">
@@ -51,9 +85,7 @@ const ProductCard = ({ product, priority = false }) => {
                 </div>
 
                 {/* Wishlist */}
-                <button
-                    aria-label="Add to wishlist"
-                >
+                <button aria-label="Add to wishlist">
                     <Image
                         src={LOVE_ICON}
                         alt="Love icon"
@@ -95,8 +127,12 @@ const ProductCard = ({ product, priority = false }) => {
 
                 {/* Buttons */}
                 <div className="absolute inset-0 flex gap-3 opacity-0 translate-y-2 group-hover/card:opacity-100 group-hover/card:translate-y-0 transition-all duration-500 ease-in-out">
-                    <button className="flex-1 h-11.25 bg-black-custom rounded-[20px] font-aeonik text-white-custom text-[16px] cursor-pointer hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out">
-                        ADD TO BAG
+                    <button
+                        onClick={handleAddToCart}
+                        disabled={isAdding || atMax}
+                        className="flex-1 h-11.25 bg-black-custom rounded-[20px] font-aeonik text-white-custom text-[16px] cursor-pointer hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                        {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : "ADD TO BAG"}
                     </button>
                     <Link
                         href={`/shop/product/${productSlug}`}

@@ -1,21 +1,29 @@
-import { client } from '../lib/client'
+import { defineQuery } from 'next-sanity'
+import { sanityFetch } from '../lib/live'
 
-export async function getFeaturedProducts(locale, limit = 3) {
-  const query = `
-    *[_type == 'product' && status == true && defined(badge) && badge != '']
-      | order(sortOrder asc)
-      [0...$limit] {
-      _id,
-      "title": title[language == $locale][0].value,
-      localizedSlugs[] { language, "slug": slug.current },
-      image,
-      price,
-      salePrice,
-      badge,
-      inventory,
-      "size": size[language == $locale][0].value,
-      series[]-> { _id, "title": title[language == $locale][0].value }
+export async function getFeaturedProducts(locale) {
+    const QUERY = defineQuery(`
+        *[_type == "homePage"][0] {
+            featuredProducts[]-> {
+                _id,
+                "title": title[language == $locale][0].value,
+                "slug": slugs[$locale].current,
+                "subtitleLine1": subtitleLine1[language == $locale][0].value,
+                "flavourName": flavourName[language == $locale][0].value,
+                "size": size[language == $locale][0].value,
+                image,
+                price,
+                salePrice,
+                inventory,
+                badge,
+            }
+        }
+    `)
+
+    try {
+        const result = await sanityFetch({ query: QUERY, params: { locale } })
+        return result.data?.featuredProducts?.filter(Boolean) ?? []
+    } catch {
+        return []
     }
-  `
-  return client.fetch(query, { locale, limit }, { next: { tags: ['product'], revalidate: 3600 } })
 }

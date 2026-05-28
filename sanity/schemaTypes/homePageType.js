@@ -1,4 +1,4 @@
-import { defineField, defineType } from 'sanity'
+import { defineArrayMember, defineField, defineType } from 'sanity'
 
 export const homePageType = defineType({
   name: 'homePage',
@@ -12,6 +12,15 @@ export const homePageType = defineType({
       initialValue: 'Home Page',
       validation: Rule => Rule.required(),
     }),
+    defineField({
+      name: 'featuredProducts',
+      title: 'Featured Products',
+      description: 'Products shown in the Featured Products section (max 6). Drag to reorder.',
+      type: 'array',
+      of: [defineArrayMember({ type: 'reference', to: [{ type: 'product' }], options: { disableNew: true } })],
+      validation: Rule => Rule.max(6),
+    }),
+
     defineField({
       name: 'seo',
       title: 'SEO',

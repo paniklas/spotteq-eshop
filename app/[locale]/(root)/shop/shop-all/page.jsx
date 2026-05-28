@@ -31,7 +31,7 @@ async function ShopAllContent({ locale }) {
 
     return (
         <ShopView categories={categories} bundles={bundles} total={total} heading="Shop All">
-            <ProductGrid initialProducts={products} total={total} locale={locale} />
+            <ProductGrid initialProducts={products} total={total} locale={locale} bundles={bundles} />
         </ShopView>
     )
 }

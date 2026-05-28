@@ -1,6 +1,14 @@
+"use client"
+
+import { useState } from "react";
 import Image from "next/image";
+import { toast } from "sonner";
+import { Link } from "@/i18n/navigation";
+import { useCartStore, makeCartId } from "@/store/cart-store";
 
 const BundleCard = ({
+    _id,
+    slug,
     title,
     products = [],
     description,
@@ -9,9 +17,45 @@ const BundleCard = ({
     imageUrl,
     variant = "horizontal",
 }) => {
+    const [isAdding, setIsAdding] = useState(false)
+    const { addToCart, cartItems } = useCartStore()
+
+    const effectivePrice = saleBundlePrice ?? bundlePrice
+
+    const cartId = makeCartId(_id)
+    const cartQty = cartItems.find((i) => i.cartId === cartId)?.qty ?? 0
+    const maxBundleQty = products.reduce((min, item) => {
+        if (!item.product || item.product.inventory == null) return min
+        return Math.min(min, Math.floor(item.product.inventory / item.quantity))
+    }, Infinity)
+    const atMax = maxBundleQty !== Infinity && cartQty >= maxBundleQty
+
     const displayImages = imageUrl
         ? [imageUrl]
         : products.map(p => p.product?.imageUrl).filter(Boolean)
+
+    const handleAddToCart = async () => {
+        if (!_id || !effectivePrice) return
+        setIsAdding(true)
+        const result = await addToCart({
+            id: _id,
+            type: "bundle",
+            slug,
+            name: title,
+            subtitle: products
+                .map(item => item.product?.title ? `${item.quantity}x ${item.product.title}` : null)
+                .filter(Boolean),
+            price: effectivePrice,
+            image: imageUrl ?? displayImages[0] ?? "",
+            flavour: "",
+        })
+        setIsAdding(false)
+        if (result?.error === "out_of_stock" || result?.error === "max_quantity") {
+            toast.error("Maximum available quantity reached.")
+        } else if (result?.error === "failed") {
+            toast.error("Failed to add to bag. Please try again.")
+        }
+    }
 
     const priceBlock = (
         <div className="flex items-end gap-2">
@@ -80,26 +124,26 @@ const BundleCard = ({
 
                     <div className="flex items-center justify-between mt-6">
                         {priceBlock}
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2">
-                                <span className="w-2.5 h-2.5 rounded-full bg-teal-accent shrink-0" />
-                                <span className="font-aeonik text-[13px] text-black-custom">IN STOCK</span>
-                            </div>
-                            <button aria-label="Add to wishlist" className="w-fit p-1 cursor-pointer bg-black rounded-full">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white-custom">
-                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                                </svg>
-                            </button>
+                        <div className="flex items-center gap-2">
+                            <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${atMax ? "bg-red-400" : "bg-teal-accent"}`} />
+                            <span className="font-aeonik text-[13px] text-black-custom">{atMax ? "OUT OF STOCK" : "IN STOCK"}</span>
                         </div>
                     </div>
 
                     <div className="flex gap-3 mt-3">
-                        <button className="flex-1 h-10 bg-black-custom rounded-[21px] font-aeonik text-white-custom cursor-pointer text-[14px] hover:bg-gray-mint hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500">
-                            ADD TO BAG
+                        <button
+                            onClick={handleAddToCart}
+                            disabled={isAdding || atMax}
+                            className="flex-1 h-10 bg-black-custom rounded-[21px] font-aeonik text-white-custom cursor-pointer text-[14px] hover:bg-gray-mint hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                            {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : "ADD TO BAG"}
                         </button>
-                        <button className="flex-1 h-10 bg-white-custom rounded-[21px] font-aeonik text-black-custom cursor-pointer text-[14px] hover:bg-gray-mint hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500">
+                        <Link
+                            href={`/shop/bundle/${slug}`}
+                            className="flex-1 h-10 bg-white-custom rounded-[21px] font-aeonik text-black-custom text-[14px] hover:bg-gray-mint hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 flex items-center justify-center"
+                        >
                             VIEW DETAILS
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </div>
@@ -129,23 +173,25 @@ const BundleCard = ({
                     <div className="flex flex-col gap-2">
                         {priceBlock}
                         <div className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full bg-teal-accent shrink-0" />
-                            <span className="font-aeonik text-[13px] text-black-custom">IN STOCK</span>
+                            <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${atMax ? "bg-red-400" : "bg-teal-accent"}`} />
+                            <span className="font-aeonik text-[13px] text-black-custom">{atMax ? "OUT OF STOCK" : "IN STOCK"}</span>
                         </div>
-                        <button aria-label="Add to wishlist" className="w-fit p-1 cursor-pointer bg-black rounded-full">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white-custom">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                            </svg>
-                        </button>
                     </div>
 
                     <div className="flex flex-col gap-2 min-w-37.5">
-                        <button className="w-full h-11.25 bg-black-custom rounded-[20px] font-aeonik text-white-custom cursor-pointer text-[14px] hover:bg-gray-mint hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500">
-                            ADD TO BAG
+                        <button
+                            onClick={handleAddToCart}
+                            disabled={isAdding || atMax}
+                            className="w-full h-11.25 bg-black-custom rounded-[20px] font-aeonik text-white-custom cursor-pointer text-[14px] hover:bg-gray-mint hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                            {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : "ADD TO BAG"}
                         </button>
-                        <button className="w-full h-11.25 bg-white-custom rounded-[20px] font-aeonik text-black-custom text-[14px] hover:bg-gray-mint cursor-pointer hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500">
+                        <Link
+                            href={`/shop/bundle/${slug}`}
+                            className="w-full h-11.25 bg-white-custom rounded-[20px] font-aeonik text-black-custom text-[14px] hover:bg-gray-mint hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 flex items-center justify-center"
+                        >
                             VIEW DETAILS
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </div>

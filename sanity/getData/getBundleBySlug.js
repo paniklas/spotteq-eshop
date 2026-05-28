@@ -11,10 +11,14 @@ export async function getBundleBySlug(slug, locale) {
       "slug": slugs[$locale].current,
       "productIds": products[].product->._id,
       image,
+      galleryImages,
       bundlePrice,
       saleBundlePrice,
       badge,
       status,
+      productDetails {
+        "additionalInfo": additionalInfo[language == $locale][0].value
+      },
       products[] {
         quantity,
         "product": product-> {
@@ -37,7 +41,8 @@ export async function getBundleBySlug(slug, locale) {
 
     return {
       ...bundle,
-      imageUrl: bundle.image ? urlFor(bundle.image).width(600).url() : null,
+      imageUrl: bundle.image ? urlFor(bundle.image).width(800).url() : null,
+      galleryImageUrls: bundle.galleryImages?.filter(img => img?.asset?._ref).map(img => urlFor(img).width(800).url()) ?? [],
       products: bundle.products?.map(item => ({
         ...item,
         product: item.product

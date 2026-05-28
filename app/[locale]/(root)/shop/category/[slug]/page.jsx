@@ -25,20 +25,23 @@ export default async function CategoryPageBySlug({ params }) {
 }
 
 async function CategoryContent({ locale, slug }) {
-    const [category, categories, bundles] = await Promise.all([
+    const [category, categories] = await Promise.all([
         getCategoryBySlug(slug, locale),
         getAllCategories(locale),
-        getShopBundles(locale),
     ])
 
     if (!category) notFound()
 
-    const { products, total } = await getAllProducts(locale, { categoryIds: [category._id] })
+    const [{ products, total }, allBundles, filteredBundles] = await Promise.all([
+        getAllProducts(locale, { categoryIds: [category._id] }),
+        getShopBundles(locale),
+        getShopBundles(locale, { categoryId: category._id }),
+    ])
 
     return (
         <ShopView
             categories={categories}
-            bundles={bundles}
+            bundles={allBundles}
             total={total}
             activeSlug={slug}
             heading={category.title}
@@ -49,6 +52,7 @@ async function CategoryContent({ locale, slug }) {
                 total={total}
                 locale={locale}
                 categoryIds={[category._id]}
+                bundles={filteredBundles}
             />
         </ShopView>
     )
