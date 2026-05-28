@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 import MenuOverlay from "./navbar-menu-overlay";
 import { useHeaderStyles } from "@/hooks/use-header-styles";
 import { getStylesForCurrentPage } from "@/hooks/get-header-styles-current-page";
-import { useCart } from "@/context/cart-context";
+import { useCartStore } from "@/store/cart-store";
 
 
 const Navbar = () => {
@@ -17,7 +17,7 @@ const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [burgerHovered, setBurgerHovered] = useState(false);
-    const { setCartOpen } = useCart();
+    const { openCart, cartItems } = useCartStore();
     const sectionStyles = useHeaderStyles(); // { color, scrollBg } | null — section-level (home page only)
     const pageStyles = getStylesForCurrentPage(pathname, locale); // page-level fallback
 
@@ -140,7 +140,7 @@ const Navbar = () => {
                             </button>
 
                             {/* Cart */}
-                            <button aria-label="Cart" onClick={() => setCartOpen(true)} className="relative flex items-center cursor-pointer">
+                            <button aria-label="Cart" onClick={openCart} className="relative flex items-center cursor-pointer">
                                 <svg width="31" height="46" viewBox="0 0 31 46" fill="none">
                                     <path
                                         d="M23 18.5V7.5C23 3.63401 19.866 0.5 16 0.5C12.134 0.5 9 3.63401 9 7.5V18.5"
@@ -149,7 +149,7 @@ const Navbar = () => {
                                     <rect x="0.5" y="14" width="30" height="31" stroke="currentColor" />
                                 </svg>
                                 <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-sm font-aeonik leading-none" style={{ color: "inherit" }}>
-                                    100
+                                    {cartItems.length}
                                 </span>
                             </button>
                         </motion.div>

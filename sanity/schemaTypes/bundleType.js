@@ -68,6 +68,15 @@ export const bundleType = defineType({
       type: 'image',
       options: { hotspot: true },
     }),
+    // Gallery Images
+    defineField({
+      name: 'galleryImages',
+      title: 'Gallery Images',
+      description: 'Additional images shown in the bundle gallery (max 8)',
+      type: 'array',
+      of: [defineArrayMember({ type: 'image', options: { hotspot: true } })],
+      validation: Rule => Rule.max(8),
+    }),
     // Products Array
     defineField({
       name: 'products',
@@ -131,8 +140,21 @@ export const bundleType = defineType({
     defineField({
       name: 'badge',
       title: 'Badge',
+      description: 'Optional label shown on bundle card, e.g. "BESTSELLER"',
       type: 'string',
-      description: 'Optional badge, e.g. "SAVE 20%"',
+    }),
+    // Product Details
+    defineField({
+      name: 'productDetails',
+      title: 'Product Details',
+      type: 'object',
+      fields: [
+        defineField({
+          name: 'additionalInfo',
+          title: 'Additional Information',
+          type: 'internationalizedArrayBlockContent',
+        }),
+      ],
     }),
     // Show on Home Page Flag
     defineField({

@@ -4,13 +4,13 @@ import { useState } from "react";
 import Image from "next/image";
 import { Check } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { useCart } from "@/context/cart-context";
+import { useCartStore } from "@/store/cart-store";
 
 const FREE_SHIPPING_THRESHOLD = 95.50
 const FLAT_SHIPPING = 4.99
 
 const OrderSummary = () => {
-    const { cartItems } = useCart()
+    const { cartItems } = useCartStore()
     const [coupon, setCoupon] = useState("")
 
     const subTotal = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0)

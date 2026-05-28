@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { ChevronDown, Plus, Minus, Heart } from "lucide-react";
-import { useCart } from "@/context/cart-context";
+import { toast } from "sonner";
+import { useCartStore, makeCartId } from "@/store/cart-store";
 import { PortableText } from "@portabletext/react";
 
 
@@ -40,21 +42,30 @@ const AccordionItem = ({ label, children }) => {
 const ProductInteractive = ({ product, relatedProducts = [] }) => {
     const router = useRouter()
     const [quantity, setQuantity] = useState(1)
-    const [selectedFlavour, setSelectedFlavour] = useState(
-        product.flavours?.find(f => f.slug === product.slug)?.flavourName ?? ""
-    )
     const [flavourOpen, setFlavourOpen] = useState(false)
     const [wishlisted, setWishlisted] = useState(false)
     const [currentImage, setCurrentImage] = useState(0)
-    const { addToCart } = useCart()
+    const [isAdding, setIsAdding] = useState(false)
+    const { addToCart, cartItems } = useCartStore()
+
+    const displayImages = [
+        ...(product.imageUrl ? [product.imageUrl] : []),
+        ...(product.galleryImageUrls ?? []),
+    ]
+
+    const cartId = makeCartId(product._id, product.flavourName ?? "")
+    const cartQty = cartItems.find((i) => i.cartId === cartId)?.qty ?? 0
+    const remaining = product.inventory != null ? product.inventory - cartQty : Infinity
+    const atMax = remaining <= 0
+    const incrementDisabled = quantity >= remaining
 
     const decrement = () => setQuantity((q) => Math.max(1, q - 1))
-    const increment = () => setQuantity((q) => q + 1)
+    const increment = () => setQuantity((q) => Math.min(q + 1, Math.max(1, remaining)))
 
     const prevImage = () =>
-        setCurrentImage((i) => (i === 0 ? product.images.length - 1 : i - 1))
+        setCurrentImage((i) => (i === 0 ? displayImages.length - 1 : i - 1))
     const nextImage = () =>
-        setCurrentImage((i) => (i === product.images.length - 1 ? 0 : i + 1))
+        setCurrentImage((i) => (i === displayImages.length - 1 ? 0 : i + 1))
 
     return (
         <div className="bg-white-custom pt-40 pb-20">
@@ -67,55 +78,63 @@ const ProductInteractive = ({ product, relatedProducts = [] }) => {
                     <div className="w-full md:w-1/2 flex flex-col gap-4">
 
                         {/* Back button */}
-                        <button onClick={() => router.back()} className="group flex items-center w-fit cursor-pointer">
-                            <Image
-                                src="/icons/arrow-left.svg"
-                                alt=""
-                                width={36}
-                                height={36}
-                                className="transition-transform duration-300 group-hover:-translate-x-1"
-                            />
-                            <span className="relative font-aeonik text-[14px] xl:text-[16px] text-black-custom">
-                                Back
-                                <span className="absolute bottom-0 left-0 h-px w-0 bg-black-custom group-hover:w-full transition-all duration-500 ease-out" />
-                            </span>
-                        </button>
+                        <Link href="/shop/shop-all">
+                            <button className="group flex items-center w-fit cursor-pointer">
+                                <Image
+                                    src="/icons/arrow-left.svg"
+                                    alt=""
+                                    width={36}
+                                    height={36}
+                                    className="transition-transform duration-300 group-hover:-translate-x-1"
+                                />
+                                <span className="relative font-aeonik text-[14px] xl:text-[16px] text-black-custom">
+                                    Back
+                                    <span className="absolute bottom-0 left-0 h-px w-0 bg-black-custom group-hover:w-full transition-all duration-500 ease-out" />
+                                </span>
+                            </button>
+                        </Link>
 
                         {/* Image circle with navigation */}
                         <div className="relative flex items-center justify-center">
-                            <button
-                                onClick={prevImage}
-                                aria-label="Previous image"
-                                className="absolute left-0 z-10 p-2 text-black-custom hover:opacity-60 transition-opacity duration-200"
-                            >
-                                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M9.46967 19.4697C9.17678 19.7626 9.17678 20.2374 9.46967 20.5303L14.2426 25.3033C14.5355 25.5962 15.0104 25.5962 15.3033 25.3033C15.5962 25.0104 15.5962 24.5355 15.3033 24.2426L11.0607 20L15.3033 15.7574C15.5962 15.4645 15.5962 14.9896 15.3033 14.6967C15.0104 14.4038 14.5355 14.4038 14.2426 14.6967L9.46967 19.4697ZM30 20L30 19.25L10 19.25L10 20L10 20.75L30 20.75L30 20Z" fill="black"/>
-                                </svg>
-
-                            </button>
+                            {displayImages.length > 1 && (
+                                <button
+                                    onClick={prevImage}
+                                    aria-label="Previous image"
+                                    className="absolute left-0 z-10 p-2 text-black-custom cursor-pointer hover:opacity-60 transition-opacity duration-200"
+                                >
+                                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M9.46967 19.4697C9.17678 19.7626 9.17678 20.2374 9.46967 20.5303L14.2426 25.3033C14.5355 25.5962 15.0104 25.5962 15.3033 25.3033C15.5962 25.0104 15.5962 24.5355 15.3033 24.2426L11.0607 20L15.3033 15.7574C15.5962 15.4645 15.5962 14.9896 15.3033 14.6967C15.0104 14.4038 14.5355 14.4038 14.2426 14.6967L9.46967 19.4697ZM30 20L30 19.25L10 19.25L10 20L10 20.75L30 20.75L30 20Z" fill="black"/>
+                                    </svg>
+                                </button>
+                            )}
 
                             <div className="relative w-full aspect-square mx-auto flex items-center justify-center">
                                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[75%] aspect-375/572 bg-gray-soft rounded-full z-0" />
-                                <Image
-                                    src={product.images[currentImage]}
-                                    alt={product.title}
-                                    width={420}
-                                    height={420}
-                                    unoptimized={true}
-                                    priority
-                                    className="w-[72%] h-[72%] object-contain relative z-1"
-                                />
+                                {displayImages.length > 0 && (
+                                    <Image
+                                        key={currentImage}
+                                        src={displayImages[currentImage]}
+                                        alt={product.title}
+                                        width={420}
+                                        height={420}
+                                        unoptimized={true}
+                                        priority
+                                        className="w-[72%] h-[72%] object-contain relative z-1"
+                                    />
+                                )}
                             </div>
 
-                            <button
-                                onClick={nextImage}
-                                aria-label="Next image"
-                                className="absolute right-0 z-10 p-2 text-black-custom hover:opacity-60 transition-opacity duration-200"
-                            >
-                                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M30.5303 20.5303C30.8232 20.2374 30.8232 19.7626 30.5303 19.4697L25.7574 14.6967C25.4645 14.4038 24.9896 14.4038 24.6967 14.6967C24.4038 14.9896 24.4038 15.4645 24.6967 15.7574L28.9393 20L24.6967 24.2426C24.4038 24.5355 24.4038 25.0104 24.6967 25.3033C24.9896 25.5962 25.4645 25.5962 25.7574 25.3033L30.5303 20.5303ZM10 20L10 20.75L30 20.75L30 20L30 19.25L10 19.25L10 20Z" fill="black"/>
-                                </svg>
-                            </button>
+                            {displayImages.length > 1 && (
+                                <button
+                                    onClick={nextImage}
+                                    aria-label="Next image"
+                                    className="absolute right-0 z-10 p-2 text-black-custom cursor-pointer hover:opacity-60 transition-opacity duration-200"
+                                >
+                                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M30.5303 20.5303C30.8232 20.2374 30.8232 19.7626 30.5303 19.4697L25.7574 14.6967C25.4645 14.4038 24.9896 14.4038 24.6967 14.6967C24.4038 14.9896 24.4038 15.4645 24.6967 15.7574L28.9393 20L24.6967 24.2426C24.4038 24.5355 24.4038 25.0104 24.6967 25.3033C24.9896 25.5962 25.4645 25.5962 25.7574 25.3033L30.5303 20.5303ZM10 20L10 20.75L30 20.75L30 20L30 19.25L10 19.25L10 20Z" fill="black"/>
+                                    </svg>
+                                </button>
+                            )}
                         </div>
 
                         {/* Certification badges */}
@@ -174,35 +193,43 @@ const ProductInteractive = ({ product, relatedProducts = [] }) => {
 
                         {/* Flavour selector */}
                         {product.flavours?.length > 0 && (
-                            <div className="relative">
+                            <div
+                                className={`border border-gray-mint overflow-hidden ${flavourOpen ? "rounded-3xl" : "rounded-full"}`}
+                                style={!flavourOpen ? { transition: "border-radius 0ms 300ms" } : undefined}
+                            >
                                 <button
                                     onClick={() => setFlavourOpen((v) => !v)}
-                                    className="w-full flex items-center justify-between border border-gray-mint rounded-full px-6 py-2 font-aeonik text-[13px] xl:text-[16px] tracking-wide text-black-custom"
+                                    className="w-full flex items-center justify-between px-6 py-4 font-aeonik text-[13px] xl:text-[16px] uppercase tracking-wide text-black-custom"
                                 >
-                                    {selectedFlavour || "FLAVOUR"}
+                                    {product.flavourName || "FLAVOUR"}
                                     <ChevronDown
                                         size={18}
                                         strokeWidth={1.5}
                                         className={`shrink-0 transition-transform duration-300 ${flavourOpen ? "rotate-180" : ""}`}
                                     />
                                 </button>
-                                {flavourOpen && (
-                                    <div className="absolute top-full left-0 right-0 mt-2 bg-white-custom border border-gray-mint rounded-2xl z-20 overflow-hidden shadow-sm">
-                                        {product.flavours.map((f) => (
-                                            <button
-                                                key={f._id}
-                                                onClick={() => {
-                                                    setSelectedFlavour(f.flavourName)
-                                                    setFlavourOpen(false)
-                                                    router.push(`/shop/product/${f.slug}`)
-                                                }}
-                                                className="w-full text-left px-6 py-3 font-aeonik text-[13px] text-black-custom hover:bg-gray-soft transition-colors duration-200"
-                                            >
-                                                {f.flavourName}
-                                            </button>
-                                        ))}
+                                <div className={`grid transition-all duration-300 ${flavourOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
+                                    <div className="overflow-hidden">
+                                        <div className="px-2 pb-2 pt-1 border-t border-gray-mint/40">
+                                            {product.flavours.map((f) => {
+                                                const isCurrent = f.slug === product.slug
+                                                return (
+                                                    <button
+                                                        key={f._id}
+                                                        onClick={() => {
+                                                            setFlavourOpen(false)
+                                                            if (!isCurrent) router.push(`/shop/product/${f.slug}`)
+                                                        }}
+                                                        className={`w-full text-left px-4 py-2.5 rounded-full font-aeonik text-[13px] xl:text-[16px] transition-colors duration-200 flex items-center justify-between ${isCurrent ? "bg-gray-soft text-black-custom font-semibold cursor-default" : "text-black-custom hover:bg-gray-soft cursor-pointer"}`}
+                                                    >
+                                                        {f.flavourName}
+                                                        {isCurrent && <span className="w-2 h-2 rounded-full bg-black-custom shrink-0" />}
+                                                    </button>
+                                                )
+                                            })}
+                                        </div>
                                     </div>
-                                )}
+                                </div>
                             </div>
                         )}
 
@@ -226,8 +253,9 @@ const ProductInteractive = ({ product, relatedProducts = [] }) => {
                                 </span>
                                 <button
                                     onClick={increment}
+                                    disabled={incrementDisabled}
                                     aria-label="Increase quantity"
-                                    className="w-9 h-9 flex items-center justify-center text-black-custom hover:opacity-60 transition-opacity duration-200 cursor-pointer"
+                                    className="w-9 h-9 flex items-center justify-center text-black-custom hover:opacity-60 transition-opacity duration-200 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                                 >
                                     <Plus size={14} strokeWidth={1.5} />
                                 </button>
@@ -235,9 +263,9 @@ const ProductInteractive = ({ product, relatedProducts = [] }) => {
 
                             {/* Stock indicator */}
                             <div className="flex items-center gap-2 ml-auto">
-                                <span className="w-2.5 h-2.5 rounded-full bg-teal-accent shrink-0" />
+                                <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${atMax ? "bg-red-400" : "bg-teal-accent"}`} />
                                 <span className="font-aeonik text-[12px] uppercase tracking-wide text-black-custom">
-                                    In Stock
+                                    {atMax ? "Out of Stock" : "In Stock"}
                                 </span>
                             </div>
 
@@ -258,20 +286,32 @@ const ProductInteractive = ({ product, relatedProducts = [] }) => {
                         {/* CTA buttons */}
                         <div className="flex gap-3">
                             <button
-                                onClick={() => {
-                                    addToCart({
+                                disabled={isAdding || atMax}
+                                onClick={async () => {
+                                    setIsAdding(true)
+                                    const result = await addToCart({
                                         id: product._id,
+                                        slug: product.slug,
                                         name: product.title,
                                         subtitle: product.subtitle,
                                         price: product.price,
-                                        image: product.images[0],
-                                        flavour: selectedFlavour,
+                                        image: displayImages[0] ?? "",
+                                        flavour: product.flavourName ?? "",
                                     }, quantity)
-                                    setQuantity(1)
+                                    setIsAdding(false)
+                                    if (result?.error === "out_of_stock") {
+                                        toast.error("This product is out of stock.")
+                                    } else if (result?.error === "max_quantity") {
+                                        toast.error(`Maximum available quantity reached (${product.inventory}).`)
+                                    } else if (result?.error === "failed") {
+                                        toast.error("Failed to add to bag. Please try again.")
+                                    } else {
+                                        setQuantity(1)
+                                    }
                                 }}
-                                className="flex-1 h-12 bg-black-custom rounded-full font-aeonik text-[12px] xl:text-[16px] uppercase text-white-custom hover:bg-gray-text transition-colors duration-300 cursor-pointer"
+                                className="flex-1 h-12 bg-black-custom rounded-full font-aeonik text-[12px] xl:text-[16px] uppercase text-white-custom hover:bg-gray-text transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                             >
-                                ADD TO BAG
+                                {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : "ADD TO BAG"}
                             </button>
                             <button className="flex-1 h-12 bg-gray-mint rounded-full font-aeonik text-[12px] xl:text-[16px] uppercase text-black-custom hover:bg-white-custom hover:border hover:border-black-custom transition-colors duration-300 cursor-pointer">
                                 QUICK BUY
@@ -330,7 +370,7 @@ const ProductInteractive = ({ product, relatedProducts = [] }) => {
                                                     {rp.price}€
                                                 </span>
                                                 <button
-                                                    onClick={() => addToCart({ id: rp._id, name: rp.title, subtitle: rp.flavourName ? [rp.flavourName] : [], price: rp.price, image: rp.imageUrl })}
+                                                    onClick={() => addToCart({ id: rp._id, slug: rp.slug, name: rp.title, subtitle: rp.flavourName ? [rp.flavourName] : [], price: rp.price, image: rp.imageUrl, flavour: rp.flavourName || "" })}
                                                     className="px-8 h-9 bg-black-custom rounded-full font-aeonik text-[12px] xl:text-[16px] uppercase text-white-custom hover:bg-gray-text transition-colors duration-300 cursor-pointer"
                                                 >
                                                     ADD TO BAG

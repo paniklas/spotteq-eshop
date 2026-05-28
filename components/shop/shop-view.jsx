@@ -1,6 +1,6 @@
 import { Link } from "@/i18n/navigation";
 
-const ShopView = ({ children, categories = [], bundles = [], total = 0, activeSlug, activeBundleSlug, heading = "Shop All", description }) => {
+const ShopView = ({ children, categories = [], bundles = [], total, activeSlug, activeBundleSlug, heading = "Shop All", description }) => {
     const grouped = categories.reduce((acc, cat) => {
         const key = cat.group || "other"
         if (!acc[key]) acc[key] = { title: cat.groupTitle || key, sortOrder: cat.groupSortOrder ?? 999, items: [] }
@@ -13,7 +13,7 @@ const ShopView = ({ children, categories = [], bundles = [], total = 0, activeSl
     return (
         <section className="pt-24 min-h-screen bg-white-custom pb-10 xl:pb-42 relative">
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="product-glow" style={{ top: "35%", right: "130px", transform: "translateY(-50%)" }} />
+                <div className="product-glow" style={{ top: "35%", right: "-100px", zIndex: 99, transform: "translateY(-50%)" }} />
             </div>
 
             <div className="max-w-480 mx-auto page-x">
@@ -31,9 +31,11 @@ const ShopView = ({ children, categories = [], bundles = [], total = 0, activeSl
                             {description ?? "A focused line of science-driven formulas for strength, performance, recovery and everyday health. Explore all our series, flavours and formats to build the system that works for your body and training."}
                         </p>
 
-                        <p className="mb-12 font-aeonik text-[14px] xl:text-[18px] uppercase text-black-custom border-b-2 border-black-custom">
-                            {total} Results
-                        </p>
+                        {total != null && (
+                            <p className="mb-12 font-aeonik text-[14px] xl:text-[18px] uppercase text-black-custom border-b-2 border-black-custom">
+                                {total} Results
+                            </p>
+                        )}
 
                         <div className="mt-8">
                             <Link

@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { useCartStore } from "@/store/cart-store";
+import { validateCartInventory } from "@/app/actions/cart";
 
 
 const SHIPPING_METHODS = [
@@ -63,6 +66,10 @@ const SectionCard = ({ title, children }) => (
 )
 
 const CheckoutForm = () => {
+    const locale = useLocale()
+    const cartItems = useCartStore((s) => s.cartItems)
+    const [validating, setValidating] = useState(false)
+    const [inventoryIssues, setInventoryIssues] = useState([])
     const [form, setForm] = useState({
         email: "",
         emailMe: false,
@@ -94,6 +101,18 @@ const CheckoutForm = () => {
         setForm((f) => ({ ...f, [key]: e.target.type === "checkbox" ? e.target.checked : e.target.value }))
 
     const selectedMethod = SHIPPING_METHODS.find((m) => m.id === form.shippingMethod)
+
+    const handlePayNow = async () => {
+        setInventoryIssues([])
+        setValidating(true)
+        const { valid, issues } = await validateCartInventory(cartItems, locale)
+        setValidating(false)
+        if (!valid) {
+            setInventoryIssues(issues)
+            return
+        }
+        // TODO: proceed to payment
+    }
 
     return (
         <div className="pt-4">
@@ -239,16 +258,35 @@ const CheckoutForm = () => {
                     <span className="font-aeonik text-[12px] text-black-custom">I have read and agree to the SPOTTEQ Terms and Conditions of Sales and to the Privacy Policy.</span>
                 </label>
 
+                {inventoryIssues.length > 0 && (
+                    <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 flex flex-col gap-2">
+                        <p className="font-aeonik text-[13px] text-red-700 font-semibold">Some items in your cart are no longer available in the requested quantity:</p>
+                        {inventoryIssues.map((issue) => (
+                            <p key={issue.productId} className="font-aeonik text-[12px] text-red-600">
+                                <span className="font-semibold">{issue.title}</span>
+                                {" — "}requested {issue.requested}, only {issue.available} available
+                            </p>
+                        ))}
+                        <p className="font-aeonik text-[12px] text-red-500">Please update your cart before proceeding.</p>
+                    </div>
+                )}
+
                 <div className="flex justify-center mt-6">
                     <button
                         type="button"
-                        className="h-14 w-full bg-black-custom font-aeonik text-[16px] uppercase text-white-custom rounded-xl hover:bg-gray-text transition-colors duration-300 cursor-pointer"
+                        onClick={handlePayNow}
+                        disabled={validating}
+                        className="h-14 w-full bg-black-custom font-aeonik text-[16px] uppercase text-white-custom rounded-xl hover:bg-gray-text transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                        PAY NOW - <span className="font-semibold">80€</span>
-                        {selectedMethod && (
-                            <span className="ml-2 font-aeonik">
-                                — {selectedMethod.price === 0 ? "FREE" : `${selectedMethod.price.toFixed(2).replace(".", ",")}€`}
-                            </span>
+                        {validating ? "CHECKING..." : (
+                            <>
+                                PAY NOW - <span className="font-semibold">80€</span>
+                                {selectedMethod && (
+                                    <span className="ml-2 font-aeonik">
+                                        — {selectedMethod.price === 0 ? "FREE" : `${selectedMethod.price.toFixed(2).replace(".", ",")}€`}
+                                    </span>
+                                )}
+                            </>
                         )}
                     </button>
                 </div>

@@ -2,9 +2,10 @@
 
 import { useState, useTransition } from "react"
 import ProductCard from "@/components/home/product-card"
+import BundleShopCard from "@/components/shop/bundle-shop-card"
 import { loadMoreProducts } from "@/app/actions/products"
 
-const ProductGrid = ({ initialProducts, total, locale, categoryIds = [], productIds = [] }) => {
+const ProductGrid = ({ initialProducts, total, locale, categoryIds = [], productIds = [], bundles = [] }) => {
     const [extraProducts, setExtraProducts] = useState([])
     const [isPending, startTransition] = useTransition()
     const products = [...initialProducts, ...extraProducts]
@@ -17,7 +18,7 @@ const ProductGrid = ({ initialProducts, total, locale, categoryIds = [], product
         })
     }
 
-    if (products.length === 0) {
+    if (products.length === 0 && bundles.length === 0) {
         return (
             <p className="font-aeonik text-[18px] text-black-custom">
                 No products found.
@@ -28,6 +29,9 @@ const ProductGrid = ({ initialProducts, total, locale, categoryIds = [], product
     return (
         <div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-16">
+                {bundles.map((bundle) => (
+                    <BundleShopCard key={bundle._id} bundle={bundle} />
+                ))}
                 {products.map((product, i) => (
                     <ProductCard key={product._id} product={product} priority={i < 2} />
                 ))}

@@ -21,7 +21,8 @@ export async function getAllBundles(locale) {
           "title": title[language == $locale][0].value,
           image,
           price,
-          salePrice
+          salePrice,
+          inventory
         }
       }
     }
