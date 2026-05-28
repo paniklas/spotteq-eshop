@@ -118,6 +118,6 @@ export async function validateCartInventory(cartItems, locale = "el") {
         }
         return { valid: issues.length === 0, issues }
     } catch {
-        return { valid: true, issues: [] }
+        return { valid: false, issues: [], error: "validation_failed" }
     }
 }

@@ -22,7 +22,7 @@ const BundleCard = ({
 
     const effectivePrice = saleBundlePrice ?? bundlePrice
 
-    const cartId = makeCartId(_id, "")
+    const cartId = makeCartId(_id)
     const cartQty = cartItems.find((i) => i.cartId === cartId)?.qty ?? 0
     const maxBundleQty = products.reduce((min, item) => {
         if (!item.product || item.product.inventory == null) return min

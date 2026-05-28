@@ -26,7 +26,7 @@ const ProductCard = ({ product, priority = false }) => {
     const productName = product.name ?? product.title
     const productSlug = product.slug ?? product.id
 
-    const cartId = makeCartId(product._id, product.flavourName || "")
+    const cartId = makeCartId(product._id)
     const cartQty = cartItems.find((i) => i.cartId === cartId)?.qty ?? 0
     const atMax = product.inventory != null && cartQty >= product.inventory
 
@@ -132,7 +132,7 @@ const ProductCard = ({ product, priority = false }) => {
                         disabled={isAdding || atMax}
                         className="flex-1 h-11.25 bg-black-custom rounded-[20px] font-aeonik text-white-custom text-[16px] cursor-pointer hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                        {atMax ? "MAX QTY" : isAdding ? "ADDING..." : "ADD TO BAG"}
+                        {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : "ADD TO BAG"}
                     </button>
                     <Link
                         href={`/shop/product/${productSlug}`}

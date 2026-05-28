@@ -70,6 +70,9 @@ const CheckoutForm = () => {
     const cartItems = useCartStore((s) => s.cartItems)
     const [validating, setValidating] = useState(false)
     const [inventoryIssues, setInventoryIssues] = useState([])
+    const [validationError, setValidationError] = useState(false)
+
+    const cartTotal = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0)
     const [form, setForm] = useState({
         email: "",
         emailMe: false,
@@ -104,9 +107,14 @@ const CheckoutForm = () => {
 
     const handlePayNow = async () => {
         setInventoryIssues([])
+        setValidationError(false)
         setValidating(true)
-        const { valid, issues } = await validateCartInventory(cartItems, locale)
+        const { valid, issues, error } = await validateCartInventory(cartItems, locale)
         setValidating(false)
+        if (error === "validation_failed") {
+            setValidationError(true)
+            return
+        }
         if (!valid) {
             setInventoryIssues(issues)
             return
@@ -258,6 +266,12 @@ const CheckoutForm = () => {
                     <span className="font-aeonik text-[12px] text-black-custom">I have read and agree to the SPOTTEQ Terms and Conditions of Sales and to the Privacy Policy.</span>
                 </label>
 
+                {validationError && (
+                    <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4">
+                        <p className="font-aeonik text-[13px] text-red-700 font-semibold">Unable to verify stock at this time. Please try again.</p>
+                    </div>
+                )}
+
                 {inventoryIssues.length > 0 && (
                     <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 flex flex-col gap-2">
                         <p className="font-aeonik text-[13px] text-red-700 font-semibold">Some items in your cart are no longer available in the requested quantity:</p>
@@ -280,7 +294,7 @@ const CheckoutForm = () => {
                     >
                         {validating ? "CHECKING..." : (
                             <>
-                                PAY NOW - <span className="font-semibold">80€</span>
+                                PAY NOW - <span className="font-semibold">{cartTotal.toFixed(2).replace(".", ",")}€</span>
                                 {selectedMethod && (
                                     <span className="ml-2 font-aeonik">
                                         — {selectedMethod.price === 0 ? "FREE" : `${selectedMethod.price.toFixed(2).replace(".", ",")}€`}

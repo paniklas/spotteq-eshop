@@ -19,7 +19,7 @@ export const useCartStore = create(
             addingIds: {},
 
             addToCart: async (item, qty = 1) => {
-                const cartId = makeCartId(item.id, item.flavour)
+                const cartId = makeCartId(item.id)
 
                 set((state) => ({ addingIds: { ...state.addingIds, [cartId]: true } }))
 

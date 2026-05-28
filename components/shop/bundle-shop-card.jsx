@@ -14,7 +14,7 @@ const BundleShopCard = ({ bundle }) => {
 
     const effectivePrice = bundle.saleBundlePrice ?? bundle.bundlePrice
 
-    const cartId = makeCartId(bundle._id, "")
+    const cartId = makeCartId(bundle._id)
     const cartItem = cartItems.find((i) => i.cartId === cartId)
     const cartQty = cartItem?.qty ?? 0
 

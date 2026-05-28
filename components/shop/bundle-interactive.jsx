@@ -16,7 +16,7 @@ const BundleInteractive = ({ bundle }) => {
     const { addToCart, cartItems } = useCartStore()
 
     const effectivePrice = bundle.saleBundlePrice ?? bundle.bundlePrice
-    const cartId = makeCartId(bundle._id, "")
+    const cartId = makeCartId(bundle._id)
     const cartQty = cartItems.find((i) => i.cartId === cartId)?.qty ?? 0
 
     const maxBundleQty = bundle.products?.reduce((min, item) => {
@@ -25,12 +25,12 @@ const BundleInteractive = ({ bundle }) => {
     }, Infinity) ?? Infinity
     const atMax = maxBundleQty !== Infinity && cartQty >= maxBundleQty
 
-const galleryImages = bundle.galleryImageUrls ?? []
-    const displayImages = [
+    const ownImages = [
         ...(bundle.imageUrl ? [bundle.imageUrl] : []),
-        ...galleryImages,
-    ].filter(Boolean).length > 0
-        ? [...(bundle.imageUrl ? [bundle.imageUrl] : []), ...galleryImages].filter(Boolean)
+        ...(bundle.galleryImageUrls ?? []),
+    ].filter(Boolean)
+    const displayImages = ownImages.length > 0
+        ? ownImages
         : bundle.products?.map(p => p.product?.imageUrl).filter(Boolean) ?? []
 
     const prevImage = () =>
@@ -152,7 +152,7 @@ const galleryImages = bundle.galleryImageUrls ?? []
                                                 {item.product.title}
                                             </span>
                                             <span className="font-aeonik text-[16px] xl:text-[18px] text-black-custom/60">
-                                                <span className="text-[14px]">Quantity:</span>x{item.quantity}
+                                                <span className="text-[14px]">Quantity: </span>x{item.quantity}
                                             </span>
                                         </div>
                                     )
@@ -221,8 +221,8 @@ const galleryImages = bundle.galleryImageUrls ?? []
                         <Image
                             src="/images/certification-badges.png"
                             alt="GMP Certified"
-                            width={56}
-                            height={56}
+                            width={240}
+                            height={240}
                             unoptimized={true}
                             className="w-60 h-60 object-contain"
                         />
