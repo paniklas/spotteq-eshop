@@ -139,6 +139,25 @@ export const useCartStore = create(
                 return { error: null }
             },
 
+            appliedCoupon: null,
+            couponDiscount: 0,
+            couponEmailVerified: false,
+            checkoutEmail: "",
+
+            applyCoupon: (coupon, emailVerified = false) => set({
+                appliedCoupon: coupon,
+                couponDiscount: coupon.discountAmount,
+                couponEmailVerified: emailVerified,
+            }),
+
+            removeCoupon: () => set({
+                appliedCoupon: null,
+                couponDiscount: 0,
+                couponEmailVerified: false,
+            }),
+
+            setCheckoutEmail: (email) => set({ checkoutEmail: email }),
+
             setCartOpen: (open) => set({ cartOpen: open }),
             openCart: () => set({ cartOpen: true }),
             closeCart: () => set({ cartOpen: false }),

@@ -1,6 +1,6 @@
 import { Link } from "@/i18n/navigation";
 
-const ShopView = ({ children, categories = [], bundles = [], total, activeSlug, activeBundleSlug, heading = "Shop All", description }) => {
+const ShopView = ({ children, categories = [], bundles = [], total, activeSlug, activeBundleSlug, activeBundlesPage = false, heading = "Shop All", description }) => {
     const grouped = categories.reduce((acc, cat) => {
         const key = cat.group || "other"
         if (!acc[key]) acc[key] = { title: cat.groupTitle || key, sortOrder: cat.groupSortOrder ?? 999, items: [] }
@@ -27,7 +27,7 @@ const ShopView = ({ children, categories = [], bundles = [], total, activeSlug, 
                             {heading}
                         </h1>
 
-                        <p className="font-aeonik text-[14px] xl:text-[18px] text-black-custom leading-relaxed mb-16">
+                        <p className="font-aeonik text-[14px] xl:text-[18px] text-black-custom leading-relaxed mb-10">
                             {description ?? "A focused line of science-driven formulas for strength, performance, recovery and everyday health. Explore all our series, flavours and formats to build the system that works for your body and training."}
                         </p>
 
@@ -37,19 +37,27 @@ const ShopView = ({ children, categories = [], bundles = [], total, activeSlug, 
                             </p>
                         )}
 
-                        <div className="mt-8">
+                        <div className="mt-8 flex flex-col gap-2">
                             <Link
                                 href="/shop/shop-all"
                                 className={`font-aeonik text-[12px] xl:text-[15px] transition-colors duration-300 ${
-                                    !activeSlug && !activeBundleSlug ? "text-orange-accent font-semibold" : "text-black-custom hover:text-panBlack"
+                                    !activeSlug && !activeBundleSlug && !activeBundlesPage ? "text-orange-accent font-semibold" : "text-black-custom hover:text-panBlack"
                                 }`}
                             >
                                 All Products
                             </Link>
+                            <Link
+                                href="/shop/bundles"
+                                className={`font-aeonik text-[12px] xl:text-[15px] transition-colors duration-300 ${
+                                    activeBundlesPage ? "text-orange-accent font-semibold" : "text-black-custom hover:text-panBlack"
+                                }`}
+                            >
+                                All Bundles
+                            </Link>
                         </div>
 
                         {sortedGroups.map(([groupSlug, group]) => (
-                            <div key={groupSlug} className="mt-12">
+                            <div key={groupSlug} className="mt-8">
                                 <p className="font-aeonik text-[12px] xl:text-[14px] uppercase text-black-custom">
                                     SHOP BY {group.title}
                                 </p>
@@ -73,7 +81,7 @@ const ShopView = ({ children, categories = [], bundles = [], total, activeSlug, 
                         ))}
 
                         {bundles.length > 0 && (
-                            <div className="mt-12">
+                            <div className="mt-8">
                                 <p className="font-aeonik text-[12px] xl:text-[14px] uppercase text-black-custom">
                                     SHOP BY BUNDLE
                                 </p>

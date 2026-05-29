@@ -67,12 +67,14 @@ const SectionCard = ({ title, children }) => (
 
 const CheckoutForm = () => {
     const locale = useLocale()
-    const cartItems = useCartStore((s) => s.cartItems)
+    const { cartItems, couponDiscount, setCheckoutEmail } = useCartStore()
     const [validating, setValidating] = useState(false)
     const [inventoryIssues, setInventoryIssues] = useState([])
     const [validationError, setValidationError] = useState(false)
 
     const cartTotal = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0)
+    const discountAmount = couponDiscount > 0 ? (cartTotal * couponDiscount) / 100 : 0
+    const discountedTotal = cartTotal - discountAmount
     const [form, setForm] = useState({
         email: "",
         emailMe: false,
@@ -127,7 +129,7 @@ const CheckoutForm = () => {
             {/* Contact */}
             <SectionCard title="Contact">
                 <div className="flex flex-col gap-4">
-                    <FloatingInput id="email" type="email" label="Email" value={form.email} onChange={set("email")} />
+                    <FloatingInput id="email" type="email" label="Email" value={form.email} onChange={(e) => { set("email")(e); setCheckoutEmail(e.target.value) }} />
                     <label className="flex items-center gap-3 cursor-pointer">
                         <input
                             type="checkbox"
@@ -294,7 +296,7 @@ const CheckoutForm = () => {
                     >
                         {validating ? "CHECKING..." : (
                             <>
-                                PAY NOW - <span className="font-semibold">{cartTotal.toFixed(2).replace(".", ",")}€</span>
+                                PAY NOW - <span className="font-semibold">{discountedTotal.toFixed(2).replace(".", ",")}€</span>
                                 {selectedMethod && (
                                     <span className="ml-2 font-aeonik">
                                         — {selectedMethod.price === 0 ? "FREE" : `${selectedMethod.price.toFixed(2).replace(".", ",")}€`}
