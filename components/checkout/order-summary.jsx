@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Check, X } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -11,7 +11,7 @@ const FREE_SHIPPING_THRESHOLD = 95.50
 const FLAT_SHIPPING = 4.99
 
 const OrderSummary = () => {
-    const { cartItems, appliedCoupon, couponDiscount, applyCoupon, removeCoupon, checkoutEmail } = useCartStore()
+    const { cartItems, appliedCoupon, couponDiscount, couponEmailVerified, applyCoupon, removeCoupon, checkoutEmail } = useCartStore()
     const [couponInput, setCouponInput] = useState("")
     const [couponApplying, setCouponApplying] = useState(false)
     const [couponError, setCouponError] = useState("")
@@ -22,6 +22,19 @@ const OrderSummary = () => {
     const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subTotal)
     const shipping = subTotal >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING
     const total = discountedSubTotal + shipping
+
+    // Silently re-validate a coupon applied from the cart drawer once the checkout email is known
+    useEffect(() => {
+        if (!appliedCoupon || couponEmailVerified || !checkoutEmail.trim()) return
+        validateCouponWithEmail(appliedCoupon.couponCode, checkoutEmail).then((result) => {
+            if (!result.valid) {
+                removeCoupon()
+                setCouponError(result.error)
+            } else {
+                applyCoupon(result.coupon, true)
+            }
+        })
+    }, [checkoutEmail, appliedCoupon, couponEmailVerified, applyCoupon, removeCoupon])
 
     const handleApplyCoupon = async () => {
         setCouponError("")
@@ -36,7 +49,7 @@ const OrderSummary = () => {
             setCouponError(result.error)
             return
         }
-        applyCoupon(result.coupon)
+        applyCoupon(result.coupon, true)
         setCouponInput("")
     }
 
