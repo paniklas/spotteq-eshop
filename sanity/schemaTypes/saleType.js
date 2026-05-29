@@ -67,6 +67,12 @@ export const saleType = defineType({
       ],
     }),
     defineField({
+      name: 'maxUses',
+      title: 'Max Uses',
+      type: 'number',
+      description: 'Leave empty for unlimited uses. Coupon auto-deactivates when this limit is reached.',
+    }),
+    defineField({
       name: 'isActive',
       title: 'Active',
       type: 'boolean',

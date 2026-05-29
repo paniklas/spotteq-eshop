@@ -5,6 +5,7 @@ import Image from "next/image"
 import { Trash2, Check, X } from "lucide-react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useCartStore } from "@/store/cart-store"
+import { validateCoupon } from "@/app/actions/coupon"
 
 
 const FREE_SHIPPING_THRESHOLD = 95.50
@@ -47,14 +48,37 @@ const CheckoutModal = ({ onClose, onCloseAll, onGuest }) => (
 )
 
 const CartDrawer = () => {
-    const { cartItems, cartOpen, closeCart, removeFromCart, updateQty } = useCartStore()
-    const [coupon, setCoupon] = useState("")
+    const { cartItems, cartOpen, closeCart, removeFromCart, updateQty, appliedCoupon, couponDiscount, applyCoupon, removeCoupon } = useCartStore()
+    const [couponInput, setCouponInput] = useState("")
+    const [couponApplying, setCouponApplying] = useState(false)
+    const [couponError, setCouponError] = useState("")
     const [showModal, setShowModal] = useState(false)
     const [incrementingIds, setIncrementingIds] = useState({})
     const router = useRouter()
 
-    const total = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0)
-    const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - total)
+    const subTotal = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0)
+    const discountAmount = couponDiscount > 0 ? (subTotal * couponDiscount) / 100 : 0
+    const total = subTotal - discountAmount
+    const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subTotal)
+
+    const handleApplyCoupon = async () => {
+        setCouponError("")
+        setCouponApplying(true)
+        const result = await validateCoupon(couponInput)
+        setCouponApplying(false)
+        if (!result.valid) {
+            setCouponError(result.error)
+            return
+        }
+        applyCoupon(result.coupon)
+        setCouponInput("")
+    }
+
+    const handleRemoveCoupon = () => {
+        removeCoupon()
+        setCouponInput("")
+        setCouponError("")
+    }
 
     const handleCheckoutClick = () => setShowModal(true)
     const handleModalClose = () => setShowModal(false)
@@ -91,7 +115,7 @@ const CartDrawer = () => {
                 </div>
 
                 {/* Free shipping banner */}
-                <div className="px-8 py-4">
+                <div className="px-8 pt-4 pb-4">
                     <p className="font-aeonik text-[13px] xl:text-[22px] text-black-custom">
                         {remaining > 0
                             ? `You are ${remaining.toFixed(2).replace(".", ",")}€ away from FREE SHIPPING!`
@@ -107,7 +131,7 @@ const CartDrawer = () => {
                     {cartItems.map((item, i) => (
                         <div key={item.cartId}>
                             {i > 0 && <hr className="border-gray-mint" />}
-                            <div className="flex gap-4 py-5">
+                            <div className="flex gap-4 py-8 pb-4">
                                 {/* Image + name — clickable if slug is available */}
                                 <Link
                                     href={item.slug ? (item.type === "bundle" ? `/shop/bundle/${item.slug}` : `/shop/product/${item.slug}`) : "#"}
@@ -186,26 +210,64 @@ const CartDrawer = () => {
                 {/* Footer */}
                 <div className="px-8 pb-8 pt-5 border-t border-gray-mint">
                     {/* Coupon */}
-                    <div className="flex items-center gap-4 mb-6">
-                        <span className="font-aeonik text-[11px] xl:text-[14px] uppercase text-black-custom leading-tight shrink-0">
-                            COUPON CODE /<br />GIFT CARD
-                        </span>
-                        <div className="flex-1 flex items-center border border-gray-mint rounded-sm">
-                            <input
-                                value={coupon}
-                                onChange={(e) => setCoupon(e.target.value)}
-                                className="flex-1 px-3 py-2.5 font-tt text-[13px] text-black-custom outline-none bg-transparent"
-                            />
-                            <button className="px-3 py-2.5 hover:opacity-60 transition-opacity cursor-pointer">
-                                <Check size={15} strokeWidth={1.5} />
+                    {appliedCoupon ? (
+                        <div className="flex items-center justify-between mb-6 px-3 py-2.5 bg-teal-accent/10 border border-teal-accent rounded-sm">
+                            <span className="font-aeonik text-[13px] text-black-custom">
+                                <span className="font-semibold">{appliedCoupon.couponCode}</span>
+                                {" — "}{appliedCoupon.discountAmount}% off
+                            </span>
+                            <button onClick={handleRemoveCoupon} className="p-1 hover:opacity-60 transition-opacity cursor-pointer">
+                                <X size={14} strokeWidth={1.5} />
                             </button>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="mb-6">
+                            <div className="flex items-center gap-4">
+                                <span className="font-aeonik text-[11px] xl:text-[14px] uppercase text-black-custom leading-tight shrink-0">
+                                    COUPON CODE /<br />GIFT CARD
+                                </span>
+                                <div className="flex-1 flex items-center border border-gray-mint rounded-sm">
+                                    <input
+                                        value={couponInput}
+                                        onChange={(e) => { setCouponInput(e.target.value); setCouponError("") }}
+                                        onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
+                                        placeholder="Enter code"
+                                        className="flex-1 px-3 py-2.5 font-tt text-[13px] text-black-custom outline-none bg-transparent placeholder:text-gray-text/50"
+                                    />
+                                    <button
+                                        onClick={handleApplyCoupon}
+                                        disabled={couponApplying}
+                                        className="px-3 py-2.5 hover:opacity-60 transition-opacity cursor-pointer disabled:opacity-40 flex items-center gap-1 font-aeonik text-[11px] xl:text-[13px] uppercase shrink-0"
+                                    >
+                                        <Check size={13} strokeWidth={1.5} />
+                                        {couponApplying ? "..." : "Apply"}
+                                    </button>
+                                </div>
+                            </div>
+                            {couponError && (
+                                <p className="mt-1.5 font-aeonik text-[11px] text-red-500">{couponError}</p>
+                            )}
+                        </div>
+                    )}
 
                     {/* Total */}
-                    <div className="flex items-center justify-between mb-5">
-                        <span className="font-aeonik text-[13px] xl:text-[14px] uppercase text-black-custom">TOTAL</span>
-                        <span className="font-aeonik text-[30px] font-bold text-black-custom">{total.toFixed(2).replace(".", ",")}€</span>
+                    <div className="flex flex-col gap-1 mb-5">
+                        {discountAmount > 0 && (
+                            <>
+                                <div className="flex items-center justify-between">
+                                    <span className="font-aeonik text-[13px] xl:text-[14px] uppercase text-black-custom">SUBTOTAL</span>
+                                    <span className="font-aeonik text-[16px] text-black-custom">{subTotal.toFixed(2).replace(".", ",")}€</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="font-aeonik text-[13px] xl:text-[14px] uppercase text-teal-accent">DISCOUNT ({appliedCoupon.discountAmount}%)</span>
+                                    <span className="font-aeonik text-[16px] text-teal-accent">-{discountAmount.toFixed(2).replace(".", ",")}€</span>
+                                </div>
+                            </>
+                        )}
+                        <div className="flex items-center justify-between">
+                            <span className="font-aeonik text-[13px] xl:text-[14px] uppercase text-black-custom">TOTAL</span>
+                            <span className="font-aeonik text-[30px] font-bold text-black-custom">{total.toFixed(2).replace(".", ",")}€</span>
+                        </div>
                     </div>
 
                     {/* Checkout */}

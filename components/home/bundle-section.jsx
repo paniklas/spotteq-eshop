@@ -23,7 +23,7 @@ const BundleSection = async ({ locale }) => {
                         system in just one step.
                     </p>
                     <Link
-                        href="/bundles"
+                        href="/shop/bundles"
                         className="hidden xl:inline-flex items-center justify-center h-[41px] w-[159px] bg-black rounded-[21px] font-aeonik text-white-custom text-[14px] hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-700 shrink-0"
                     >
                         VIEW OUR BUNDLES
@@ -55,7 +55,7 @@ const BundleSection = async ({ locale }) => {
 
                 <div className="mt-8 flex justify-center xl:hidden">
                     <Link
-                        href="/bundles"
+                        href="/shop/bundles"
                         className="inline-flex items-center justify-center h-[41px] w-[159px] bg-black-custom rounded-[20px] font-aeonik text-white text-[14px]"
                     >
                         VIEW OUR BUNDLES
