@@ -80,8 +80,8 @@ const ProductCard = ({ product, priority = false }) => {
                 )}
                 {/* Stock indicator */}
                 <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-teal-accent shrink-0" />
-                    <span className="font-aeonik text-[13px] text-black">IN STOCK</span>
+                    <span className={`w-3 h-3 rounded-full shrink-0 ${atMax ? "bg-red-400" : "bg-teal-accent"}`} />
+                    <span className="font-aeonik text-[13px] text-black">{atMax ? "OUT OF STOCK" : "IN STOCK"}</span>
                 </div>
 
                 {/* Wishlist */}
