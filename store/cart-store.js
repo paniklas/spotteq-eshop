@@ -143,6 +143,7 @@ export const useCartStore = create(
             couponDiscount: 0,
             couponEmailVerified: false,
             checkoutEmail: "",
+            selectedShippingMethod: null,
 
             applyCoupon: (coupon, emailVerified = false) => set({
                 appliedCoupon: coupon,
@@ -157,6 +158,17 @@ export const useCartStore = create(
             }),
 
             setCheckoutEmail: (email) => set({ checkoutEmail: email }),
+
+            setSelectedShippingMethod: (method) => set({ selectedShippingMethod: method }),
+
+            clearCart: () => set({
+                cartItems: [],
+                appliedCoupon: null,
+                couponDiscount: 0,
+                couponEmailVerified: false,
+                checkoutEmail: "",
+                selectedShippingMethod: null,
+            }),
 
             setCartOpen: (open) => set({ cartOpen: open }),
             openCart: () => set({ cartOpen: true }),

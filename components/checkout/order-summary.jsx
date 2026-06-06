@@ -7,11 +7,9 @@ import { Link } from "@/i18n/navigation";
 import { useCartStore } from "@/store/cart-store";
 import { validateCouponWithEmail } from "@/app/actions/coupon";
 
-const FREE_SHIPPING_THRESHOLD = 95.50
-const FLAT_SHIPPING = 4.99
-
-const OrderSummary = () => {
-    const { cartItems, appliedCoupon, couponDiscount, couponEmailVerified, applyCoupon, removeCoupon, checkoutEmail } = useCartStore()
+const OrderSummary = ({ shippingMethods = [] }) => {
+    const { cartItems, appliedCoupon, couponDiscount, couponEmailVerified, applyCoupon, removeCoupon, checkoutEmail, selectedShippingMethod } = useCartStore()
+    const activeShippingMethod = selectedShippingMethod ?? shippingMethods[0] ?? null
     const [couponInput, setCouponInput] = useState("")
     const [couponApplying, setCouponApplying] = useState(false)
     const [couponError, setCouponError] = useState("")
@@ -19,8 +17,11 @@ const OrderSummary = () => {
     const subTotal = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0)
     const discountAmount = couponDiscount > 0 ? (subTotal * couponDiscount) / 100 : 0
     const discountedSubTotal = subTotal - discountAmount
-    const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subTotal)
-    const shipping = subTotal >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING
+
+    const freeThreshold = activeShippingMethod?.freeShippingMinimum ?? 0
+    const shippingPrice  = activeShippingMethod?.price ?? 0
+    const remaining = Math.max(0, freeThreshold - subTotal)
+    const shipping  = freeThreshold > 0 && subTotal >= freeThreshold ? 0 : shippingPrice
     const total = discountedSubTotal + shipping
 
     // Silently re-validate a coupon applied from the cart drawer once the checkout email is known
@@ -181,7 +182,7 @@ const OrderSummary = () => {
                 <div className="flex justify-between items-center">
                     <span className="font-aeonik text-[13px] xl:text-[14px] uppercase tracking-wide text-black-custom">Shipping</span>
                     <span className="font-tt text-[16px] text-black-custom">
-                        {shipping === 0 ? "FREE" : `${FLAT_SHIPPING.toFixed(2).replace(".", ",")}€`}
+                        {shipping === 0 ? "FREE" : `${shippingPrice.toFixed(2).replace(".", ",")}€`}
                     </span>
                 </div>
 
