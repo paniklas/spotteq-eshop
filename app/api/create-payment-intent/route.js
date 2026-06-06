@@ -114,16 +114,16 @@ export async function POST(req) {
       const maxedOut   = coupon.maxUses != null && (coupon.usedCount ?? 0) >= coupon.maxUses;
 
       if (!notStarted && !expired && !maxedOut) {
-        discountAmount    = coupon.discountAmount ?? 0;
+        // discountAmount is stored as a percentage (e.g. 10 = 10%) — match the UI calculation
+        discountAmount    = (subtotal * (coupon.discountAmount ?? 0)) / 100;
         validatedCouponId = coupon._id;
       }
     }
 
-    // --- Shipping cost (free if threshold met after discount) ---
-    const cartAfterDiscount = subtotal - discountAmount;
-    const freeThreshold     = shippingMethod.freeShippingMinimum;
+    // --- Shipping cost (free if pre-discount subtotal meets threshold — matches UI logic) ---
+    const freeThreshold = shippingMethod.freeShippingMinimum;
     const shippingCost =
-      freeThreshold != null && freeThreshold > 0 && cartAfterDiscount >= freeThreshold
+      freeThreshold != null && freeThreshold > 0 && subtotal >= freeThreshold
         ? 0
         : shippingMethod.price;
 

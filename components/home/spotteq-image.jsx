@@ -26,7 +26,7 @@ const SpotteqImage = () => {
                     unoptimized={true}
                     quality={100}
                     sizes="100vw"
-                    // className="object-cover"
+                    className="object-cover"
                 />
             </motion.div>
         </section>
