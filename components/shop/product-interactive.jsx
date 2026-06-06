@@ -291,6 +291,7 @@ const ProductInteractive = ({ product, relatedProducts = [] }) => {
                                     setIsAdding(true)
                                     const result = await addToCart({
                                         id: product._id,
+                                        type: "product",
                                         slug: product.slug,
                                         name: product.title,
                                         subtitle: product.subtitle,

@@ -20,7 +20,7 @@ export const config = {
         '/',
         // Apply locale prefix to all locale-prefixed routes
         '/(el|en)/:path*',
-        // Apply to all routes except internal Next.js paths, static files, and the studio
-        '/((?!_next|_vercel|studio-spotteq|.*\\..*).*)',
+        // Apply to all routes except internal Next.js paths, static files, the studio, and API routes
+        '/((?!_next|_vercel|studio-spotteq|api|.*\\..*).*)',
     ],
 };

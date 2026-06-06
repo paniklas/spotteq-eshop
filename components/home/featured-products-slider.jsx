@@ -1,40 +1,49 @@
 "use client"
 
 import { useState } from "react"
+import { motion } from "framer-motion"
 import ProductCard from "./product-card"
 
-const PER_PAGE = 3
+const VISIBLE = 3
+const GAP = 32 // px — keep in sync with the gap-8 class (8 * 4 = 32px)
 
 const FeaturedProductsSlider = ({ products }) => {
-    const [page, setPage] = useState(0)
-    const [fading, setFading] = useState(false)
-    const totalPages = Math.ceil(products.length / PER_PAGE)
-    const visible = products.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE)
+    const [index, setIndex] = useState(0)
+    const maxIndex = Math.max(0, products.length - VISIBLE)
 
-    const goTo = (next) => {
-        setFading(true)
-        setTimeout(() => {
-            setPage(next)
-            setFading(false)
-        }, 200)
-    }
+    const prev = () => setIndex((i) => Math.max(0, i - 1))
+    const next = () => setIndex((i) => Math.min(maxIndex, i + 1))
 
-    const prev = () => goTo(Math.max(0, page - 1))
-    const next = () => goTo(Math.min(totalPages - 1, page + 1))
 
     return (
         <>
-            <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 xl:gap-12 transition-opacity duration-200 ${fading ? "opacity-0" : "opacity-100"}`}>
-                {visible.map((product, i) => (
-                    <ProductCard key={product._id} product={product} priority={i === 0 && page === 0} />
-                ))}
+            {/* container-type lets us use 100cqw = viewport width inside children,
+                eliminating the need for ResizeObserver + JS measurement */}
+            <div className="overflow-hidden" style={{ containerType: "inline-size" }}>
+                <motion.div
+                    className="flex"
+                    style={{ gap: `${GAP}px` }}
+                    animate={{
+                        transform: `translateX(calc(${-index} * (100cqw + ${GAP}px) / ${VISIBLE}))`,
+                    }}
+                    transition={{ duration: 0.55, ease: [0.22, 0.61, 0.36, 1] }}
+                >
+                    {products.map((product, i) => (
+                        <div
+                            key={product._id}
+                            style={{ flex: `0 0 calc((100cqw - ${GAP * (VISIBLE - 1)}px) / ${VISIBLE})` }}
+                        >
+                            <ProductCard product={product} priority={i === 0 && index === 0} />
+                        </div>
+                    ))}
+                </motion.div>
             </div>
 
-            {totalPages > 1 && (
+            {maxIndex > 0 && (
                 <div className="flex items-center gap-3 mt-20">
                     <button
                         onClick={prev}
-                        disabled={page === 0}
+                        disabled={index === 0}
                         aria-label="Previous"
                         className="w-10 h-10 flex items-center justify-center shrink-0 rotate-180 rounded-full hover:bg-gray-mint transition-colors duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
                     >
@@ -44,7 +53,7 @@ const FeaturedProductsSlider = ({ products }) => {
                     </button>
                     <button
                         onClick={next}
-                        disabled={page === totalPages - 1}
+                        disabled={index === maxIndex}
                         aria-label="Next"
                         className="w-10 h-10 flex items-center justify-center shrink-0 rounded-full hover:bg-gray-mint transition-colors duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
                     >
@@ -53,10 +62,10 @@ const FeaturedProductsSlider = ({ products }) => {
                         </svg>
                     </button>
                     <div className="flex items-center">
-                        {Array.from({ length: totalPages }).map((_, i) => (
+                        {Array.from({ length: maxIndex + 1 }).map((_, i) => (
                             <div
                                 key={i}
-                                className={`w-22.25 border-t transition-all duration-300 ${i === page ? "border-t-[3px] border-black" : "border-black/50"}`}
+                                className={`w-22.25 border-t transition-all duration-300 ${i === index ? "border-t-[3px] border-black" : "border-black/50"}`}
                             />
                         ))}
                     </div>
