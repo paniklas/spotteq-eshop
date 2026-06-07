@@ -24,8 +24,10 @@ export const metadata = {
 export default async function LocaleLayout({ children, params }) {
 
     const { locale } = await params;
-    const messages = (await import(`../../messages/${locale}.json`)).default;
-    const navData = await getNavData(locale);
+    const [messages, navData] = await Promise.all([
+        import(`../../messages/${locale}.json`).then(m => m.default),
+        getNavData(locale),
+    ]);
 
   return (
         <>

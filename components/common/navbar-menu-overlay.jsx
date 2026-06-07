@@ -73,7 +73,7 @@ const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }
                         {/* View all products */}
                         <div className="mt-6 flex justify-start" style={{ ...fade(240), gridColumnStart: categoryGroups.length + 1 }}>
                             <Link
-                                href="/shop"
+                                href="/shop/shop-all"
                                 onClick={isOnClose}
                                 tabIndex={isOpen ? 0 : -1}
                                 className="inline-flex items-center font-aeonik text-[20px] text-black-custom"
@@ -151,7 +151,7 @@ const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }
                         </div>
 
                         <Link
-                            href="/shop"
+                            href="/shop/shop-all"
                             onClick={isOnClose}
                             tabIndex={isOpen ? 0 : -1}
                             className="relative z-10 bg-white text-foreground font-tt text-xs font-medium uppercase tracking-[0.15em] px-10 py-3 rounded-full hover:bg-foreground hover:text-white transition-colors duration-200"
