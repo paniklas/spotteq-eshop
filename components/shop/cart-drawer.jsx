@@ -108,7 +108,13 @@ const CartDrawer = () => {
                             </span>
                         </div>
                         <button onClick={handleDrawerClose} className="p-1 hover:opacity-60 transition-opacity duration-200 cursor-pointer">
-                            <Image src="/icons/X.svg" alt="Close" width={20} height={20} />
+                            <Image
+                                src="/icons/X.svg"
+                                alt="Close"
+                                width={20}
+                                height={20}
+                                className="w-full h-auto"
+                            />
                         </button>
                     </div>
                     <hr className="border-black-custom mt-5" />
