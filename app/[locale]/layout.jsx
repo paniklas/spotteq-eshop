@@ -10,6 +10,7 @@ import { SanityLive } from "../../sanity/lib/live";
 import { VisualEditing } from "next-sanity/visual-editing";
 import { DisableDraftMode } from "../../components/sanity/DisableDraftMode";
 import { draftMode } from "next/headers";
+import { getNavData } from '@/sanity/getData/getNavData';
 
 export function generateStaticParams() {
     return routing.locales.map((locale) => ({ locale }));
@@ -23,7 +24,10 @@ export const metadata = {
 export default async function LocaleLayout({ children, params }) {
 
     const { locale } = await params;
-    const messages = (await import(`../../messages/${locale}.json`)).default;
+    const [messages, navData] = await Promise.all([
+        import(`../../messages/${locale}.json`).then(m => m.default),
+        getNavData(locale),
+    ]);
 
   return (
         <>
@@ -37,7 +41,7 @@ export default async function LocaleLayout({ children, params }) {
                 <CartProvider>
                 <SmoothScrolling>
                     <LocaleLanguageSetter locale={locale} />
-                    <Navbar />
+                    <Navbar categoryGroups={navData.categoryGroups} navBundles={navData.bundles} />
                     <main>
                         {children}
                     </main>

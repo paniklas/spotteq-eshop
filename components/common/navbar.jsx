@@ -1,6 +1,6 @@
 'use client';
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useLocale } from "next-intl";
@@ -11,7 +11,7 @@ import { getStylesForCurrentPage } from "@/hooks/get-header-styles-current-page"
 import { useCartStore } from "@/store/cart-store";
 
 
-const Navbar = () => {
+const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
     const locale = useLocale();
     const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -48,13 +48,13 @@ const Navbar = () => {
     return (
         <>
             {/* Menu overlay */}
-            <MenuOverlay isOpen={isMenuOpen} isOnClose={() => setIsMenuOpen(false)} />
+            <MenuOverlay isOpen={isMenuOpen} isOnClose={() => setIsMenuOpen(false)} categoryGroups={categoryGroups} navBundles={navBundles} />
 
             <header className={`fixed top-0 left-0 right-0 z-50 h-24 transition-all duration-300 ${headerBg} ${innerBg}`}>
                 <div className={`max-w-480 mx-auto h-full flex items-center justify-between page-x`}>
 
                     {/* Logo — crossfade between black and white versions */}
-                    <Link href={`/${locale}`} className="relative flex items-center" aria-label="SPOTTEQ home">
+                    <Link href="/" className="relative flex items-center" aria-label="SPOTTEQ home">
                         <div className="relative" style={{ width: 185, height: 40 }}>
                             <motion.div
                                 animate={{ opacity: isLightIcons ? 0 : 1 }}
@@ -163,10 +163,10 @@ const Navbar = () => {
                             onMouseLeave={() => setBurgerHovered(false)}
                             className="flex flex-col justify-between w-[42px] h-[22px] relative cursor-pointer"
                         >
-                            {/* Line 1 — shrinks to the right (right anchored on hover, center otherwise) */}
+                            {/* Line 1 — shrinks to the right */}
                             <motion.span
                                 className="block h-px w-full"
-                                style={{ transformOrigin: burgerHovered ? 'right center' : 'center center' }}
+                                style={{ transformOrigin: isMenuOpen ? 'center center' : 'right center' }}
                                 animate={{
                                     rotate: isMenuOpen ? 45 : 0,
                                     y: isMenuOpen ? 10.5 : 0,
@@ -180,10 +180,10 @@ const Navbar = () => {
                                     scaleX: { duration: 0.3, delay: 0, ease: 'easeInOut' },
                                 }}
                             />
-                            {/* Line 2 — shrinks to the left (left anchored on hover, center otherwise) */}
+                            {/* Line 2 — shrinks to the left */}
                             <motion.span
                                 className="block h-px w-full"
-                                style={{ transformOrigin: burgerHovered ? 'left center' : 'center center' }}
+                                style={{ transformOrigin: isMenuOpen ? 'center center' : 'left center' }}
                                 animate={{
                                     opacity: isMenuOpen ? 0 : 1,
                                     backgroundColor: iconColor,
@@ -192,13 +192,13 @@ const Navbar = () => {
                                 transition={{
                                     opacity: { duration: 0.35 },
                                     backgroundColor: { duration: 0.3 },
-                                    scaleX: { duration: 0.3, delay: 0.06, ease: 'easeInOut' },
+                                    scaleX: { duration: 0.3, delay: burgerHovered ? 0.06 : 0, ease: 'easeInOut' },
                                 }}
                             />
-                            {/* Line 3 — shrinks to the right (right anchored on hover, center otherwise) */}
+                            {/* Line 3 — shrinks to the right */}
                             <motion.span
                                 className="block h-px w-full"
-                                style={{ transformOrigin: burgerHovered ? 'right center' : 'center center' }}
+                                style={{ transformOrigin: isMenuOpen ? 'center center' : 'right center' }}
                                 animate={{
                                     rotate: isMenuOpen ? -45 : 0,
                                     y: isMenuOpen ? -10.5 : 0,
@@ -209,7 +209,7 @@ const Navbar = () => {
                                     rotate: { duration: 0.35, ease: [0.76, 0, 0.24, 1] },
                                     y: { duration: 0.35, ease: [0.76, 0, 0.24, 1] },
                                     backgroundColor: { duration: 0.3 },
-                                    scaleX: { duration: 0.3, delay: 0.12, ease: 'easeInOut' },
+                                    scaleX: { duration: 0.3, delay: burgerHovered ? 0.12 : 0, ease: 'easeInOut' },
                                 }}
                             />
                         </button>

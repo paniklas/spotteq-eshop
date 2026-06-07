@@ -1,4 +1,5 @@
 "use client";
+
 import { useRef } from "react";
 import { useScroll, useTransform, motion } from "framer-motion";
 import Image from "next/image";
@@ -10,15 +11,15 @@ const SpotteqImage = () => {
         offset: ["start end", "end start"],
     });
 
-    const y = useTransform(scrollYProgress, [0, 1], ["-15%", "15%"]);
+    const y = useTransform(scrollYProgress, [0, 1], ["-20%", "20%"]);
 
     return (
         <section
             id="spotteq-image-section"
             ref={containerRef}
-            className="w-full h-100 xl:h-162.5 relative overflow-hidden"
+            className="w-full h-100 xl:h-180 relative overflow-hidden"
         >
-            <motion.div style={{ y }} className="absolute inset-0 scale-[1.35]">
+            <motion.div style={{ y }} className="absolute inset-x-0 -inset-y-[15%]">
                 <Image
                     src="/images/packs.webp"
                     alt="SPOTTEQ athlete"

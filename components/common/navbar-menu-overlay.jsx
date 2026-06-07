@@ -1,29 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation"
 import Image from "next/image";
-import { useLocale } from "next-intl";
 
-
-const SHOP_BY_SERIES = [
-    { label: "Performance Series", href: "/series/performance" },
-    { label: "Clinical Series", href: "/series/clinical" },
-    { label: "Accessories", href: "/series/accessories" },
-    ];
-
-    const SHOP_BY_GOAL = [
-    { label: "Build Muscle & Strength", href: "/goal/muscle" },
-    { label: "Endurance & Performance", href: "/goal/endurance" },
-    { label: "Recovery & Muscle Function", href: "/goal/recovery" },
-    { label: "Immunity & Everyday Health", href: "/goal/immunity" },
-    ];
-
-    const BUNDLES = [
-    { label: "Recovery & Protection", href: "/bundles/recovery" },
-    { label: "Performance Complete", href: "/bundles/performance" },
-    { label: "Strength & Growth", href: "/bundles/strength" },
-    { label: "Total System", href: "/bundles/total-system" },
-];
 
 const BRAND_SUPPORT = [
     {
@@ -49,10 +28,7 @@ const BRAND_SUPPORT = [
 ];
 
 
-const MenuOverlay = ({ isOpen, isOnClose }) => {
-    const locale = useLocale();
-    const l = (path) => `/${locale}${path}`;
-
+const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }) => {
     const fade = (delay) => ({
         opacity: isOpen ? 1 : 0,
         transition: `opacity 380ms ease ${isOpen ? delay : 0}ms`,
@@ -70,20 +46,34 @@ const MenuOverlay = ({ isOpen, isOnClose }) => {
         >
             {/* Spacer under fixed navbar */}
             <div className="h-24" />
-            <div className="max-w-[1920px] mx-auto page-x flex gap-12 py-10 xl:py-32">
+            <div className="max-w-480 mx-auto page-x flex gap-12 py-10 xl:py-32">
                 {/* ── Left: nav content ── */}
                 <div className="flex-1 flex flex-col min-w-0 space-y-10">
         
-                    {/* Top 3-column grid */}
+                    {/* Top columns grid — category groups + bundles */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-8">
-                        <NavColumn title="Shop by Series" links={SHOP_BY_SERIES.map(i => ({ ...i, href: l(i.href) }))} isOpen={isOpen} delay={100} onClose={isOnClose} />
-                        <NavColumn title="Shop by Goal"   links={SHOP_BY_GOAL.map(i => ({ ...i, href: l(i.href) }))}   isOpen={isOpen} delay={140} onClose={isOnClose} />
-                        <NavColumn title="Bundles"         links={BUNDLES.map(i => ({ ...i, href: l(i.href) }))}         isOpen={isOpen} delay={180} onClose={isOnClose} />
+                        {categoryGroups.map((group, i) => (
+                            <NavColumn
+                                key={group.slug}
+                                title={group.title}
+                                links={group.categories.map(cat => ({ label: cat.title, href: `/shop/category/${cat.slug}` }))}
+                                isOpen={isOpen}
+                                delay={100 + i * 40}
+                                onClose={isOnClose}
+                            />
+                        ))}
+                        <NavColumn
+                            title="Bundles"
+                            links={navBundles.map(b => ({ label: b.title, href: `/shop/bundle/${b.slug}` }))}
+                            isOpen={isOpen}
+                            delay={100 + categoryGroups.length * 40}
+                            onClose={isOnClose}
+                        />
 
-                         {/* View all products */}
-                        <div className="mt-6 col-start-3 flex justify-start" style={fade(240)}>
+                        {/* View all products */}
+                        <div className="mt-6 flex justify-start" style={{ ...fade(240), gridColumnStart: categoryGroups.length + 1 }}>
                             <Link
-                                href={l("/shop")}
+                                href="/shop/shop-all"
                                 onClick={isOnClose}
                                 tabIndex={isOpen ? 0 : -1}
                                 className="inline-flex items-center font-aeonik text-[20px] text-black-custom"
@@ -105,7 +95,7 @@ const MenuOverlay = ({ isOpen, isOnClose }) => {
                             {BRAND_SUPPORT.map(({ label, sub, href }) => (
                                 <div key={label}>
                                     <Link
-                                        href={l(href)}
+                                        href={href}
                                         onClick={isOnClose}
                                         tabIndex={isOpen ? 0 : -1}
                                         className="font-aeonik text-[15px] xl:text-[20px] text-black-custom hover:opacity-50 transition-opacity leading-snug"
@@ -161,7 +151,7 @@ const MenuOverlay = ({ isOpen, isOnClose }) => {
                         </div>
 
                         <Link
-                            href={l("/shop")}
+                            href="/shop/shop-all"
                             onClick={isOnClose}
                             tabIndex={isOpen ? 0 : -1}
                             className="relative z-10 bg-white text-foreground font-tt text-xs font-medium uppercase tracking-[0.15em] px-10 py-3 rounded-full hover:bg-foreground hover:text-white transition-colors duration-200"

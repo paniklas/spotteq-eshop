@@ -40,7 +40,7 @@ const FeaturedProductsSlider = ({ products }) => {
             </div>
 
             {maxIndex > 0 && (
-                <div className="flex items-center gap-3 mt-20">
+                <div className="flex items-center gap-3">
                     <button
                         onClick={prev}
                         disabled={index === 0}

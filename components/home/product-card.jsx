@@ -54,7 +54,7 @@ const ProductCard = ({ product, priority = false }) => {
     }
 
     return (
-        <div data-testid="product-card" className="group/card flex flex-col gap-4 relative">
+        <div data-testid="product-card" className="group/card flex flex-col gap-4 relative pb-10">
             {/* Image area */}
             <div className="relative bg-white rounded-sm overflow-hidden" style={{ aspectRatio: "1/1.2" }}>
 
