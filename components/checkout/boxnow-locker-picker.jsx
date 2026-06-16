@@ -43,9 +43,11 @@ function BoxNowLockerPicker({ partnerId, postalCode, onSelect }) {
     return () => window.removeEventListener("message", handleMessage, false);
   }, []);
 
-  const iframeSrc = `https://widget-v5.boxnow.gr?partnerId=${partnerId}&gps=yes${
-    postalCode ? `&zip=${postalCode}` : ""
-  }`;
+  // When a postal code is known, disable GPS and center the map on the zip instead.
+  // BoxNow docs: zip is only used when gps=no.
+  const iframeSrc = postalCode
+    ? `https://widget-v5.boxnow.gr?partnerId=${partnerId}&gps=no&zip=${postalCode}`
+    : `https://widget-v5.boxnow.gr?partnerId=${partnerId}&gps=yes`;
 
   return (
     <div className="mt-3 space-y-2">
