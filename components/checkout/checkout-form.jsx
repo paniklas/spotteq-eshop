@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition, useState, useEffect, useRef } from "react";
+import { useTransition, useState, useEffect, useRef, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocale } from "next-intl";
@@ -19,6 +19,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { PortableText } from "@portabletext/react";
 import StripePaymentWrapper from "./stripe-payment-wrapper";
+import BoxNowLockerPicker from "./boxnow-locker-picker";
 
 // ---------------------------------------------------------------------------
 // Design primitives — kept from original spotteq design
@@ -114,6 +115,11 @@ const CheckoutForm = ({ shippingMethods = [] }) => {
   const [selectedMethodId, setSelectedMethodId] = useState(
     shippingMethods.length === 1 ? shippingMethods[0]._id : ""
   );
+  const [isBoxNow, setIsBoxNow] = useState(
+    shippingMethods.length === 1 && shippingMethods[0].provider === "boxnow"
+  );
+  const [boxNowLockerInfo, setBoxNowLockerInfo] = useState(null);
+  const [boxNowLockerError, setBoxNowLockerError] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(checkoutSchema),
@@ -169,11 +175,24 @@ const CheckoutForm = ({ shippingMethods = [] }) => {
     form.setValue("shippingMethodId", method._id, { shouldValidate: true });
     setSelectedMethodId(method._id);
     setSelectedShippingMethod(method);
+    const nextIsBoxNow = method.provider === "boxnow";
+    setIsBoxNow(nextIsBoxNow);
+    if (!nextIsBoxNow) {
+      setBoxNowLockerInfo(null);
+      setBoxNowLockerError(false);
+      form.setValue("boxNowLockerId", "");
+    }
   };
 
   const onSubmit = (data) => {
     setInventoryIssues([]);
     setInventoryError(false);
+
+    if (isBoxNow && !boxNowLockerInfo?.lockerId) {
+      setBoxNowLockerError(true);
+      return;
+    }
+    setBoxNowLockerError(false);
 
     startTransition(async () => {
       // Validate inventory before proceeding to payment
@@ -221,11 +240,22 @@ const CheckoutForm = ({ shippingMethods = [] }) => {
 
       setPaymentData({
         customerInfo,
-        shippingMethodId: data.shippingMethodId,
+        shippingMethodId:    data.shippingMethodId,
+        boxNowLockerId:      boxNowLockerInfo?.lockerId      ?? null,
+        boxNowLockerName:    boxNowLockerInfo?.lockerName    ?? null,
+        boxNowLockerAddress: boxNowLockerInfo?.lockerAddress ?? null,
       });
       setShowPayment(true);
     });
   };
+
+  // Stable reference — setters from useState/RHF are stable, so deps are empty.
+  // This lets BoxNowLockerPicker skip re-renders and drop its ref-sync effect.
+  const handleLockerSelect = useCallback((info) => {
+    setBoxNowLockerInfo(info.lockerId ? info : null);
+    setBoxNowLockerError(false);
+    form.setValue("boxNowLockerId", info.lockerId ?? "");
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleBack = () => {
     setShowPayment(false);
@@ -645,6 +675,22 @@ const CheckoutForm = ({ shippingMethods = [] }) => {
             )}
           </SectionCard>
 
+          {/* ── BoxNow Locker Picker ────────────────────────────────────── */}
+          {isBoxNow && (
+            <SectionCard title="Select BoxNow Locker">
+              <BoxNowLockerPicker
+                partnerId={process.env.NEXT_PUBLIC_BOXNOW_PARTNER_ID}
+                postalCode={form.getValues("postalCode")}
+                onSelect={handleLockerSelect}
+              />
+              {boxNowLockerError && (
+                <p className="font-aeonik text-[12px] text-red-500 mt-2">
+                  Please select a BoxNow locker before continuing.
+                </p>
+              )}
+            </SectionCard>
+          )}
+
           {/* ── Terms + Submit ───────────────────────────────────────────── */}
           <SectionCard>
             <p className="font-aeonik text-[12px] text-black-custom leading-relaxed">
@@ -724,6 +770,9 @@ const CheckoutForm = ({ shippingMethods = [] }) => {
           customerInfo={paymentData.customerInfo}
           items={cartItems}
           shippingMethodId={paymentData.shippingMethodId}
+          boxNowLockerId={paymentData.boxNowLockerId}
+          boxNowLockerName={paymentData.boxNowLockerName}
+          boxNowLockerAddress={paymentData.boxNowLockerAddress}
           coupon={appliedCoupon}
           locale={locale}
           onBack={handleBack}

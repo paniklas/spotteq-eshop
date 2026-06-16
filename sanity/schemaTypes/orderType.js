@@ -171,6 +171,39 @@ export const orderType = defineType({
       type: 'reference',
       to: [{ type: 'userInfo' }],
     }),
+    defineField({
+      name: 'boxNowLockerId',
+      title: 'BoxNow Locker ID',
+      type: 'string',
+    }),
+    defineField({
+      name: 'boxNowLockerName',
+      title: 'BoxNow Locker Name',
+      type: 'string',
+    }),
+    defineField({
+      name: 'boxNowLockerAddress',
+      title: 'BoxNow Locker Address',
+      type: 'string',
+    }),
+    defineField({
+      name: 'boxNowDeliveryRequestId',
+      title: 'BoxNow Delivery Request ID',
+      type: 'string',
+      readOnly: true,
+    }),
+    defineField({
+      name: 'boxNowParcelId',
+      title: 'BoxNow Parcel ID',
+      type: 'string',
+      readOnly: true,
+    }),
+    defineField({
+      name: 'boxNowParcelStatus',
+      title: 'BoxNow Parcel Status',
+      type: 'string',
+      readOnly: true,
+    }),
   ],
   preview: {
     select: {

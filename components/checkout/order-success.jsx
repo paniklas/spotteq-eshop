@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
-import { CheckCircle, Clock, XCircle, PackageSearch } from "lucide-react";
+import { CheckCircle, Clock, XCircle, PackageSearch, MapPin } from "lucide-react";
 import { useCartStore } from "@/store/cart-store";
 
 // ---------------------------------------------------------------------------
@@ -140,6 +140,31 @@ const OrderPaid = ({ order, orderNumber, locale }) => {
             <p>{addr.country}</p>
             {addr.phone && <p>{addr.phone}</p>}
           </div>
+        </div>
+      )}
+
+      {/* BoxNow locker info */}
+      {order.boxNowLockerId && (
+        <div className="bg-white-custom rounded-2xl p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <MapPin className="w-5 h-5 text-teal-accent shrink-0" strokeWidth={1.5} />
+            <h2 className="font-aeonik text-[15px] uppercase text-black-custom">
+              BoxNow Delivery Locker
+            </h2>
+          </div>
+          <div className="font-aeonik text-[14px] text-black-custom space-y-1 mb-4">
+            {order.boxNowLockerName && <p className="font-semibold">{order.boxNowLockerName}</p>}
+            {order.boxNowLockerAddress && <p className="text-gray-text">{order.boxNowLockerAddress}</p>}
+          </div>
+          {order.boxNowParcelId && (
+            <div className="rounded-lg bg-gray-light px-4 py-3">
+              <p className="font-aeonik text-[12px] text-gray-text uppercase mb-1">Tracking / Parcel ID</p>
+              <p className="font-tt text-[15px] text-black-custom">{order.boxNowParcelId}</p>
+            </div>
+          )}
+          <p className="mt-4 font-aeonik text-[13px] text-gray-text">
+            BoxNow will send you an SMS when your parcel is ready for pickup at the locker.
+          </p>
         </div>
       )}
 

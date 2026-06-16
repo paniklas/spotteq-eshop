@@ -43,8 +43,14 @@ export async function getOrder(orderNumber, locale) {
         _id,
         "name": name[language == $locale][0].value,
         "estimatedDeliveryTime": estimatedDeliveryTime[language == $locale][0].value,
-        price
-      }
+        price,
+        provider
+      },
+      boxNowLockerId,
+      boxNowLockerName,
+      boxNowLockerAddress,
+      boxNowParcelId,
+      boxNowParcelStatus
     }
   `
   return client.fetch(

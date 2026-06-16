@@ -83,6 +83,19 @@ export const shippingType = defineType({
       validation: Rule => Rule.required().min(1),
     }),
     defineField({
+      name: 'provider',
+      title: 'Provider',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Standard', value: 'standard' },
+          { title: 'BoxNow APM', value: 'boxnow' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'standard',
+    }),
+    defineField({
       name: 'isActive',
       title: 'Active',
       type: 'boolean',
