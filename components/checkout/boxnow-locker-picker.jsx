@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, memo } from "react";
 
 const WIDGET_HOSTNAME = "widget-v5.boxnow.gr";
 
-function BoxNowLockerPicker({ partnerId, postalCode, onSelect }) {
+function BoxNowLockerPicker({ partnerId, postalCode, city, onSelect }) {
   const [selected, setSelected] = useState(null);
 
   // onSelect is stable (useCallback in parent) so no sync effect needed —
@@ -43,10 +43,12 @@ function BoxNowLockerPicker({ partnerId, postalCode, onSelect }) {
     return () => window.removeEventListener("message", handleMessage, false);
   }, []);
 
-  // When a postal code is known, disable GPS and center the map on the zip instead.
-  // BoxNow docs: zip is only used when gps=no.
-  const iframeSrc = postalCode
-    ? `https://widget-v5.boxnow.gr?partnerId=${partnerId}&gps=no&zip=${postalCode}`
+  // When a postal code is known, disable GPS and center the map on the address instead.
+  // BoxNow docs: zip accepts "a ZIP or part of a general address" and is only used when gps=no.
+  // Combining postal code + city gives the geocoder enough context for less-populated areas.
+  const locationHint = [postalCode, city].filter(Boolean).join(" ");
+  const iframeSrc = locationHint
+    ? `https://widget-v5.boxnow.gr?partnerId=${partnerId}&gps=no&zip=${encodeURIComponent(locationHint)}`
     : `https://widget-v5.boxnow.gr?partnerId=${partnerId}&gps=yes`;
 
   return (

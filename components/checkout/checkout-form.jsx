@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition, useState, useEffect, useRef, useCallback } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
@@ -151,7 +151,8 @@ const CheckoutForm = ({ shippingMethods = [] }) => {
     },
   });
 
-  const watchedPostalCode = form.watch("postalCode");
+  const watchedPostalCode = useWatch({ control: form.control, name: "postalCode" });
+  const watchedCity       = useWatch({ control: form.control, name: "city" });
 
   // Pre-fill form with saved customer info after Zustand hydrates from localStorage
   const prefilled = useRef(false);
@@ -251,13 +252,14 @@ const CheckoutForm = ({ shippingMethods = [] }) => {
     });
   };
 
-  // Stable reference — setters from useState/RHF are stable, so deps are empty.
-  // This lets BoxNowLockerPicker skip re-renders and drop its ref-sync effect.
+  // Destructure setValue so the React Compiler sees a stable reference directly
+  // rather than through the form object (which it can't verify as stable).
+  const { setValue } = form;
   const handleLockerSelect = useCallback((info) => {
     setBoxNowLockerInfo(info.lockerId ? info : null);
     setBoxNowLockerError(false);
-    form.setValue("boxNowLockerId", info.lockerId ?? "");
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    setValue("boxNowLockerId", info.lockerId ?? "");
+  }, [setValue]);
 
   const handleBack = () => {
     setShowPayment(false);
@@ -683,6 +685,7 @@ const CheckoutForm = ({ shippingMethods = [] }) => {
               <BoxNowLockerPicker
                 partnerId={process.env.NEXT_PUBLIC_BOXNOW_PARTNER_ID}
                 postalCode={watchedPostalCode}
+                city={watchedCity}
                 onSelect={handleLockerSelect}
               />
               {boxNowLockerError && (
