@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { stripe } from "@/lib/stripe";
 import { backendClient } from "@/sanity/lib/backendClient";
 import { recordCouponUsage } from "@/app/actions/coupon";
+import { createDeliveryRequest } from "@/lib/boxnow";
 
 // Must be Node.js runtime — Edge runtime cannot read the raw request body
 // required for Stripe signature verification.
@@ -76,9 +77,40 @@ async function handlePaymentSucceeded(paymentIntent) {
   await decrementInventory(orderId);
 
   // Record coupon usage only after confirmed payment
-  // (improvement: hatlias does this in create-payment-intent, which records usage even on abandoned checkouts)
   if (couponId && couponEmail && orderNumber) {
     await recordCouponUsage(couponId, couponEmail, orderNumber);
+  }
+
+  // Auto-create BoxNow delivery request if this is a BoxNow order
+  try {
+    const fullOrder = await backendClient.fetch(
+      `*[_type == "order" && _id == $orderId][0]{
+        orderNumber,
+        email,
+        totalPrice,
+        boxNowLockerId,
+        boxNowLockerName,
+        boxNowLockerAddress,
+        shippingAddress,
+        "shippingProvider": shippingMethod->provider
+      }`,
+      { orderId }
+    );
+
+    if (fullOrder?.shippingProvider === "boxnow" && fullOrder.boxNowLockerId) {
+      const { deliveryRequestId, parcelId } = await createDeliveryRequest(fullOrder);
+      await backendClient
+        .patch(orderId)
+        .set({
+          boxNowDeliveryRequestId: deliveryRequestId,
+          boxNowParcelId:          parcelId,
+          boxNowParcelStatus:      "new",
+        })
+        .commit();
+    }
+  } catch (err) {
+    // Non-fatal: log and continue — the Stripe webhook must return 200
+    console.error("[webhook] BoxNow delivery request failed for order", orderId, err);
   }
 }
 

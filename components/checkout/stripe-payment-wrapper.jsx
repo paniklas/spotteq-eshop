@@ -8,7 +8,17 @@ import PaymentForm from "./payment-form";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
-const StripePaymentWrapper = ({ customerInfo, items, shippingMethodId, coupon, locale, onBack }) => {
+const StripePaymentWrapper = ({
+  customerInfo,
+  items,
+  shippingMethodId,
+  boxNowLockerId,
+  boxNowLockerName,
+  boxNowLockerAddress,
+  coupon,
+  locale,
+  onBack,
+}) => {
   const [clientSecret, setClientSecret]   = useState("");
   const [orderNumber, setOrderNumber]     = useState("");
   const [loading, setLoading]             = useState(true);
@@ -32,6 +42,9 @@ const StripePaymentWrapper = ({ customerInfo, items, shippingMethodId, coupon, l
               selectedFlavour: i.selectedFlavour ?? "",
             })),
             shippingMethodId,
+            boxNowLockerId:      boxNowLockerId      ?? null,
+            boxNowLockerName:    boxNowLockerName    ?? null,
+            boxNowLockerAddress: boxNowLockerAddress ?? null,
             couponId:   coupon?._id   ?? null,
             couponCode: coupon?.couponCode ?? null,
             customerInfo,

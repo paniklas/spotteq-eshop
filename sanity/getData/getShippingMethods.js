@@ -9,7 +9,8 @@ const SHIPPING_QUERY = defineQuery(`
     "description": description[language == $locale][0].value,
     price,
     freeShippingMinimum,
-    availableRegions
+    availableRegions,
+    provider
   }
 `);
 

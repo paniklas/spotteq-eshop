@@ -12,7 +12,16 @@ function generateOrderNumber() {
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { items, shippingMethodId, couponId, couponCode, customerInfo } = body;
+    const {
+      items,
+      shippingMethodId,
+      couponId,
+      couponCode,
+      customerInfo,
+      boxNowLockerId,
+      boxNowLockerName,
+      boxNowLockerAddress,
+    } = body;
 
     // --- Basic validation ---
     if (!items?.length) {
@@ -45,7 +54,7 @@ export async function POST(req) {
           )
         : Promise.resolve([]),
       backendClient.fetch(
-        `*[_type == "shipping" && _id == $id && isActive == true][0]{ _id, price, freeShippingMinimum }`,
+        `*[_type == "shipping" && _id == $id && isActive == true][0]{ _id, price, freeShippingMinimum, provider }`,
         { id: shippingMethodId }
       ),
       couponId
@@ -60,6 +69,9 @@ export async function POST(req) {
 
     if (!shippingMethod) {
       return NextResponse.json({ error: "Invalid shipping method." }, { status: 400 });
+    }
+    if (shippingMethod.provider === "boxnow" && !boxNowLockerId) {
+      return NextResponse.json({ error: "Please select a BoxNow locker." }, { status: 400 });
     }
 
     // --- Build order line items and compute subtotal ---
@@ -172,6 +184,11 @@ export async function POST(req) {
           }
         : {}),
       shippingMethod:  { _type: "reference", _ref: shippingMethodId },
+      ...(boxNowLockerId ? {
+        boxNowLockerId,
+        boxNowLockerName:    boxNowLockerName    ?? "",
+        boxNowLockerAddress: boxNowLockerAddress ?? "",
+      } : {}),
       shippingAddress: {
         firstName:  customerInfo.firstName,
         lastName:   customerInfo.lastName,
