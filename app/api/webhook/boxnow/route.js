@@ -1,6 +1,6 @@
 import "server-only";
 import { NextResponse } from "next/server";
-import { createHmac } from "crypto";
+import { createHmac, timingSafeEqual } from "crypto";
 import { backendClient } from "@/sanity/lib/backendClient";
 
 export const runtime = "nodejs";
@@ -21,16 +21,25 @@ export async function POST(req) {
 
   // Verify HMAC-SHA256 datasignature
   const secret = process.env.BOXNOW_WEBHOOK_SECRET;
-  if (secret) {
-    const received = body.datasignature ?? "";
-    const expected = createHmac("sha256", secret)
-      .update(JSON.stringify(body.data ?? {}))
-      .digest("hex");
+  if (!secret) {
+    console.error("[boxnow-webhook] BOXNOW_WEBHOOK_SECRET is not set — rejecting request");
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
 
-    if (received !== expected) {
-      console.error("[boxnow-webhook] Invalid datasignature");
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
+  const received = body.datasignature ?? "";
+  const expected = createHmac("sha256", secret)
+    .update(JSON.stringify(body.data ?? {}))
+    .digest("hex");
+
+  const receivedBuf = Buffer.from(received);
+  const expectedBuf = Buffer.from(expected);
+  const sigValid =
+    receivedBuf.length === expectedBuf.length &&
+    timingSafeEqual(receivedBuf, expectedBuf);
+
+  if (!sigValid) {
+    console.error("[boxnow-webhook] Invalid datasignature");
+    return new NextResponse("Unauthorized", { status: 401 });
   }
 
   const { parcelId, event } = body.data ?? {};

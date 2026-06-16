@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, memo } from "react";
 
-const WIDGET_ORIGIN = "widget-v5.boxnow.";
+const WIDGET_HOSTNAME = "widget-v5.boxnow.gr";
 
 function BoxNowLockerPicker({ partnerId, postalCode, onSelect }) {
   const [selected, setSelected] = useState(null);
@@ -13,7 +13,12 @@ function BoxNowLockerPicker({ partnerId, postalCode, onSelect }) {
 
   useEffect(() => {
     function handleMessage(event) {
-      if (!event.origin.includes(WIDGET_ORIGIN)) return;
+      if (!event.origin) return;
+      try {
+        if (new URL(event.origin).hostname !== WIDGET_HOSTNAME) return;
+      } catch {
+        return;
+      }
 
       const data = event.data;
       if (!data?.boxnowLockerId) return;

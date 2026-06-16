@@ -151,6 +151,8 @@ const CheckoutForm = ({ shippingMethods = [] }) => {
     },
   });
 
+  const watchedPostalCode = form.watch("postalCode");
+
   // Pre-fill form with saved customer info after Zustand hydrates from localStorage
   const prefilled = useRef(false);
   useEffect(() => {
@@ -680,7 +682,7 @@ const CheckoutForm = ({ shippingMethods = [] }) => {
             <SectionCard title="Select BoxNow Locker">
               <BoxNowLockerPicker
                 partnerId={process.env.NEXT_PUBLIC_BOXNOW_PARTNER_ID}
-                postalCode={form.getValues("postalCode")}
+                postalCode={watchedPostalCode}
                 onSelect={handleLockerSelect}
               />
               {boxNowLockerError && (
