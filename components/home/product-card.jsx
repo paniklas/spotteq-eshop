@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { urlFor } from "@/sanity/lib/image";
 import { toast } from "sonner";
 import { useCartStore, makeCartId } from "@/store/cart-store";
+import { formatPrice } from "@/utils/formatPrice";
 
 
 const LOVE_ICON = "/icons/love-icon.svg";
@@ -104,7 +105,7 @@ const ProductCard = ({ product, priority = false }) => {
                     {productName}
                 </h3>
                 {/* Price */}
-                <span className="font-tt text-[24px] text-black-custom font-semibold">{product.price}€</span>
+                <span className="font-tt text-[24px] text-black-custom font-semibold">{formatPrice(product.price)}€</span>
             </div>
 
             {/* Divider */}

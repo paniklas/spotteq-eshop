@@ -1,8 +1,9 @@
+import { cache } from 'react'
 import { defineQuery } from 'next-sanity'
 import { sanityFetch } from '../lib/live'
 import { urlFor } from '../lib/image'
 
-export async function getProductBySlug(slug, locale) {
+export const getProductBySlug = cache(async (slug, locale) => {
     const QUERY = defineQuery(`
         *[_type == "product" && slugs[$locale].current == $slug][0] {
             _id,
@@ -15,6 +16,7 @@ export async function getProductBySlug(slug, locale) {
             "highlights": highlights[language == $locale][0].value,
             "size": size[language == $locale][0].value,
             badge,
+            "flavourName": flavourName[language == $locale][0].value,
             "slug": slugs[$locale].current,
             image,
             galleryImages,
@@ -42,6 +44,11 @@ export async function getProductBySlug(slug, locale) {
                 "slug": slugs[$locale].current,
                 "group": categoryGroup->slug.current
             },
+            keyFeatures {
+                "description": description[language == $locale][0].value,
+                "features": features[language == $locale][0].value,
+                image
+            },
             productDetails {
                 "ingredients": ingredients[language == $locale][0].value,
                 "directions": directions[language == $locale][0].value,
@@ -59,6 +66,10 @@ export async function getProductBySlug(slug, locale) {
             ...product,
             imageUrl: product.image ? urlFor(product.image).width(800).url() : null,
             galleryImageUrls: product.galleryImages?.filter(img => img?.asset?._ref).map(img => urlFor(img).width(800).url()) ?? [],
+            keyFeatures: product.keyFeatures ? {
+                ...product.keyFeatures,
+                imageUrl: product.keyFeatures.image ? urlFor(product.keyFeatures.image).width(1200).url() : null,
+            } : null,
             flavours: product.flavours?.filter(Boolean).map(f => ({
                 ...f,
                 imageUrl: f.image ? urlFor(f.image).width(200).url() : null,
@@ -72,4 +83,4 @@ export async function getProductBySlug(slug, locale) {
         console.error('Error fetching product by slug', error)
         return null
     }
-}
+})

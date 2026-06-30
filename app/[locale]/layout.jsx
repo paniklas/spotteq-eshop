@@ -1,4 +1,5 @@
 import { NextIntlClientProvider } from 'next-intl';
+import { notFound } from 'next/navigation';
 import { Toaster } from "@/components/ui/sonner";
 // components
 import LocaleLanguageSetter from "@/components/common/locale-lng-setter";
@@ -10,7 +11,8 @@ import { SanityLive } from "../../sanity/lib/live";
 import { VisualEditing } from "next-sanity/visual-editing";
 import { DisableDraftMode } from "../../components/sanity/DisableDraftMode";
 import { draftMode } from "next/headers";
-import { getNavData } from '@/sanity/getData/getNavData';
+import { getNavData } from '@/sanity/getData/getNavData'
+import { getAllBundlesForCart } from '@/sanity/getData/getAllBundlesForCart';
 
 export function generateStaticParams() {
     return routing.locales.map((locale) => ({ locale }));
@@ -24,9 +26,12 @@ export const metadata = {
 export default async function LocaleLayout({ children, params }) {
 
     const { locale } = await params;
-    const [messages, navData] = await Promise.all([
+    if (!routing.locales.includes(locale)) notFound();
+
+    const [messages, navData, allBundles] = await Promise.all([
         import(`../../messages/${locale}.json`).then(m => m.default),
         getNavData(locale),
+        getAllBundlesForCart(locale),
     ]);
 
   return (
@@ -38,7 +43,7 @@ export default async function LocaleLayout({ children, params }) {
                 </>
             )}
             <NextIntlClientProvider messages={messages} locale={locale}>
-                <CartProvider>
+                <CartProvider allBundles={allBundles}>
                 <SmoothScrolling>
                     <LocaleLanguageSetter locale={locale} />
                     <Navbar categoryGroups={navData.categoryGroups} navBundles={navData.bundles} />

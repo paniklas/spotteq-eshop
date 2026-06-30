@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Heart } from "lucide-react";
 import { toast } from "sonner";
 import { useCartStore, makeCartId } from "@/store/cart-store";
+import { formatPrice } from "@/utils/formatPrice";
 import { PortableText } from "@portabletext/react";
 import { Link } from "@/i18n/navigation";
 
@@ -170,11 +171,11 @@ const BundleInteractive = ({ bundle }) => {
                         <div className="flex items-center gap-4 flex-wrap border-t border-gray-mint pt-4">
                             <div className="flex items-baseline gap-2">
                                 <span className="font-tt text-[32px] text-black-custom">
-                                    {effectivePrice}€
+                                    {formatPrice(effectivePrice)}€
                                 </span>
                                 {bundle.saleBundlePrice && (
                                     <span className="font-tt text-[20px] text-black-custom/40 line-through">
-                                        {bundle.bundlePrice}€
+                                        {formatPrice(bundle.bundlePrice)}€
                                     </span>
                                 )}
                             </div>

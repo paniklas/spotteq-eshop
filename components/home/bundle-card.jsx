@@ -5,6 +5,7 @@ import Image from "next/image";
 import { toast } from "sonner";
 import { Link } from "@/i18n/navigation";
 import { useCartStore, makeCartId } from "@/store/cart-store";
+import { formatPrice } from "@/utils/formatPrice";
 
 const BundleCard = ({
     _id,
@@ -60,11 +61,11 @@ const BundleCard = ({
     const priceBlock = (
         <div className="flex items-end gap-2">
             <span className="font-tt font-light text-[42px] xl:text-[48px] text-black-custom leading-none">
-                {saleBundlePrice ? `€${saleBundlePrice}` : `€${bundlePrice}`}
+                {saleBundlePrice ? `€${formatPrice(saleBundlePrice)}` : `€${formatPrice(bundlePrice)}`}
             </span>
             {saleBundlePrice && (
                 <span className="font-tt text-[20px] text-black-custom/50 line-through leading-none mb-2">
-                    €{bundlePrice}
+                    €{formatPrice(bundlePrice)}
                 </span>
             )}
         </div>

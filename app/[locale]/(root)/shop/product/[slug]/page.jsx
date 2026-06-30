@@ -2,6 +2,7 @@ import { Suspense } from "react"
 import { notFound } from "next/navigation"
 import { getProductBySlug } from "@/sanity/getData/getProductBySlug"
 import { getRelatedProducts } from "@/sanity/getData/getRelatedProducts"
+import { getBundlesContainingProduct } from "@/sanity/getData/getBundlesContainingProduct"
 import ProductInteractive from "@/components/shop/product-interactive"
 import ProductPageSkeleton from "@/components/skeletons/product-page-skeleton"
 import QualitySection from "@/components/home/quality-section"
@@ -20,7 +21,7 @@ export default async function ProductPage({ params }) {
             <Suspense fallback={<ProductPageSkeleton />}>
                 <ProductPageContent slug={slug} locale={locale} />
             </Suspense>
-            <KeyFeatures />
+            <KeyFeaturesForSlug slug={slug} locale={locale} />
             <RelatedProductsForSlug slug={slug} locale={locale} />
             <QualitySection />
             <SpotteqImage />
@@ -31,6 +32,8 @@ export default async function ProductPage({ params }) {
 async function ProductPageContent({ slug, locale }) {
     const product = await getProductBySlug(slug, locale)
     if (!product) notFound()
+
+    const bundleCallouts = await getBundlesContainingProduct(product._id, locale)
 
     const images = [product.imageUrl, ...product.galleryImageUrls].filter(Boolean)
     const subtitle = [product.subtitleLine1, product.subtitleLine2].filter(Boolean)
@@ -43,8 +46,15 @@ async function ProductPageContent({ slug, locale }) {
                 subtitle,
             }}
             relatedProducts={product.relatedProducts}
+            bundleCallouts={bundleCallouts}
         />
     )
+}
+
+async function KeyFeaturesForSlug({ slug, locale }) {
+    const product = await getProductBySlug(slug, locale)
+    if (!product?.keyFeatures) return null
+    return <KeyFeatures keyFeatures={product.keyFeatures} />
 }
 
 async function RelatedProductsForSlug({ slug, locale }) {
