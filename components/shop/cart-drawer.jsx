@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import Image from "next/image"
-import { Trash2, Check, X } from "lucide-react";
+import { Trash2, Check, X, ArrowRight } from "lucide-react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useCartStore } from "@/store/cart-store"
+import { formatPrice } from "@/utils/formatPrice"
 import { validateCoupon } from "@/app/actions/coupon"
 
 
@@ -47,8 +48,23 @@ const CheckoutModal = ({ onClose, onCloseAll, onGuest }) => (
     </>
 )
 
-const CartDrawer = () => {
+const CartDrawer = ({ allBundles = [] }) => {
     const { cartItems, cartOpen, closeCart, removeFromCart, updateQty, appliedCoupon, couponDiscount, applyCoupon, removeCoupon } = useCartStore()
+
+    const bundleSuggestions = useMemo(() => {
+        const productIdsInCart = new Set(
+            cartItems.filter((i) => i.type === "product").map((i) => i.id)
+        )
+        const bundleIdsInCart = new Set(
+            cartItems.filter((i) => i.type === "bundle").map((i) => i.id)
+        )
+        if (productIdsInCart.size === 0) return []
+
+        return allBundles.filter((bundle) => {
+            if (bundleIdsInCart.has(bundle._id)) return false
+            return bundle.products?.every((item) => productIdsInCart.has(item.product?._id))
+        })
+    }, [cartItems, allBundles])
     const [couponInput, setCouponInput] = useState("")
     const [couponApplying, setCouponApplying] = useState(false)
     const [couponError, setCouponError] = useState("")
@@ -104,7 +120,7 @@ const CartDrawer = () => {
                         <div className="flex items-baseline gap-3">
                             <h2 className="font-aeonik text-[28px] xl:text-[35px] text-black-custom">Your bag</h2>
                             <span className="font-aeonik text-[13px] xl:text-[18px] text-black-custom underline">
-                                {cartItems.length} {cartItems.length === 1 ? "ITEM" : "ITEMS"}
+                                {cartItems.reduce((sum, i) => sum + i.qty, 0)} {cartItems.reduce((sum, i) => sum + i.qty, 0) === 1 ? "ITEM" : "ITEMS"}
                             </span>
                         </div>
                         <button onClick={handleDrawerClose} className="p-1 hover:opacity-60 transition-opacity duration-200 cursor-pointer">
@@ -174,7 +190,7 @@ const CartDrawer = () => {
                                     </div>
 
                                     <div className="flex flex-col items-end gap-6 shrink-0">
-                                        <span className="font-tt text-[15px] xl:text-[22px] text-black-custom">{item.price}€</span>
+                                        <span className="font-tt text-[15px] xl:text-[22px] text-black-custom">{formatPrice(item.price)}€</span>
                                         <div className="flex items-center border border-black-custom rounded-full px-1">
                                             <button
                                                 onClick={() => updateQty(item.cartId, -1)}
@@ -213,8 +229,64 @@ const CartDrawer = () => {
                     ))}
                 </div>
 
+                {/* Bundle suggestions */}
+                {bundleSuggestions.length > 0 && (
+                    <div className="px-8 shrink-0">
+                        <hr className="border-gray-mint" />
+                        <div className="py-5">
+                            <p className="font-aeonik text-[10px] xl:text-[12px] uppercase tracking-wide mb-4">
+                                Bundle Deal Available
+                            </p>
+                            <div className="flex flex-col gap-4">
+                                {bundleSuggestions.map((bundle) => {
+                                    const bundlePrice = bundle.saleBundlePrice ?? bundle.bundlePrice
+                                    const individualTotal = bundle.products?.reduce(
+                                        (sum, item) => sum + (item.product?.price ?? 0) * item.quantity,
+                                        0
+                                    ) ?? 0
+                                    const savings = +(individualTotal - bundlePrice).toFixed(2)
+
+                                    return (
+                                        <div key={bundle._id} className="flex items-center gap-3">
+                                            {bundle.imageUrl && (
+                                                <Image
+                                                    src={bundle.imageUrl}
+                                                    alt={bundle.title}
+                                                    width={40}
+                                                    height={40}
+                                                    unoptimized
+                                                    className="w-10 h-10 object-contain shrink-0"
+                                                />
+                                            )}
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-aeonik text-[13px] xl:text-[15px] text-black-custom truncate">
+                                                    {bundle.title}
+                                                </p>
+                                                {savings > 0 && (
+                                                    <p className="font-tt text-[11px] xl:text-[13px]">
+                                                        Save {savings.toFixed(2).replace(".", ",")}€ vs buying individually
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <Link
+                                                href={`/shop/bundle/${bundle.slug}`}
+                                                onClick={closeCart}
+                                                className="group shrink-0 flex items-center gap-1.5 px-4 h-9 border border-black-custom rounded-full font-aeonik text-[11px] xl:text-[13px] uppercase text-black-custom hover:bg-black-custom hover:text-white-custom transition-colors duration-300"
+                                            >
+                                                View Bundle
+                                                <ArrowRight size={13} strokeWidth={1.5} className="group-hover:translate-x-0.5 transition-transform duration-300" />
+                                            </Link>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                        <hr className="border-gray-mint" />
+                    </div>
+                )}
+
                 {/* Footer */}
-                <div className="px-8 pb-8 pt-5 border-t border-gray-mint">
+                <div className={`px-8 pb-8 pt-5 ${bundleSuggestions.length === 0 ? "border-t border-gray-mint" : ""}`}>
                     {/* Coupon */}
                     {appliedCoupon ? (
                         <div className="flex items-center justify-between mb-6 px-3 py-2.5 bg-teal-accent/10 border border-teal-accent rounded-sm">

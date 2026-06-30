@@ -4,9 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
-import { ChevronDown, Plus, Minus, Heart } from "lucide-react";
+import { ChevronDown, Plus, Minus, Heart, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { useCartStore, makeCartId } from "@/store/cart-store";
+import { formatPrice } from "@/utils/formatPrice";
 import { PortableText } from "@portabletext/react";
 
 
@@ -39,7 +40,7 @@ const AccordionItem = ({ label, children }) => {
     )
 }
 
-const ProductInteractive = ({ product, relatedProducts = [] }) => {
+const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = [] }) => {
     const router = useRouter()
     const [quantity, setQuantity] = useState(1)
     const [flavourOpen, setFlavourOpen] = useState(false)
@@ -236,7 +237,7 @@ const ProductInteractive = ({ product, relatedProducts = [] }) => {
                         {/* Price + Qty + Stock + Wishlist */}
                         <div className="flex items-center gap-4 flex-wrap">
                             <span className="font-tt text-[32px] text-black-custom">
-                                {product.price}€
+                                {formatPrice(product.price)}€
                             </span>
 
                             {/* Quantity stepper */}
@@ -337,6 +338,72 @@ const ProductInteractive = ({ product, relatedProducts = [] }) => {
                             )}
                         </div>
 
+                        {/* Bundle Callouts */}
+                        {bundleCallouts?.length > 0 && (
+                            <div className="pt-4">
+                                <p className="font-aeonik text-[11px] xl:text-[14px] uppercase text-black-custom mb-4">
+                                    Also Available as a Bundle
+                                </p>
+                                <div className="flex flex-col gap-3">
+                                    {bundleCallouts.map((bundle) => {
+                                        const price = bundle.saleBundlePrice ?? bundle.bundlePrice
+                                        const productSummary = bundle.products
+                                            ?.map(item =>
+                                                item.product?.title
+                                                    ? `${item.quantity > 1 ? `${item.quantity}× ` : ""}${item.product.title}`
+                                                    : null
+                                            )
+                                            .filter(Boolean)
+                                            .join(" + ")
+
+                                        return (
+                                            <Link
+                                                key={bundle._id}
+                                                href={`/shop/bundle/${bundle.slug}`}
+                                                className="group flex items-center gap-4 border border-gray-mint rounded-full px-5 py-3 hover:border-black-custom transition-colors duration-300"
+                                            >
+                                                {bundle.imageUrl && (
+                                                    <Image
+                                                        src={bundle.imageUrl}
+                                                        alt={bundle.title}
+                                                        width={40}
+                                                        height={40}
+                                                        unoptimized
+                                                        className="w-10 h-10 object-contain shrink-0"
+                                                    />
+                                                )}
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-aeonik text-[13px] xl:text-[15px] text-black-custom truncate">
+                                                        {bundle.title}
+                                                    </p>
+                                                    {productSummary && (
+                                                        <p className="font-tt text-[11px] xl:text-[13px] text-gray-text truncate">
+                                                            {productSummary}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-2 shrink-0">
+                                                    <span className="font-tt text-[16px] xl:text-[18px] text-black-custom">
+                                                        {formatPrice(price)}€
+                                                    </span>
+                                                    {bundle.saleBundlePrice && (
+                                                        <span className="font-tt text-[13px] text-black-custom/40 line-through">
+                                                            {formatPrice(bundle.bundlePrice)}€
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <ArrowRight
+                                                    size={16}
+                                                    strokeWidth={1.5}
+                                                    className="shrink-0 text-black-custom group-hover:translate-x-1 transition-transform duration-300"
+                                                />
+                                            </Link>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
                         {/* Complete Your Routine */}
                         {relatedProducts?.length > 0 && (
                             <div className="pt-4">
@@ -368,7 +435,7 @@ const ProductInteractive = ({ product, relatedProducts = [] }) => {
                                             </div>
                                             <div className="flex justify-center items-center gap-3">
                                                 <span className="font-aeonik text-[15px] xl:text-[24px] text-black-custom">
-                                                    {rp.price}€
+                                                    {formatPrice(rp.price)}€
                                                 </span>
                                                 <button
                                                     onClick={() => addToCart({ id: rp._id, slug: rp.slug, name: rp.title, subtitle: rp.flavourName ? [rp.flavourName] : [], price: rp.price, image: rp.imageUrl, flavour: rp.flavourName || "" })}

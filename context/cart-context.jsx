@@ -2,11 +2,11 @@
 
 import CartDrawer from "@/components/shop/cart-drawer"
 
-export const CartProvider = ({ children }) => {
+export const CartProvider = ({ children, allBundles = [] }) => {
     return (
         <>
             {children}
-            <CartDrawer />
+            <CartDrawer allBundles={allBundles} />
         </>
     )
 }

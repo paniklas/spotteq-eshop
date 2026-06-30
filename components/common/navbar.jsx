@@ -149,7 +149,7 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
                                     <rect x="0.5" y="14" width="30" height="31" stroke="currentColor" />
                                 </svg>
                                 <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-sm font-aeonik leading-none" style={{ color: "inherit" }}>
-                                    {cartItems.length}
+                                    {cartItems.reduce((sum, i) => sum + i.qty, 0)}
                                 </span>
                             </button>
                         </motion.div>
