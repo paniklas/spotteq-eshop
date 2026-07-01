@@ -5,10 +5,22 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useLocale } from "next-intl";
 import { usePathname } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import MenuOverlay from "./navbar-menu-overlay";
 import { useHeaderStyles } from "@/hooks/use-header-styles";
 import { getStylesForCurrentPage } from "@/hooks/get-header-styles-current-page";
 import { useCartStore } from "@/store/cart-store";
+
+const AccountIcon = () => (
+    <svg width="18" height="21" viewBox="0 0 18 21" fill="none">
+        <path
+            d="M16.8636 20.5V18.2778C16.8636 17.099 16.4039 15.9686 15.5856 15.1351C14.7672 14.3016 13.6573 13.8333 12.5 13.8333H4.86364C3.70633 13.8333 2.59642 14.3016 1.77808 15.1351C0.959739 15.9686 0.5 17.099 0.5 18.2778V20.5M13.0455 4.94444C13.0455 7.39904 11.0918 9.38889 8.68182 9.38889C6.27185 9.38889 4.31818 7.39904 4.31818 4.94444C4.31818 2.48985 6.27185 0.5 8.68182 0.5C11.0918 0.5 13.0455 2.48985 13.0455 4.94444Z"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        />
+    </svg>
+);
 
 
 const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
@@ -18,6 +30,14 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
     const [scrolled, setScrolled] = useState(false);
     const [burgerHovered, setBurgerHovered] = useState(false);
     const { openCart, cartItems } = useCartStore();
+    const { isSignedIn, user } = useUser();
+
+    // Clerk email/password sign-up doesn't collect a name, so fall back gracefully.
+    const displayName =
+        user?.firstName ||
+        user?.username ||
+        user?.primaryEmailAddress?.emailAddress?.split("@")[0] ||
+        "";
     const sectionStyles = useHeaderStyles(); // { color, scrollBg } | null — section-level (home page only)
     const pageStyles = getStylesForCurrentPage(pathname, locale); // page-level fallback
 
@@ -113,17 +133,26 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
                             animate={{ color: iconColor }}
                             transition={{ duration: 0.3 }}
                         >
-                            {/* User account */}
-                            <button aria-label="Account" className="hidden md:flex items-center cursor-pointer">
-                                <svg width="18" height="21" viewBox="0 0 18 21" fill="none">
-                                    <path
-                                        d="M16.8636 20.5V18.2778C16.8636 17.099 16.4039 15.9686 15.5856 15.1351C14.7672 14.3016 13.6573 13.8333 12.5 13.8333H4.86364C3.70633 13.8333 2.59642 14.3016 1.77808 15.1351C0.959739 15.9686 0.5 17.099 0.5 18.2778V20.5M13.0455 4.94444C13.0455 7.39904 11.0918 9.38889 8.68182 9.38889C6.27185 9.38889 4.31818 7.39904 4.31818 4.94444C4.31818 2.48985 6.27185 0.5 8.68182 0.5C11.0918 0.5 13.0455 2.48985 13.0455 4.94444Z"
-                                        stroke="currentColor"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    />
-                                </svg>
-                            </button>
+                            {/* User account — first name + green check when signed in, sign-in otherwise */}
+                            <Link
+                                href={isSignedIn ? "/account" : "/sign-in"}
+                                aria-label={isSignedIn ? "My account" : "Sign in"}
+                                className="hidden md:flex items-center gap-2 cursor-pointer"
+                            >
+                                <span className="relative flex items-center">
+                                    <AccountIcon />
+                                    {isSignedIn && (
+                                        <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-teal-accent flex items-center justify-center">
+                                            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#000000" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M20 6 9 17l-5-5" />
+                                            </svg>
+                                        </span>
+                                    )}
+                                </span>
+                                {isSignedIn && displayName && (
+                                    <span className="font-aeonik text-[14px] leading-none">{displayName}</span>
+                                )}
+                            </Link>
 
                             {/* Search */}
                             <button aria-label="Search" className="hidden md:flex items-center cursor-pointer">
@@ -140,8 +169,12 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
                             </button>
 
                             {/* Cart */}
-                            <button aria-label="Cart" onClick={openCart} className="relative flex items-center cursor-pointer">
-                                <svg width="31" height="46" viewBox="0 0 31 46" fill="none">
+                            <button 
+                                aria-label="Cart" 
+                                onClick={openCart} 
+                                className="relative flex items-center cursor-pointer"
+                            >
+                                <svg width="25" height="40" viewBox="0 0 31 46" fill="none">
                                     <path
                                         d="M23 18.5V7.5C23 3.63401 19.866 0.5 16 0.5C12.134 0.5 9 3.63401 9 7.5V18.5"
                                         stroke="currentColor"

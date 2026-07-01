@@ -31,6 +31,11 @@ export const userInfoType = defineType({
       validation: Rule => Rule.required().email(),
     }),
     defineField({
+      name: 'phone',
+      title: 'Phone',
+      type: 'string',
+    }),
+    defineField({
       name: 'role',
       title: 'Role',
       type: 'string',
