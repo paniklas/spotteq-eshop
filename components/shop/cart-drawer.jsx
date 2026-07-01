@@ -146,7 +146,7 @@ const CartDrawer = ({ allBundles = [] }) => {
                 </div>
 
                 {/* Items */}
-                <div className="flex-1 overflow-y-auto px-8">
+                <div data-lenis-prevent className="flex-1 overflow-y-auto px-8">
                     {cartItems.length === 0 && (
                         <p className="font-aeonik text-[14px] xl:text-[22px] text-gray-text text-center mt-12">Your bag is empty.</p>
                     )}
