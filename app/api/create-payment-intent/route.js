@@ -1,5 +1,6 @@
 import "server-only";
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { stripe } from "@/lib/stripe";
 import { backendClient } from "@/sanity/lib/backendClient";
 
@@ -159,6 +160,17 @@ export async function POST(req) {
       stripeCustomerId = customer.id;
     }
 
+    // --- Link the order to a signed-in user's profile (guests stay guest) ---
+    const { userId } = await auth();
+    let userInfoRef = null;
+    if (userId) {
+      const userInfo = await backendClient.fetch(
+        `*[_type == "userInfo" && userId == $userId][0]{ _id }`,
+        { userId }
+      );
+      if (userInfo?._id) userInfoRef = userInfo._id;
+    }
+
     // --- Create Sanity order (pending — PI ID is set in the webhook after payment) ---
     const orderNumber  = generateOrderNumber();
     const customerName = `${customerInfo.firstName} ${customerInfo.lastName}`.trim();
@@ -167,7 +179,8 @@ export async function POST(req) {
       _type: "order",
       orderNumber,
       stripeCustomerId,
-      isGuestCheckout: true,
+      isGuestCheckout: !userInfoRef,
+      ...(userInfoRef ? { userInfo: { _type: "reference", _ref: userInfoRef } } : {}),
       customerName,
       email: customerInfo.email,
       products: orderProducts,

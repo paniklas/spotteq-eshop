@@ -94,7 +94,7 @@ const BILLING_FIELDS = [
 // Main component
 // ---------------------------------------------------------------------------
 
-const CheckoutForm = ({ shippingMethods = [] }) => {
+const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
   const locale = useLocale();
 
   const {
@@ -154,8 +154,31 @@ const CheckoutForm = ({ shippingMethods = [] }) => {
   const watchedPostalCode = useWatch({ control: form.control, name: "postalCode" });
   const watchedCity       = useWatch({ control: form.control, name: "city" });
 
-  // Pre-fill form with saved customer info after Zustand hydrates from localStorage
+  const accountPrefilled = useRef(false);
   const prefilled = useRef(false);
+
+  // Prefill from the signed-in user's saved profile (takes precedence over the
+  // localStorage guest cache). Runs once on mount when accountDefaults is present.
+  useEffect(() => {
+    if (accountPrefilled.current || !accountDefaults) return;
+    accountPrefilled.current = true;
+    prefilled.current = true; // skip the guest savedInfo prefill below
+    form.reset({
+      ...form.getValues(),
+      email:      accountDefaults.email      ?? form.getValues("email"),
+      firstName:  accountDefaults.firstName  ?? "",
+      lastName:   accountDefaults.lastName   ?? "",
+      company:    accountDefaults.company    ?? "",
+      address:    accountDefaults.address    ?? "",
+      apartment:  accountDefaults.apartment  ?? "",
+      city:       accountDefaults.city       ?? "",
+      postalCode: accountDefaults.postalCode ?? "",
+      country:    accountDefaults.country    || "GR",
+      phone:      accountDefaults.phone      ?? "",
+    });
+  }, [accountDefaults, form]);
+
+  // Pre-fill form with saved customer info after Zustand hydrates from localStorage
   useEffect(() => {
     if (prefilled.current || !savedInfo) return;
     prefilled.current = true;
