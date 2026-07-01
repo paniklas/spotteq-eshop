@@ -24,7 +24,10 @@ export const getOrCreateUserInfo = cache(async () => {
     );
     if (existing) return existing;
 
-    return backendClient.create({
+    // Deterministic _id keyed by Clerk userId + createIfNotExists makes creation
+    // idempotent under concurrent requests (two misses can't create duplicates).
+    return backendClient.createIfNotExists({
+        _id: `userInfo.${userId}`,
         _type: "userInfo",
         userId,
         email,

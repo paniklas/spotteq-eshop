@@ -40,7 +40,7 @@
         "lastName": "Last name",
         "createAccount": "Create account",
         "verifyEmail": "Check your email",
-        "verifyEmailDesc": "We sent a verification code to your email address.",
+        "verifyEmailDesc": "We sent a 6-digit code to",
         "verifyAndContinue": "Verify and continue",
         "resendCode": "Resend code",
         "resendIn": "Resend in {seconds}s",
@@ -49,8 +49,7 @@
         "signInIncomplete": "Sign in could not be completed.",
         "verificationFailed": "Verification failed. Please try again.",
         "sendingTo": "We'll send a reset link to",
-        "resetPasswordDesc": "Enter the code from your email and your new password.",
-        "verifyEmailDesc": "We sent a 6-digit code to"
+        "resetPasswordDesc": "Enter the code from your email and your new password."
     },
     "account": {
         "title": "My Account",

@@ -40,7 +40,7 @@
         "lastName": "Επώνυμο",
         "createAccount": "Δημιουργία λογαριασμού",
         "verifyEmail": "Ελέγξτε το email σας",
-        "verifyEmailDesc": "Στείλαμε κωδικό επαλήθευσης στο email σας.",
+        "verifyEmailDesc": "Στείλαμε 6-ψήφιο κωδικό στο",
         "verifyAndContinue": "Επαλήθευση και συνέχεια",
         "resendCode": "Εκ νέου αποστολή",
         "resendIn": "Εκ νέου αποστολή σε {seconds}δ",
@@ -49,8 +49,7 @@
         "signInIncomplete": "Η σύνδεση δεν ολοκληρώθηκε.",
         "verificationFailed": "Η επαλήθευση απέτυχε. Δοκιμάστε ξανά.",
         "sendingTo": "Θα στείλουμε σύνδεσμο επαναφοράς στο",
-        "resetPasswordDesc": "Εισάγετε τον κωδικό από το email σας και τον νέο κωδικό πρόσβασης.",
-        "verifyEmailDesc": "Στείλαμε 6-ψήφιο κωδικό στο"
+        "resetPasswordDesc": "Εισάγετε τον κωδικό από το email σας και τον νέο κωδικό πρόσβασης."
     },
     "account": {
         "title": "Ο λογαριασμός μου",

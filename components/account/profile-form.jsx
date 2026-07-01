@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect, useRef } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -32,14 +32,16 @@ const ProfileForm = ({ defaultPhone = "" }) => {
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [phone, setPhone] = useState(defaultPhone);
-    const [seeded, setSeeded] = useState(false);
+    const seededRef = useRef(false);
 
-    // Seed name fields once Clerk user is loaded
-    if (isLoaded && user && !seeded) {
-        setFirstName(user.firstName ?? "");
-        setLastName(user.lastName ?? "");
-        setSeeded(true);
-    }
+    // Seed name fields once, after the Clerk user finishes loading.
+    useEffect(() => {
+        if (isLoaded && user && !seededRef.current) {
+            setFirstName(user.firstName ?? "");
+            setLastName(user.lastName ?? "");
+            seededRef.current = true;
+        }
+    }, [isLoaded, user]);
 
     const email = user?.primaryEmailAddress?.emailAddress ?? "";
 
