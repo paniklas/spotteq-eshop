@@ -110,7 +110,10 @@ export default function SignInForm() {
                 await setActive({ session: result.createdSessionId });
                 router.push(`/${locale}/account`);
             } else {
-                setError(t('signInIncomplete'));
+                // TEMP diagnostic: surface Clerk's real status to distinguish a
+                // dev-instance-on-hosted-domain failure from a config issue.
+                console.error('[sign-in] non-complete result:', result);
+                setError(`${t('signInIncomplete')} [status: ${result.status}]`);
             }
         } catch (err) {
             setError(clerkError(err));
