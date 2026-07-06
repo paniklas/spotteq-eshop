@@ -72,7 +72,7 @@ const CartDrawer = ({ allBundles = [] }) => {
     const [showModal, setShowModal] = useState(false)
     const [incrementingIds, setIncrementingIds] = useState({})
     const router = useRouter()
-    const { isSignedIn } = useUser()
+    const { isLoaded: userLoaded, isSignedIn } = useUser()
 
     const subTotal = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0)
     const discountAmount = couponDiscount > 0 ? (subTotal * couponDiscount) / 100 : 0
@@ -99,6 +99,7 @@ const CartDrawer = ({ allBundles = [] }) => {
     }
 
     const handleCheckoutClick = () => {
+        if (!userLoaded) return
         if (isSignedIn) {
             closeCart()
             router.push("/checkout")
@@ -360,7 +361,8 @@ const CartDrawer = ({ allBundles = [] }) => {
                     {/* Checkout */}
                     <button
                         onClick={handleCheckoutClick}
-                        className="w-full h-14 bg-black-custom font-aeonik text-[13px] xl:text-[16px] uppercase text-white-custom rounded-[18px] hover:bg-gray-text transition-colors duration-300 cursor-pointer flex items-center justify-center"
+                        disabled={!userLoaded}
+                        className="w-full h-14 bg-black-custom font-aeonik text-[13px] xl:text-[16px] uppercase text-white-custom rounded-[18px] hover:bg-gray-text transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
                     >
                         PROCEED TO CHECKOUT
                     </button>

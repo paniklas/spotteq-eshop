@@ -90,7 +90,7 @@ const PaymentForm = ({ orderNumber, locale, customerInfo, onBack }) => {
         type="button"
         onClick={onBack}
         disabled={processing}
-        className="font-aeonik text-[13px] text-gray-text underline text-center cursor-pointer hover:text-black-custom transition-colors disabled:opacity-40"
+        className="font-aeonik text-[13px] text-gray-text underline text-center cursor-pointer hover:text-black-custom transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
         Return to delivery details
       </button>

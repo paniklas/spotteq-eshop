@@ -22,7 +22,7 @@ export default clerkMiddleware(async (auth, request) => {
     if (pathname.startsWith('/sso-callback')) return NextResponse.next();
     // API routes need clerkMiddleware() to run so auth() works inside them,
     // but must bypass next-intl's locale routing/redirects.
-    if (pathname.startsWith('/api')) return NextResponse.next();
+    if (pathname === '/api' || pathname.startsWith('/api/')) return NextResponse.next();
 
     if (isProtectedRoute(request)) {
         const { userId } = await auth();
