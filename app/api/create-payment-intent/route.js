@@ -1,4 +1,5 @@
 import "server-only";
+import { z } from "zod";
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { stripe } from "@/lib/stripe";
@@ -10,9 +11,42 @@ function generateOrderNumber() {
   return `SPQ-${ymd}-${rand}`;
 }
 
+const cartItemSchema = z.object({
+  id: z.string().min(1),
+  type: z.enum(["product", "bundle"]).optional(),
+  qty: z.number().int().min(1).max(99),
+  selectedFlavour: z.string().optional(),
+});
+
+const bodySchema = z.object({
+  items: z.array(cartItemSchema).min(1).max(50),
+  shippingMethodId: z.string().min(1),
+  couponId: z.string().optional().nullable(),
+  couponCode: z.string().optional().nullable(),
+  customerInfo: z.object({
+    email: z.string().email(),
+    firstName: z.string().min(1),
+    lastName: z.string().min(1),
+    address: z.string().optional(),
+    apartment: z.string().optional(),
+    city: z.string().optional(),
+    postalCode: z.string().optional(),
+    country: z.string().optional(),
+    phone: z.string().optional(),
+  }),
+  boxNowLockerId: z.string().optional().nullable(),
+  boxNowLockerName: z.string().optional().nullable(),
+  boxNowLockerAddress: z.string().optional().nullable(),
+});
+
 export async function POST(req) {
   try {
-    const body = await req.json();
+    const rawBody = await req.json();
+    const parsed = bodySchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid checkout request." }, { status: 400 });
+    }
+
     const {
       items,
       shippingMethodId,
@@ -22,18 +56,7 @@ export async function POST(req) {
       boxNowLockerId,
       boxNowLockerName,
       boxNowLockerAddress,
-    } = body;
-
-    // --- Basic validation ---
-    if (!items?.length) {
-      return NextResponse.json({ error: "Cart is empty." }, { status: 400 });
-    }
-    if (!shippingMethodId) {
-      return NextResponse.json({ error: "Shipping method is required." }, { status: 400 });
-    }
-    if (!customerInfo?.email || !customerInfo?.firstName || !customerInfo?.lastName) {
-      return NextResponse.json({ error: "Customer information is incomplete." }, { status: 400 });
-    }
+    } = parsed.data;
 
     const productItems = items.filter((i) => i.type !== "bundle");
     const bundleItems  = items.filter((i) => i.type === "bundle");
@@ -222,6 +245,8 @@ export async function POST(req) {
       amount:   amountInCents,
       currency: "eur",
       customer: stripeCustomerId,
+      // Card only — Apple Pay / Google Pay are wallets on top of "card" and
+      // are surfaced automatically by the Payment Element, not separate types.
       payment_method_types: ["card"],
       metadata: {
         orderNumber,

@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react"
 import Image from "next/image"
 import { Trash2, Check, X, ArrowRight } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useCartStore } from "@/store/cart-store"
 import { formatPrice } from "@/utils/formatPrice"
@@ -30,7 +31,7 @@ const CheckoutModal = ({ onClose, onCloseAll, onGuest }) => (
                 </p>
                 <div className="flex flex-col gap-3">
                     <Link
-                        href="/login"
+                        href="/sign-in"
                         onClick={onCloseAll}
                         className="w-full h-14 bg-black-custom font-aeonik text-[13px] xl:text-[15px] uppercase text-white-custom rounded-[18px] hover:bg-gray-text transition-colors duration-300 flex items-center justify-center"
                     >
@@ -71,6 +72,7 @@ const CartDrawer = ({ allBundles = [] }) => {
     const [showModal, setShowModal] = useState(false)
     const [incrementingIds, setIncrementingIds] = useState({})
     const router = useRouter()
+    const { isLoaded: userLoaded, isSignedIn } = useUser()
 
     const subTotal = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0)
     const discountAmount = couponDiscount > 0 ? (subTotal * couponDiscount) / 100 : 0
@@ -96,7 +98,15 @@ const CartDrawer = ({ allBundles = [] }) => {
         setCouponError("")
     }
 
-    const handleCheckoutClick = () => setShowModal(true)
+    const handleCheckoutClick = () => {
+        if (!userLoaded) return
+        if (isSignedIn) {
+            closeCart()
+            router.push("/checkout")
+            return
+        }
+        setShowModal(true)
+    }
     const handleModalClose = () => setShowModal(false)
     const handleCloseAll = () => { setShowModal(false); closeCart() }
     const handleGuest = () => { setShowModal(false); closeCart(); router.push("/checkout") }
@@ -351,7 +361,8 @@ const CartDrawer = ({ allBundles = [] }) => {
                     {/* Checkout */}
                     <button
                         onClick={handleCheckoutClick}
-                        className="w-full h-14 bg-black-custom font-aeonik text-[13px] xl:text-[16px] uppercase text-white-custom rounded-[18px] hover:bg-gray-text transition-colors duration-300 cursor-pointer flex items-center justify-center"
+                        disabled={!userLoaded}
+                        className="w-full h-14 bg-black-custom font-aeonik text-[13px] xl:text-[16px] uppercase text-white-custom rounded-[18px] hover:bg-gray-text transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
                     >
                         PROCEED TO CHECKOUT
                     </button>

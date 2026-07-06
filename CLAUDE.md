@@ -151,7 +151,7 @@ When instructions conflict, follow this order:
 ### Constraints
 
 - Checkout supports both guest and authenticated users
-- Authentication not yet implemented — planned (likely Clerk)
+- Authentication implemented via Clerk (`/sign-in`, `/sign-up`, `/account` routes; custom forms using `@clerk/nextjs/legacy` hooks, no Clerk-hosted UI)
 - Products and bundles both purchasable; inventory tracked per product
 - Coupon system is email-tied with max-uses and auto-deactivation
 - Shipping methods managed in Sanity (not hardcoded)

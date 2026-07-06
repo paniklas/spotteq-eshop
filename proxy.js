@@ -20,6 +20,9 @@ export default clerkMiddleware(async (auth, request) => {
     // Sanity Studio lives at the root and must bypass both auth and locale handling.
     if (pathname.startsWith('/studio-spotteq')) return NextResponse.next();
     if (pathname.startsWith('/sso-callback')) return NextResponse.next();
+    // API routes need clerkMiddleware() to run so auth() works inside them,
+    // but must bypass next-intl's locale routing/redirects.
+    if (pathname === '/api' || pathname.startsWith('/api/')) return NextResponse.next();
 
     if (isProtectedRoute(request)) {
         const { userId } = await auth();
@@ -42,7 +45,8 @@ export const config = {
         '/',
         // Apply locale prefix to all locale-prefixed routes
         '/(el|en)/:path*',
-        // Apply to all routes except internal Next.js paths, static files, the studio, and API routes
-        '/((?!_next|_vercel|studio-spotteq|api|.*\\..*).*)',
+        // Apply to all routes except internal Next.js paths, static files, and the studio
+        // (API routes are matched here too so clerkMiddleware() runs, but are bypassed above)
+        '/((?!_next|_vercel|studio-spotteq|.*\\..*).*)',
     ],
 };
