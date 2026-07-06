@@ -781,7 +781,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="h-14 w-full bg-black-custom font-aeonik text-[16px] uppercase text-white-custom rounded-xl hover:bg-gray-text transition-colors duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="h-14 w-full bg-black-custom font-aeonik text-[16px] uppercase text-white-custom rounded-xl hover:bg-gray-text cursor-pointer transition-colors duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {isPending ? "Checking…" : "Continue to Payment"}
                 </button>
