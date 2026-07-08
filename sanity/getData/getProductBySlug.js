@@ -36,6 +36,7 @@ export const getProductBySlug = cache(async (slug, locale) => {
                 "flavourName": flavourName[language == $locale][0].value,
                 "slug": slugs[$locale].current,
                 price,
+                salePrice,
                 image
             },
             categories[]-> {

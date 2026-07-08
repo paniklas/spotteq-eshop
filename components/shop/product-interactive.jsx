@@ -56,6 +56,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
 
     const cartId = makeCartId(product._id, product.flavourName ?? "")
     const cartQty = cartItems.find((i) => i.cartId === cartId)?.qty ?? 0
+    const effectivePrice = product.salePrice ?? product.price
     const remaining = product.inventory != null ? product.inventory - cartQty : Infinity
     const atMax = remaining <= 0
     const incrementDisabled = quantity >= remaining
@@ -236,8 +237,15 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
 
                         {/* Price + Qty + Stock + Wishlist */}
                         <div className="flex items-center gap-4 flex-wrap">
-                            <span className="font-tt text-[32px] text-black-custom">
-                                {formatPrice(product.price)}€
+                            <span className="flex items-baseline gap-2">
+                                <span className="font-tt text-[32px] text-black-custom">
+                                    {formatPrice(effectivePrice)}€
+                                </span>
+                                {product.salePrice && (
+                                    <span className="font-tt text-[18px] text-black-custom/50 line-through">
+                                        {formatPrice(product.price)}€
+                                    </span>
+                                )}
                             </span>
 
                             {/* Quantity stepper */}
@@ -296,7 +304,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                                         slug: product.slug,
                                         name: product.title,
                                         subtitle: product.subtitle,
-                                        price: product.price,
+                                        price: effectivePrice,
                                         image: displayImages[0] ?? "",
                                         flavour: product.flavourName ?? "",
                                     }, quantity)
@@ -411,7 +419,9 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                                     Complete Your Routine
                                 </p>
                                 <div className="flex gap-4">
-                                    {relatedProducts.map((rp) => (
+                                    {relatedProducts.map((rp) => {
+                                        const rpEffectivePrice = rp.salePrice ?? rp.price
+                                        return (
                                         <div key={rp._id} className="flex-1 flex flex-col gap-3">
                                             <div className="relative aspect-square flex flex-col items-center justify-end gap-1 pb-3">
                                                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[65%] aspect-375/572 bg-gray-soft rounded-full z-0" />
@@ -434,18 +444,26 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                                                 )}
                                             </div>
                                             <div className="flex justify-center items-center gap-3">
-                                                <span className="font-aeonik text-[15px] xl:text-[24px] text-black-custom">
-                                                    {formatPrice(rp.price)}€
+                                                <span className="flex items-baseline gap-1.5">
+                                                    <span className="font-aeonik text-[15px] xl:text-[24px] text-black-custom">
+                                                        {formatPrice(rpEffectivePrice)}€
+                                                    </span>
+                                                    {rp.salePrice && (
+                                                        <span className="font-aeonik text-[11px] xl:text-[14px] text-black-custom/50 line-through">
+                                                            {formatPrice(rp.price)}€
+                                                        </span>
+                                                    )}
                                                 </span>
                                                 <button
-                                                    onClick={() => addToCart({ id: rp._id, slug: rp.slug, name: rp.title, subtitle: rp.flavourName ? [rp.flavourName] : [], price: rp.price, image: rp.imageUrl, flavour: rp.flavourName || "" })}
+                                                    onClick={() => addToCart({ id: rp._id, slug: rp.slug, name: rp.title, subtitle: rp.flavourName ? [rp.flavourName] : [], price: rpEffectivePrice, image: rp.imageUrl, flavour: rp.flavourName || "" })}
                                                     className="px-8 h-9 bg-black-custom rounded-full font-aeonik text-[12px] xl:text-[16px] uppercase text-white-custom hover:bg-gray-text transition-colors duration-300 cursor-pointer"
                                                 >
                                                     ADD TO BAG
                                                 </button>
                                             </div>
                                         </div>
-                                    ))}
+                                        )
+                                    })}
                                 </div>
                             </div>
                         )}

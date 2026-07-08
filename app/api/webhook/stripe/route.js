@@ -109,7 +109,11 @@ async function handlePaymentSucceeded(paymentIntent) {
         .commit();
     }
   } catch (err) {
-    // Non-fatal: log and continue — the Stripe webhook must return 200
+    // Non-fatal: log and continue — the Stripe webhook must return 200.
+    // Stripe will not retry this step on failure, so the order is left with no
+    // boxNowParcelId and no automatic recovery.
+    // TODO: add a Sanity Studio document action to manually retry createDeliveryRequest()
+    // for orders stuck with shippingProvider "boxnow" and no boxNowParcelId.
     console.error("[webhook] BoxNow delivery request failed for order", orderId, err);
   }
 }

@@ -30,6 +30,7 @@ const ProductCard = ({ product, priority = false }) => {
     const cartId = makeCartId(product._id)
     const cartQty = cartItems.find((i) => i.cartId === cartId)?.qty ?? 0
     const atMax = product.inventory != null && cartQty >= product.inventory
+    const effectivePrice = product.salePrice ?? product.price
 
     const handleAddToCart = async () => {
         if (atMax) return
@@ -40,7 +41,7 @@ const ProductCard = ({ product, priority = false }) => {
             name: productName,
             slug: product.slug ?? productSlug,
             subtitle: [product.subtitleLine1].filter(Boolean),
-            price: product.price,
+            price: effectivePrice,
             image: imageSrc,
             flavour: product.flavourName || "",
         })
@@ -105,7 +106,12 @@ const ProductCard = ({ product, priority = false }) => {
                     {productName}
                 </h3>
                 {/* Price */}
-                <span className="font-tt text-[24px] text-black-custom font-semibold">{formatPrice(product.price)}€</span>
+                <span className="flex items-baseline gap-2">
+                    <span className="font-tt text-[24px] text-black-custom font-semibold">{formatPrice(effectivePrice)}€</span>
+                    {product.salePrice && (
+                        <span className="font-tt text-[15px] text-black-custom/50 line-through">{formatPrice(product.price)}€</span>
+                    )}
+                </span>
             </div>
 
             {/* Divider */}

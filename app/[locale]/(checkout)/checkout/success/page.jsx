@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { getOrder } from "@/sanity/getData/getOrder";
 import OrderSuccess from "@/components/checkout/order-success";
@@ -10,7 +11,10 @@ const SuccessPage = async ({ params, searchParams }) => {
 
   if (!order_number) notFound();
 
-  const order = await getOrder(order_number, locale);
+  const cookieStore = await cookies();
+  const viewToken = cookieStore.get(`order_token_${order_number}`)?.value ?? "";
+
+  const order = await getOrder(order_number, viewToken, locale);
 
   return (
     <section className="w-full min-h-screen bg-gray-light py-16 xl:py-32">
