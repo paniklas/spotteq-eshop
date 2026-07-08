@@ -2,6 +2,7 @@
 
 import { useTransition, useState, useEffect, useRef, useCallback } from "react";
 import { useForm, useWatch } from "react-hook-form";
+import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
@@ -125,7 +126,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
   const [boxNowLockerError, setBoxNowLockerError] = useState(false);
 
   // Mirrors the total calculation in order-summary.jsx so the button reflects the actual charge
-  const activeShippingMethod = shippingMethods.find((m) => m._id === selectedMethodId) ?? null;
+  const activeShippingMethod = shippingMethods.find((m) => m._id === selectedMethodId) ?? shippingMethods[0] ?? null;
   const subTotal = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
   const discountAmount = couponDiscount > 0 ? (subTotal * couponDiscount) / 100 : 0;
   const discountedSubTotal = subTotal - discountAmount;
@@ -264,9 +265,10 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
         if (accountDefaults) {
           // Logged-in users: accountDefaults (from the Sanity profile) always wins over
           // the guest localStorage cache on the next visit, so saving locally alone was
-          // a no-op for them — persist to the profile instead. Non-fatal on failure.
+          // a no-op for them — persist to the profile instead. Non-fatal on failure —
+          // checkout still proceeds, but the customer is told the address wasn't saved.
           try {
-            await updateUserShippingInfo({
+            const result = await updateUserShippingInfo({
               firstName: data.firstName,
               lastName: data.lastName,
               company: data.company ?? "",
@@ -277,8 +279,13 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
               country: data.country,
               phone: data.phone,
             });
+            if (!result?.ok) {
+              console.error("[checkout] Failed to save shipping info to profile:", result?.error);
+              toast.error("Could not save your address for next time, but your order will still go through.");
+            }
           } catch (err) {
             console.error("[checkout] Failed to save shipping info to profile:", err);
+            toast.error("Could not save your address for next time, but your order will still go through.");
           }
         } else {
           saveCustomerInfo({
