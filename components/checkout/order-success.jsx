@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
-import { CheckCircle, Clock, XCircle, PackageSearch, MapPin } from "lucide-react";
+import { CheckCircle, Clock, XCircle, PackageSearch, MapPin, Loader2 } from "lucide-react";
 import { useCartStore } from "@/store/cart-store";
 
 // ---------------------------------------------------------------------------
@@ -156,10 +156,17 @@ const OrderPaid = ({ order, orderNumber, locale }) => {
             {order.boxNowLockerName && <p className="font-semibold">{order.boxNowLockerName}</p>}
             {order.boxNowLockerAddress && <p className="text-gray-text">{order.boxNowLockerAddress}</p>}
           </div>
-          {order.boxNowParcelId && (
+          {order.boxNowParcelId ? (
             <div className="rounded-lg bg-gray-light px-4 py-3">
               <p className="font-aeonik text-[12px] text-gray-text uppercase mb-1">Tracking / Parcel ID</p>
               <p className="font-tt text-[15px] text-black-custom">{order.boxNowParcelId}</p>
+            </div>
+          ) : (
+            <div className="rounded-lg bg-gray-light px-4 py-3 flex items-center gap-2">
+              <Loader2 className="w-4 h-4 text-gray-text animate-spin shrink-0" strokeWidth={1.5} />
+              <p className="font-aeonik text-[13px] text-gray-text">
+                Awaiting BoxNow parcel ID — this can take a few seconds. Refresh this page to check again in a minute.
+              </p>
             </div>
           )}
           <p className="mt-4 font-aeonik text-[13px] text-gray-text">
@@ -192,7 +199,7 @@ const OrderPending = ({ orderNumber }) => (
   </div>
 );
 
-const OrderFailed = ({ orderNumber, locale }) => (
+const OrderFailed = ({ orderNumber }) => (
   <div className="flex flex-col items-center gap-6 text-center py-12">
     <XCircle className="w-16 h-16 text-red-400" strokeWidth={1.5} />
     <h1 className="font-aeonik text-[28px] text-black-custom">Payment failed</h1>
@@ -201,7 +208,7 @@ const OrderFailed = ({ orderNumber, locale }) => (
       <span className="font-semibold text-black-custom">{orderNumber}</span>. No charge was made.
     </p>
     <Link
-      href={`/${locale}/checkout`}
+      href="/checkout"
       className="h-14 px-12 bg-black-custom font-aeonik text-[15px] uppercase text-white-custom rounded-xl hover:bg-gray-text transition-colors duration-300 flex items-center"
     >
       Try Again
@@ -209,7 +216,7 @@ const OrderFailed = ({ orderNumber, locale }) => (
   </div>
 );
 
-const OrderNotFound = ({ locale }) => (
+const OrderNotFound = () => (
   <div className="flex flex-col items-center gap-6 text-center py-12">
     <PackageSearch className="w-16 h-16 text-gray-text" strokeWidth={1.5} />
     <h1 className="font-aeonik text-[28px] text-black-custom">Order not found</h1>
@@ -217,7 +224,7 @@ const OrderNotFound = ({ locale }) => (
       We could not find this order. If you believe this is an error, please contact support.
     </p>
     <Link
-      href={`/${locale}/shop/shop-all`}
+      href="/shop/shop-all"
       className="h-14 px-12 bg-black-custom font-aeonik text-[15px] uppercase text-white-custom rounded-xl hover:bg-gray-text transition-colors duration-300 flex items-center"
     >
       Back to Shop
@@ -236,7 +243,7 @@ const OrderSuccess = ({ order, orderNumber, locale, paymentConfirmed }) => {
     if (order?.status === "paid") clearCart();
   }, [order?.status, clearCart]);
 
-  if (!order) return <OrderNotFound locale={locale} />;
+  if (!order) return <OrderNotFound />;
 
   if (order.status === "paid" || paymentConfirmed) {
     return <OrderPaid order={order} orderNumber={orderNumber} locale={locale} />;
@@ -246,7 +253,7 @@ const OrderSuccess = ({ order, orderNumber, locale, paymentConfirmed }) => {
     return <OrderPending orderNumber={orderNumber} />;
   }
 
-  return <OrderFailed orderNumber={orderNumber} locale={locale} />;
+  return <OrderFailed orderNumber={orderNumber} />;
 };
 
 export default OrderSuccess;

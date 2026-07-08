@@ -1,6 +1,8 @@
 import "server-only";
+import { randomBytes } from "crypto";
 import { z } from "zod";
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { auth } from "@clerk/nextjs/server";
 import { stripe } from "@/lib/stripe";
 import { backendClient } from "@/sanity/lib/backendClient";
@@ -9,6 +11,12 @@ function generateOrderNumber() {
   const ymd = new Date().toISOString().slice(0, 10).replace(/-/g, "");
   const rand = Math.random().toString(36).slice(2, 7).toUpperCase();
   return `SPQ-${ymd}-${rand}`;
+}
+
+// Secret required (alongside the guessable orderNumber) to view the order on
+// the checkout success page — prevents PII exposure via order number enumeration.
+function generateViewToken() {
+  return randomBytes(24).toString("base64url");
 }
 
 const cartItemSchema = z.object({
@@ -196,11 +204,13 @@ export async function POST(req) {
 
     // --- Create Sanity order (pending — PI ID is set in the webhook after payment) ---
     const orderNumber  = generateOrderNumber();
+    const viewToken     = generateViewToken();
     const customerName = `${customerInfo.firstName} ${customerInfo.lastName}`.trim();
 
     const sanityOrder = await backendClient.create({
       _type: "order",
       orderNumber,
+      viewToken,
       stripeCustomerId,
       isGuestCheckout: !userInfoRef,
       ...(userInfoRef ? { userInfo: { _type: "reference", _ref: userInfoRef } } : {}),
@@ -254,6 +264,18 @@ export async function POST(req) {
         couponId:    validatedCouponId ?? "",
         couponEmail: customerInfo.email,
       },
+    });
+
+    // Order-scoped, httpOnly cookie — proves the browser that started this checkout
+    // is the one viewing the success page, without putting the secret in the URL
+    // (URLs leak via referrer headers, browser history, and screenshots).
+    const cookieStore = await cookies();
+    cookieStore.set(`order_token_${orderNumber}`, viewToken, {
+      httpOnly: true,
+      secure:   process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path:     "/",
+      maxAge:   60 * 60 * 24 * 7, // 7 days
     });
 
     return NextResponse.json({

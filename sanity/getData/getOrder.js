@@ -1,8 +1,10 @@
 import { client } from '../lib/client'
 
-export async function getOrder(orderNumber, locale) {
+export async function getOrder(orderNumber, viewToken, locale) {
+  if (!viewToken) return null
+
   const query = `
-    *[_type == 'order' && orderNumber == $orderNumber][0] {
+    *[_type == 'order' && orderNumber == $orderNumber && viewToken == $viewToken][0] {
       _id,
       orderNumber,
       customerName,
@@ -55,7 +57,7 @@ export async function getOrder(orderNumber, locale) {
   `
   return client.fetch(
     query,
-    { orderNumber, locale },
+    { orderNumber, viewToken, locale },
     { next: { tags: [`order:${orderNumber}`], revalidate: 0 } }
   )
 }

@@ -2,13 +2,16 @@
 
 import { useTransition, useState, useEffect, useRef, useCallback } from "react";
 import { useForm, useWatch } from "react-hook-form";
+import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useCartStore } from "@/store/cart-store";
 import { useCustomerStore } from "@/store/customer-store";
 import { validateCartInventory } from "@/app/actions/cart";
+import { updateUserShippingInfo } from "@/app/actions/updateUserShippingInfo";
 import { checkoutSchema } from "@/lib/checkoutSchema";
+import { formatPrice } from "@/utils/formatPrice";
 import {
   Form,
   FormControl,
@@ -100,6 +103,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
   const {
     cartItems,
     appliedCoupon,
+    couponDiscount,
     setCheckoutEmail,
     setSelectedShippingMethod,
   } = useCartStore();
@@ -121,33 +125,43 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
   const [boxNowLockerInfo, setBoxNowLockerInfo] = useState(null);
   const [boxNowLockerError, setBoxNowLockerError] = useState(false);
 
+  // Mirrors the total calculation in order-summary.jsx so the button reflects the actual charge
+  const activeShippingMethod = shippingMethods.find((m) => m._id === selectedMethodId) ?? shippingMethods[0] ?? null;
+  const subTotal = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const discountAmount = couponDiscount > 0 ? (subTotal * couponDiscount) / 100 : 0;
+  const discountedSubTotal = subTotal - discountAmount;
+  const freeThreshold = activeShippingMethod?.freeShippingMinimum ?? 0;
+  const shippingPrice = activeShippingMethod?.price ?? 0;
+  const shippingCost = freeThreshold > 0 && subTotal >= freeThreshold ? 0 : shippingPrice;
+  const total = discountedSubTotal + shippingCost;
+
   const form = useForm({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
-      email:               "",
-      emailMarketing:      false,
-      firstName:           "",
-      lastName:            "",
-      company:             "",
-      address:             "",
-      apartment:           "",
-      city:                "",
-      postalCode:          "",
-      country:             "GR",
-      phone:               "",
-      saveInfo:            false,
+      email: "",
+      emailMarketing: false,
+      firstName: "",
+      lastName: "",
+      company: "",
+      address: "",
+      apartment: "",
+      city: "",
+      postalCode: "",
+      country: "GR",
+      phone: "",
+      saveInfo: false,
       useShippingAsBilling: true,
-      billingFirstName:    "",
-      billingLastName:     "",
-      billingCompany:      "",
-      billingAddress:      "",
-      billingApartment:    "",
-      billingCity:         "",
-      billingPostalCode:   "",
-      billingCountry:      "GR",
-      billingPhone:        "",
-      shippingMethodId:    shippingMethods.length === 1 ? shippingMethods[0]._id : "",
-      agreeTerms:          false,
+      billingFirstName: "",
+      billingLastName: "",
+      billingCompany: "",
+      billingAddress: "",
+      billingApartment: "",
+      billingCity: "",
+      billingPostalCode: "",
+      billingCountry: "GR",
+      billingPhone: "",
+      shippingMethodId: shippingMethods.length === 1 ? shippingMethods[0]._id : "",
+      agreeTerms: false,
     },
   });
 
@@ -165,16 +179,16 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
     prefilled.current = true; // skip the guest savedInfo prefill below
     form.reset({
       ...form.getValues(),
-      email:      accountDefaults.email      ?? form.getValues("email"),
-      firstName:  accountDefaults.firstName  ?? "",
-      lastName:   accountDefaults.lastName   ?? "",
-      company:    accountDefaults.company    ?? "",
-      address:    accountDefaults.address    ?? "",
-      apartment:  accountDefaults.apartment  ?? "",
-      city:       accountDefaults.city       ?? "",
+      email: accountDefaults.email ?? form.getValues("email"),
+      firstName: accountDefaults.firstName ?? "",
+      lastName: accountDefaults.lastName ?? "",
+      company: accountDefaults.company ?? "",
+      address: accountDefaults.address ?? "",
+      apartment: accountDefaults.apartment ?? "",
+      city: accountDefaults.city ?? "",
       postalCode: accountDefaults.postalCode ?? "",
-      country:    accountDefaults.country    || "GR",
-      phone:      accountDefaults.phone      ?? "",
+      country: accountDefaults.country || "GR",
+      phone: accountDefaults.phone ?? "",
     });
   }, [accountDefaults, form]);
 
@@ -184,16 +198,16 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
     prefilled.current = true;
     form.reset({
       ...form.getValues(),
-      firstName:      savedInfo.firstName      ?? "",
-      lastName:       savedInfo.lastName       ?? "",
-      company:        savedInfo.company        ?? "",
-      address:        savedInfo.address        ?? "",
-      apartment:      savedInfo.apartment      ?? "",
-      city:           savedInfo.city           ?? "",
-      postalCode:     savedInfo.postalCode     ?? "",
-      phone:          savedInfo.phone          ?? "",
+      firstName: savedInfo.firstName ?? "",
+      lastName: savedInfo.lastName ?? "",
+      company: savedInfo.company ?? "",
+      address: savedInfo.address ?? "",
+      apartment: savedInfo.apartment ?? "",
+      city: savedInfo.city ?? "",
+      postalCode: savedInfo.postalCode ?? "",
+      phone: savedInfo.phone ?? "",
       emailMarketing: savedInfo.emailMarketing ?? false,
-      saveInfo:       true,
+      saveInfo: true,
     });
   }, [savedInfo, form]);
 
@@ -248,27 +262,54 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
       };
 
       if (data.saveInfo) {
-        saveCustomerInfo({
-          firstName:      data.firstName,
-          lastName:       data.lastName,
-          company:        data.company        ?? "",
-          address:        data.address,
-          apartment:      data.apartment      ?? "",
-          city:           data.city,
-          postalCode:     data.postalCode,
-          country:        data.country,
-          phone:          data.phone,
-          emailMarketing: data.emailMarketing,
-        });
-      } else {
+        if (accountDefaults) {
+          // Logged-in users: accountDefaults (from the Sanity profile) always wins over
+          // the guest localStorage cache on the next visit, so saving locally alone was
+          // a no-op for them — persist to the profile instead. Non-fatal on failure —
+          // checkout still proceeds, but the customer is told the address wasn't saved.
+          try {
+            const result = await updateUserShippingInfo({
+              firstName: data.firstName,
+              lastName: data.lastName,
+              company: data.company ?? "",
+              address: data.address,
+              apartment: data.apartment ?? "",
+              city: data.city,
+              postalCode: data.postalCode,
+              country: data.country,
+              phone: data.phone,
+            });
+            if (!result?.ok) {
+              console.error("[checkout] Failed to save shipping info to profile:", result?.error);
+              toast.error("Could not save your address for next time, but your order will still go through.");
+            }
+          } catch (err) {
+            console.error("[checkout] Failed to save shipping info to profile:", err);
+            toast.error("Could not save your address for next time, but your order will still go through.");
+          }
+        } else {
+          saveCustomerInfo({
+            firstName: data.firstName,
+            lastName: data.lastName,
+            company: data.company ?? "",
+            address: data.address,
+            apartment: data.apartment ?? "",
+            city: data.city,
+            postalCode: data.postalCode,
+            country: data.country,
+            phone: data.phone,
+            emailMarketing: data.emailMarketing,
+          });
+        }
+      } else if (!accountDefaults) {
         clearCustomerInfo();
       }
 
       setPaymentData({
         customerInfo,
-        shippingMethodId:    data.shippingMethodId,
-        boxNowLockerId:      boxNowLockerInfo?.lockerId      ?? null,
-        boxNowLockerName:    boxNowLockerInfo?.lockerName    ?? null,
+        shippingMethodId: data.shippingMethodId,
+        boxNowLockerId: boxNowLockerInfo?.lockerId ?? null,
+        boxNowLockerName: boxNowLockerInfo?.lockerName ?? null,
         boxNowLockerAddress: boxNowLockerInfo?.lockerAddress ?? null,
       });
       setShowPayment(true);
@@ -783,7 +824,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
                   disabled={isPending}
                   className="h-14 w-full bg-black-custom font-aeonik text-[16px] uppercase text-white-custom rounded-xl hover:bg-gray-text cursor-pointer transition-colors duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {isPending ? "Checking…" : "Continue to Payment"}
+                  {isPending ? "Checking…" : `Continue to Payment - ${formatPrice(total)}€`}
                 </button>
               </div>
             )}

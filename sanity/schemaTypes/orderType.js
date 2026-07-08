@@ -13,6 +13,14 @@ export const orderType = defineType({
       validation: Rule => Rule.required(),
     }),
     defineField({
+      name: 'viewToken',
+      title: 'View Token',
+      description: 'Secret token required to view this order on the checkout success page. Not the order number — do not share.',
+      type: 'string',
+      readOnly: true,
+      validation: Rule => Rule.required(),
+    }),
+    defineField({
       name: 'stripeCheckoutSessionId',
       title: 'Stripe Checkout Session ID',
       type: 'string',
