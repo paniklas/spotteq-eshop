@@ -1,6 +1,6 @@
 import { cache } from 'react'
 import { defineQuery } from 'next-sanity'
-import { sanityFetch } from '../lib/live'
+import { catalogFetch } from '../lib/catalogFetch'
 import { urlFor } from '../lib/image'
 
 export const getProductBySlug = cache(async (slug, locale) => {
@@ -59,8 +59,11 @@ export const getProductBySlug = cache(async (slug, locale) => {
     `)
 
     try {
-        const result = await sanityFetch({ query: QUERY, params: { slug, locale } })
-        const product = result.data
+        const product = await catalogFetch({
+            query: QUERY,
+            params: { slug, locale },
+            tags: [`product:${slug}`],
+        })
         if (!product) return null
 
         return {

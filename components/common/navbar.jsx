@@ -41,6 +41,10 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
     const sectionStyles = useHeaderStyles(); // { color, scrollBg } | null — section-level (home page only)
     const pageStyles = getStylesForCurrentPage(pathname, locale); // page-level fallback
 
+    // Hide the cart button on the checkout flow — the checkout page already
+    // shows the order summary, and a cart drawer over it is redundant.
+    const isCheckout = pathname.includes("/checkout");
+
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 10);
         window.addEventListener('scroll', onScroll, { passive: true });
@@ -168,10 +172,11 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
                                 </svg>
                             </button>
 
-                            {/* Cart */}
-                            <button 
-                                aria-label="Cart" 
-                                onClick={openCart} 
+                            {/* Cart — hidden on the checkout flow */}
+                            {!isCheckout && (
+                            <button
+                                aria-label="Cart"
+                                onClick={openCart}
                                 className="relative flex items-center cursor-pointer"
                             >
                                 <svg width="25" height="40" viewBox="0 0 31 46" fill="none">
@@ -185,6 +190,7 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
                                     {cartItems.reduce((sum, i) => sum + i.qty, 0)}
                                 </span>
                             </button>
+                            )}
                         </motion.div>
 
                         {/* Burger — motion.span lines animate rotation + color + hover shrink */}

@@ -1,5 +1,5 @@
 import { defineQuery } from 'next-sanity'
-import { sanityFetch } from '../lib/live'
+import { catalogFetch } from '../lib/catalogFetch'
 import { urlFor } from '../lib/image'
 
 export async function getBundlesContainingProduct(productId, locale) {
@@ -24,10 +24,13 @@ export async function getBundlesContainingProduct(productId, locale) {
   `)
 
   try {
-    const result = await sanityFetch({ query: QUERY, params: { productId, locale } })
-    const bundles = result.data ?? []
+    const bundles = await catalogFetch({
+      query: QUERY,
+      params: { productId, locale },
+      tags: ['bundles'],
+    })
 
-    return bundles.map(bundle => ({
+    return (bundles ?? []).map(bundle => ({
       ...bundle,
       imageUrl: bundle.image ? urlFor(bundle.image).width(120).url() : null,
     }))

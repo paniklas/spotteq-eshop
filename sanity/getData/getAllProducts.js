@@ -1,5 +1,5 @@
 import { defineQuery } from 'next-sanity'
-import { sanityFetch } from '../lib/live'
+import { catalogFetch } from '../lib/catalogFetch'
 
 const PAGE_SIZE = 12
 
@@ -55,13 +55,13 @@ export async function getAllProducts(locale, options = {}) {
     maxPrice: maxPrice ?? 99999,
   }
 
-  const [productsResult, countResult] = await Promise.all([
-    sanityFetch({ query: productsQuery, params }),
-    sanityFetch({ query: countQuery, params }),
+  const [products, total] = await Promise.all([
+    catalogFetch({ query: productsQuery, params, tags: ['products'] }),
+    catalogFetch({ query: countQuery, params, tags: ['products'] }),
   ])
 
   return {
-    products: productsResult.data ?? [],
-    total: countResult.data ?? 0,
+    products: products ?? [],
+    total: total ?? 0,
   }
 }

@@ -99,7 +99,7 @@ const CartDrawer = ({ allBundles = [] }) => {
     }
 
     const handleCheckoutClick = () => {
-        if (!userLoaded) return
+        if (!userLoaded || cartItems.length === 0) return
         if (isSignedIn) {
             closeCart()
             router.push("/checkout")
@@ -297,8 +297,8 @@ const CartDrawer = ({ allBundles = [] }) => {
 
                 {/* Footer */}
                 <div className={`px-8 pb-8 pt-5 ${bundleSuggestions.length === 0 ? "border-t border-gray-mint" : ""}`}>
-                    {/* Coupon */}
-                    {appliedCoupon ? (
+                    {/* Coupon — hidden when the cart is empty */}
+                    {cartItems.length > 0 && (appliedCoupon ? (
                         <div className="flex items-center justify-between mb-6 px-3 py-2.5 bg-teal-accent/10 border border-teal-accent rounded-sm">
                             <span className="font-aeonik text-[13px] text-black-custom">
                                 <span className="font-semibold">{appliedCoupon.couponCode}</span>
@@ -336,7 +336,7 @@ const CartDrawer = ({ allBundles = [] }) => {
                                 <p className="mt-1.5 font-aeonik text-[11px] text-red-500">{couponError}</p>
                             )}
                         </div>
-                    )}
+                    ))}
 
                     {/* Total */}
                     <div className="flex flex-col gap-1 mb-5">
@@ -361,7 +361,7 @@ const CartDrawer = ({ allBundles = [] }) => {
                     {/* Checkout */}
                     <button
                         onClick={handleCheckoutClick}
-                        disabled={!userLoaded}
+                        disabled={!userLoaded || cartItems.length === 0}
                         className="w-full h-14 bg-black-custom font-aeonik text-[13px] xl:text-[16px] uppercase text-white-custom rounded-[18px] hover:bg-gray-text transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
                     >
                         PROCEED TO CHECKOUT
