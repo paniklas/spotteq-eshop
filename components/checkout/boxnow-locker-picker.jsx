@@ -11,6 +11,20 @@ function BoxNowLockerPicker({ partnerId, postalCode, city, onSelect }) {
   // the ref is initialized once and never goes stale.
   const onSelectRef = useRef(onSelect);
 
+  // iframe src is built from postalCode/city, which change on every keystroke —
+  // debounce so the widget doesn't reload mid-typing (an iframe reloads on every
+  // src change). Lazy-init from the current values so the first render doesn't
+  // briefly show the GPS-only src before the debounce fires.
+  const [debouncedLocationHint, setDebouncedLocationHint] = useState(
+    () => [postalCode, city].filter(Boolean).join(" ")
+  );
+
+  useEffect(() => {
+    const hint = [postalCode, city].filter(Boolean).join(" ");
+    const timeout = setTimeout(() => setDebouncedLocationHint(hint), 600);
+    return () => clearTimeout(timeout);
+  }, [postalCode, city]);
+
   useEffect(() => {
     function handleMessage(event) {
       if (!event.origin) return;
@@ -46,9 +60,8 @@ function BoxNowLockerPicker({ partnerId, postalCode, city, onSelect }) {
   // When a postal code is known, disable GPS and center the map on the address instead.
   // BoxNow docs: zip accepts "a ZIP or part of a general address" and is only used when gps=no.
   // Combining postal code + city gives the geocoder enough context for less-populated areas.
-  const locationHint = [postalCode, city].filter(Boolean).join(" ");
-  const iframeSrc = locationHint
-    ? `https://widget-v5.boxnow.gr?partnerId=${partnerId}&gps=no&zip=${encodeURIComponent(locationHint)}`
+  const iframeSrc = debouncedLocationHint
+    ? `https://widget-v5.boxnow.gr?partnerId=${partnerId}&gps=no&zip=${encodeURIComponent(debouncedLocationHint)}`
     : `https://widget-v5.boxnow.gr?partnerId=${partnerId}&gps=yes`;
 
   return (

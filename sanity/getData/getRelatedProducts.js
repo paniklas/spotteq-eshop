@@ -1,5 +1,5 @@
 import { defineQuery } from 'next-sanity'
-import { sanityFetch } from '../lib/live'
+import { catalogFetch } from '../lib/catalogFetch'
 
 export async function getRelatedProducts(productId, categoryIds, locale) {
     if (!categoryIds?.length) return []
@@ -25,8 +25,12 @@ export async function getRelatedProducts(productId, categoryIds, locale) {
     `)
 
     try {
-        const result = await sanityFetch({ query: QUERY, params: { productId, categoryIds, locale } })
-        return result.data ?? []
+        const products = await catalogFetch({
+            query: QUERY,
+            params: { productId, categoryIds, locale },
+            tags: ['products'],
+        })
+        return products ?? []
     } catch {
         return []
     }

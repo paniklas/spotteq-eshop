@@ -1,5 +1,5 @@
 import { defineQuery } from 'next-sanity'
-import { sanityFetch } from '../lib/live'
+import { catalogFetch } from '../lib/catalogFetch'
 
 export async function getFeaturedProducts(locale) {
     const QUERY = defineQuery(`
@@ -21,8 +21,12 @@ export async function getFeaturedProducts(locale) {
     `)
 
     try {
-        const result = await sanityFetch({ query: QUERY, params: { locale } })
-        return result.data?.featuredProducts?.filter(Boolean) ?? []
+        const homePage = await catalogFetch({
+            query: QUERY,
+            params: { locale },
+            tags: ['products', 'homePage'],
+        })
+        return homePage?.featuredProducts?.filter(Boolean) ?? []
     } catch {
         return []
     }

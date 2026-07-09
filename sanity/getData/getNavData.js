@@ -1,5 +1,5 @@
 import { defineQuery } from 'next-sanity'
-import { sanityFetch } from '../lib/live'
+import { catalogFetch } from '../lib/catalogFetch'
 
 export async function getNavData(locale) {
   const QUERY = defineQuery(`{
@@ -18,8 +18,12 @@ export async function getNavData(locale) {
   }`)
 
   try {
-    const result = await sanityFetch({ query: QUERY, params: { locale } })
-    return result.data ?? { categoryGroups: [], bundles: [] }
+    const navData = await catalogFetch({
+      query: QUERY,
+      params: { locale },
+      tags: ['nav', 'categories', 'bundles'],
+    })
+    return navData ?? { categoryGroups: [], bundles: [] }
   } catch (error) {
     console.error('Error fetching nav data', error)
     return { categoryGroups: [], bundles: [] }

@@ -1,5 +1,5 @@
 import { defineQuery } from 'next-sanity';
-import { sanityFetch } from '../lib/live';
+import { catalogFetch } from '../lib/catalogFetch';
 
 export const getAllCategories = async (locale) => {
     const ALL_CATEGORIES_QUERY = defineQuery(`
@@ -21,14 +21,13 @@ export const getAllCategories = async (locale) => {
         }
     `);
         try {
-            // Use sanityFetch to send the query
-            const categories = await sanityFetch({
+            const categories = await catalogFetch({
                 query: ALL_CATEGORIES_QUERY,
-                params: { locale }
+                params: { locale },
+                tags: ['categories'],
             });
 
-            // Return the categories
-            return categories.data || [];
+            return categories || [];
         } catch (error) {
             console.error("Error fetching all categories", error);
             return [];
@@ -51,11 +50,12 @@ export const getCategoriesByGroup = async (locale, groupSlug) => {
         }
     `);
     try {
-        const categories = await sanityFetch({
+        const categories = await catalogFetch({
             query: CATEGORIES_BY_GROUP_QUERY,
-            params: { locale, groupSlug }
+            params: { locale, groupSlug },
+            tags: ['categories'],
         });
-        return categories.data || [];
+        return categories || [];
     } catch (error) {
         console.error("Error fetching categories by group", error);
         return [];
@@ -74,8 +74,12 @@ export const getCategoryBySlug = async (slug, locale) => {
         }
     `)
     try {
-        const result = await sanityFetch({ query: QUERY, params: { slug, locale } })
-        return result.data || null
+        const category = await catalogFetch({
+            query: QUERY,
+            params: { slug, locale },
+            tags: [`category:${slug}`, 'categories'],
+        })
+        return category || null
     } catch (error) {
         console.error("Error fetching category by slug", error)
         return null

@@ -1,5 +1,5 @@
 import { defineQuery } from 'next-sanity'
-import { sanityFetch } from '../lib/live'
+import { catalogFetch } from '../lib/catalogFetch'
 import { urlFor } from '../lib/image'
 
 export async function getBundleBySlug(slug, locale) {
@@ -35,8 +35,13 @@ export async function getBundleBySlug(slug, locale) {
   `)
 
   try {
-    const result = await sanityFetch({ query: QUERY, params: { slug, locale } })
-    const bundle = result.data
+    const bundle = await catalogFetch({
+      query: QUERY,
+      params: { slug, locale },
+      // `bundles` (in addition to the per-slug tag) so a product change — which
+      // purges `bundles` — also refreshes this page's embedded product data.
+      tags: [`bundle:${slug}`, 'bundles'],
+    })
     if (!bundle) return null
 
     return {

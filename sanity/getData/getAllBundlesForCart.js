@@ -1,5 +1,5 @@
 import { defineQuery } from 'next-sanity'
-import { sanityFetch } from '../lib/live'
+import { catalogFetch } from '../lib/catalogFetch'
 import { urlFor } from '../lib/image'
 
 // Minimal bundle data for client-side cart suggestion matching.
@@ -23,10 +23,13 @@ export async function getAllBundlesForCart(locale) {
   `)
 
   try {
-    const result = await sanityFetch({ query: QUERY, params: { locale } })
-    const bundles = result.data ?? []
+    const bundles = await catalogFetch({
+      query: QUERY,
+      params: { locale },
+      tags: ['bundles'],
+    })
 
-    return bundles.map(bundle => ({
+    return (bundles ?? []).map(bundle => ({
       ...bundle,
       imageUrl: bundle.image ? urlFor(bundle.image).width(120).url() : null,
     }))
