@@ -5,9 +5,12 @@ import Image from "next/image";
 import { Check, X } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useCartStore } from "@/store/cart-store";
+import { useCartHydrated } from "@/hooks/use-cart-hydrated";
 import { validateCouponWithEmail } from "@/app/actions/coupon";
+import OrderSummarySkeleton from "./order-summary-skeleton";
 
 const OrderSummary = ({ shippingMethods = [] }) => {
+    const cartHydrated = useCartHydrated()
     const { cartItems, appliedCoupon, couponDiscount, couponEmailVerified, applyCoupon, removeCoupon, checkoutEmail, selectedShippingMethod, paymentLocked } = useCartStore()
     const activeShippingMethod = selectedShippingMethod ?? shippingMethods[0] ?? null
     const [couponInput, setCouponInput] = useState("")
@@ -59,6 +62,10 @@ const OrderSummary = ({ shippingMethods = [] }) => {
         setCouponInput("")
         setCouponError("")
     }
+
+    // Before rehydration the store reports an empty cart, which would render
+    // "Your bag is empty." and zeroed totals to a customer who has items.
+    if (!cartHydrated) return <OrderSummarySkeleton />
 
     return (
         <div className="bg-white-custom rounded-2xl p-6 h-full overflow-y-auto">

@@ -1,26 +1,15 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
 import { Link } from "@/i18n/navigation";
 import { useCartStore } from "@/store/cart-store";
+import { useCartHydrated } from "@/hooks/use-cart-hydrated";
 import CheckoutForm from "./checkout-form";
 import OrderSummary from "./order-summary";
-
-// The cart lives in localStorage, so it reads as empty during SSR and through the
-// hydration render. Gating the empty-bag state on hydration keeps a customer with a
-// full cart from seeing it flash on every checkout visit.
-const subscribeHydration = (cb) => useCartStore.persist.onFinishHydration(cb);
-const getCartHydrated = () => useCartStore.persist.hasHydrated();
-const getCartHydratedOnServer = () => false;
 
 // Owns the empty-cart decision because it covers both the form and the summary —
 // a guard inside CheckoutForm cannot hide its sibling OrderSummary.
 const CheckoutContent = ({ shippingMethods = [], accountDefaults = null }) => {
-  const cartHydrated = useSyncExternalStore(
-    subscribeHydration,
-    getCartHydrated,
-    getCartHydratedOnServer
-  );
+  const cartHydrated = useCartHydrated();
   const cartItems = useCartStore((state) => state.cartItems);
 
   // Reachable by browser-back after a paid order (the cart is cleared on success),
