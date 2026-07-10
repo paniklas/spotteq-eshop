@@ -8,7 +8,7 @@ import { useCartStore } from "@/store/cart-store";
 import { validateCouponWithEmail } from "@/app/actions/coupon";
 
 const OrderSummary = ({ shippingMethods = [] }) => {
-    const { cartItems, appliedCoupon, couponDiscount, couponEmailVerified, applyCoupon, removeCoupon, checkoutEmail, selectedShippingMethod } = useCartStore()
+    const { cartItems, appliedCoupon, couponDiscount, couponEmailVerified, applyCoupon, removeCoupon, checkoutEmail, selectedShippingMethod, paymentLocked } = useCartStore()
     const activeShippingMethod = selectedShippingMethod ?? shippingMethods[0] ?? null
     const [couponInput, setCouponInput] = useState("")
     const [couponApplying, setCouponApplying] = useState(false)
@@ -126,7 +126,11 @@ const OrderSummary = ({ shippingMethods = [] }) => {
                             <span className="font-semibold">{appliedCoupon.couponCode}</span>
                             {" — "}{appliedCoupon.discountAmount}% off applied
                         </span>
-                        <button onClick={handleRemoveCoupon} className="p-1 hover:opacity-60 transition-opacity cursor-pointer">
+                        <button
+                            onClick={handleRemoveCoupon}
+                            disabled={paymentLocked}
+                            className="p-1 hover:opacity-60 transition-opacity cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
                             <X size={14} strokeWidth={1.5} />
                         </button>
                     </div>
@@ -141,12 +145,13 @@ const OrderSummary = ({ shippingMethods = [] }) => {
                                     value={couponInput}
                                     onChange={(e) => { setCouponInput(e.target.value); setCouponError("") }}
                                     onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
+                                    disabled={paymentLocked}
                                     placeholder="Enter code"
-                                    className="flex-1 px-4 py-3 font-tt text-[13px] text-black-custom outline-none bg-transparent placeholder:text-gray-text/50"
+                                    className="flex-1 px-4 py-3 font-tt text-[13px] text-black-custom outline-none bg-transparent placeholder:text-gray-text/50 disabled:cursor-not-allowed"
                                 />
                                 <button
                                     onClick={handleApplyCoupon}
-                                    disabled={couponApplying || !couponInput.trim()}
+                                    disabled={paymentLocked || couponApplying || !couponInput.trim()}
                                     className="px-4 py-3 font-aeonik text-[12px] uppercase text-black-custom hover:opacity-60 transition-opacity cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 shrink-0"
                                 >
                                     <Check size={13} strokeWidth={1.5} />
@@ -158,6 +163,11 @@ const OrderSummary = ({ shippingMethods = [] }) => {
                             <p className="mt-2 font-aeonik text-[12px] text-red-500">{couponError}</p>
                         )}
                     </div>
+                )}
+                {paymentLocked && (
+                    <p className="mt-2 font-aeonik text-[12px] text-gray-text">
+                        Return to delivery details to change your coupon.
+                    </p>
                 )}
             </div>
 

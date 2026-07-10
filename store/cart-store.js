@@ -145,6 +145,12 @@ export const useCartStore = create(
             checkoutEmail: "",
             selectedShippingMethod: null,
 
+            // True once the payment step is open. The Payment Intent is created with a
+            // fixed amount, so the coupon can no longer change the total — the summary
+            // would show a discount the customer is not charged. Never persisted.
+            paymentLocked: false,
+            setPaymentLocked: (locked) => set({ paymentLocked: locked }),
+
             applyCoupon: (coupon, emailVerified = false) => set({
                 appliedCoupon: coupon,
                 couponDiscount: coupon.discountAmount,
@@ -168,6 +174,7 @@ export const useCartStore = create(
                 couponEmailVerified: false,
                 checkoutEmail: "",
                 selectedShippingMethod: null,
+                paymentLocked: false,
             }),
 
             setCartOpen: (open) => set({ cartOpen: open }),
