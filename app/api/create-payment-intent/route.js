@@ -215,16 +215,22 @@ export async function POST(req) {
     // document: it keeps reuse scoped to this browser (an order must never be handed
     // to a different visitor who happens to type the same email) and it carries the
     // previous PI id, which the order does not store until the webhook fires.
-    const [pendingOrderId, pendingIntentId] = (cookieStore.get(PENDING_CHECKOUT_COOKIE)?.value ?? "")
-      .split("|");
+    //
+    // The cookie is treated as untrusted input — httpOnly stops scripts, not the
+    // person holding the devtools. It must therefore prove which order it names, so
+    // it carries the order's viewToken and the query matches on it. Otherwise anyone
+    // who learned an order _id could steer this endpoint at someone else's checkout.
+    const [pendingOrderId, pendingIntentId, pendingViewToken] =
+      (cookieStore.get(PENDING_CHECKOUT_COOKIE)?.value ?? "").split("|");
 
     let reusableOrder = null;
-    if (pendingOrderId) {
+    if (pendingOrderId && pendingViewToken) {
       reusableOrder = await backendClient.fetch(
-        `*[_type == "order" && _id == $id && status == "pending" && !defined(stripePaymentIntentId)][0]{
+        `*[_type == "order" && _id == $id && viewToken == $viewToken
+           && status == "pending" && !defined(stripePaymentIntentId)][0]{
           _id, orderNumber, viewToken
         }`,
-        { id: pendingOrderId }
+        { id: pendingOrderId, viewToken: pendingViewToken }
       );
     }
 
@@ -235,14 +241,22 @@ export async function POST(req) {
     if (reusableOrder && pendingIntentId) {
       try {
         const previousIntent = await stripe.paymentIntents.retrieve(pendingIntentId);
-        if (["succeeded", "processing", "requires_capture"].includes(previousIntent.status)) {
+
+        // The intent id also comes from the cookie, so confirm Stripe agrees it
+        // belongs to this order before cancelling it. Without this, a tampered
+        // cookie could cancel another customer's in-flight Payment Intent.
+        if (previousIntent.metadata?.orderId !== reusableOrder._id) {
+          console.warn("[create-payment-intent] intent/order mismatch — refusing to cancel");
+          reusableOrder = null;
+        } else if (["succeeded", "processing", "requires_capture"].includes(previousIntent.status)) {
           reusableOrder = null;
         } else if (previousIntent.status !== "canceled") {
           await stripe.paymentIntents.cancel(pendingIntentId);
         }
       } catch (err) {
         // Unknown PI state — fall back to a fresh order rather than risk clobbering.
-        console.warn("[create-payment-intent] superseded PI check failed:", err.message);
+        const reason = err instanceof Error ? err.message : String(err);
+        console.warn("[create-payment-intent] superseded PI check failed:", reason);
         reusableOrder = null;
       }
     }
@@ -339,7 +353,7 @@ export async function POST(req) {
       maxAge:   60 * 60 * 24 * 7, // 7 days
     });
 
-    cookieStore.set(PENDING_CHECKOUT_COOKIE, `${sanityOrder._id}|${paymentIntent.id}`, {
+    cookieStore.set(PENDING_CHECKOUT_COOKIE, `${sanityOrder._id}|${paymentIntent.id}|${viewToken}`, {
       httpOnly: true,
       secure:   process.env.NODE_ENV === "production",
       sameSite: "lax",

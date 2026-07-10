@@ -332,7 +332,8 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
 
   // The store outlives this component, so a lock set here would survive navigating
   // away mid-payment and leave the coupon field disabled on the next visit.
-  // Unmount-only: no dependencies, so it never re-runs on render.
+  // The only dependency is a Zustand setter, whose identity is stable, so the
+  // cleanup runs on unmount rather than between renders.
   useEffect(() => () => setPaymentLocked(false), [setPaymentLocked]);
 
   const handleBack = () => {
