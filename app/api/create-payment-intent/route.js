@@ -7,6 +7,10 @@ import { auth } from "@clerk/nextjs/server";
 import { stripe } from "@/lib/stripe";
 import { backendClient } from "@/sanity/lib/backendClient";
 
+// Points at the pending order + PI this browser most recently started, so a
+// Back → Continue cycle updates that order instead of creating another one.
+const PENDING_CHECKOUT_COOKIE = "pending_checkout";
+
 function generateOrderNumber() {
   const ymd = new Date().toISOString().slice(0, 10).replace(/-/g, "");
   const rand = Math.random().toString(36).slice(2, 7).toUpperCase();
@@ -202,18 +206,73 @@ export async function POST(req) {
       if (userInfo?._id) userInfoRef = userInfo._id;
     }
 
-    // --- Create Sanity order (pending — PI ID is set in the webhook after payment) ---
-    const orderNumber  = generateOrderNumber();
-    const viewToken     = generateViewToken();
+    const cookieStore = await cookies();
+
+    // --- Reuse the order this browser already started, if any ---
+    // Going Back from the payment step unmounts the payment component, so a second
+    // "Continue to Payment" would otherwise create a fresh order + PI every cycle.
+    // The pending checkout is tracked in an httpOnly cookie rather than on the order
+    // document: it keeps reuse scoped to this browser (an order must never be handed
+    // to a different visitor who happens to type the same email) and it carries the
+    // previous PI id, which the order does not store until the webhook fires.
+    //
+    // The cookie is treated as untrusted input — httpOnly stops scripts, not the
+    // person holding the devtools. It must therefore prove which order it names, so
+    // it carries the order's viewToken and the query matches on it. Otherwise anyone
+    // who learned an order _id could steer this endpoint at someone else's checkout.
+    const [pendingOrderId, pendingIntentId, pendingViewToken] =
+      (cookieStore.get(PENDING_CHECKOUT_COOKIE)?.value ?? "").split("|");
+
+    let reusableOrder = null;
+    if (pendingOrderId && pendingViewToken) {
+      reusableOrder = await backendClient.fetch(
+        `*[_type == "order" && _id == $id && viewToken == $viewToken
+           && status == "pending" && !defined(stripePaymentIntentId)][0]{
+          _id, orderNumber, viewToken
+        }`,
+        { id: pendingOrderId, viewToken: pendingViewToken }
+      );
+    }
+
+    // The order alone cannot tell us whether payment is already in flight: it stays
+    // "pending" with no PI id until the webhook lands. Ask Stripe directly, so a
+    // customer who paid and then hit Back never has their paid order overwritten.
+    // Otherwise cancel the superseded PI, so only one live intent targets the order.
+    if (reusableOrder && pendingIntentId) {
+      try {
+        const previousIntent = await stripe.paymentIntents.retrieve(pendingIntentId);
+
+        // The intent id also comes from the cookie, so confirm Stripe agrees it
+        // belongs to this order before cancelling it. Without this, a tampered
+        // cookie could cancel another customer's in-flight Payment Intent.
+        if (previousIntent.metadata?.orderId !== reusableOrder._id) {
+          console.warn("[create-payment-intent] intent/order mismatch — refusing to cancel");
+          reusableOrder = null;
+        } else if (["succeeded", "processing", "requires_capture"].includes(previousIntent.status)) {
+          reusableOrder = null;
+        } else if (previousIntent.status !== "canceled") {
+          await stripe.paymentIntents.cancel(pendingIntentId);
+        }
+      } catch (err) {
+        // Unknown PI state — fall back to a fresh order rather than risk clobbering.
+        const reason = err instanceof Error ? err.message : String(err);
+        console.warn("[create-payment-intent] superseded PI check failed:", reason);
+        reusableOrder = null;
+      }
+    }
+
+    // --- Create or update the Sanity order (pending — PI ID is set in the webhook) ---
+    const orderNumber  = reusableOrder?.orderNumber ?? generateOrderNumber();
+    const viewToken    = reusableOrder?.viewToken   ?? generateViewToken();
     const customerName = `${customerInfo.firstName} ${customerInfo.lastName}`.trim();
 
-    const sanityOrder = await backendClient.create({
-      _type: "order",
-      orderNumber,
-      viewToken,
+    const appliedCoupon = validatedCouponId && couponCode
+      ? { code: couponCode, sale: { _type: "reference", _ref: validatedCouponId } }
+      : null;
+
+    const orderFields = {
       stripeCustomerId,
       isGuestCheckout: !userInfoRef,
-      ...(userInfoRef ? { userInfo: { _type: "reference", _ref: userInfoRef } } : {}),
       customerName,
       email: customerInfo.email,
       products: orderProducts,
@@ -221,20 +280,7 @@ export async function POST(req) {
       totalPrice:     parseFloat(total.toFixed(2)),
       currency:       "eur",
       amountDiscount: parseFloat(discountAmount.toFixed(2)),
-      ...(validatedCouponId && couponCode
-        ? {
-            appliedCoupon: {
-              code: couponCode,
-              sale: { _type: "reference", _ref: validatedCouponId },
-            },
-          }
-        : {}),
-      shippingMethod:  { _type: "reference", _ref: shippingMethodId },
-      ...(boxNowLockerId ? {
-        boxNowLockerId,
-        boxNowLockerName:    boxNowLockerName    ?? "",
-        boxNowLockerAddress: boxNowLockerAddress ?? "",
-      } : {}),
+      shippingMethod: { _type: "reference", _ref: shippingMethodId },
       shippingAddress: {
         firstName:  customerInfo.firstName,
         lastName:   customerInfo.lastName,
@@ -247,7 +293,37 @@ export async function POST(req) {
       },
       status:    "pending",
       orderDate: new Date().toISOString(),
-    });
+      ...(userInfoRef ? { userInfo: { _type: "reference", _ref: userInfoRef } } : {}),
+      ...(appliedCoupon ? { appliedCoupon } : {}),
+      ...(boxNowLockerId ? {
+        boxNowLockerId,
+        boxNowLockerName:    boxNowLockerName    ?? "",
+        boxNowLockerAddress: boxNowLockerAddress ?? "",
+      } : {}),
+    };
+
+    let sanityOrder;
+    if (reusableOrder) {
+      // Optional fields must be explicitly unset — a retry that drops the coupon or
+      // switches away from BoxNow would otherwise keep the previous attempt's values.
+      const staleFields = [
+        ...(userInfoRef     ? [] : ["userInfo"]),
+        ...(appliedCoupon   ? [] : ["appliedCoupon"]),
+        ...(boxNowLockerId  ? [] : ["boxNowLockerId", "boxNowLockerName", "boxNowLockerAddress"]),
+      ];
+      sanityOrder = await backendClient
+        .patch(reusableOrder._id)
+        .set(orderFields)
+        .unset(staleFields)
+        .commit();
+    } else {
+      sanityOrder = await backendClient.create({
+        _type: "order",
+        orderNumber,
+        viewToken,
+        ...orderFields,
+      });
+    }
 
     // --- Create Stripe Payment Intent ---
     // orderId in metadata lets the webhook find and update this order
@@ -269,13 +345,20 @@ export async function POST(req) {
     // Order-scoped, httpOnly cookie — proves the browser that started this checkout
     // is the one viewing the success page, without putting the secret in the URL
     // (URLs leak via referrer headers, browser history, and screenshots).
-    const cookieStore = await cookies();
     cookieStore.set(`order_token_${orderNumber}`, viewToken, {
       httpOnly: true,
       secure:   process.env.NODE_ENV === "production",
       sameSite: "lax",
       path:     "/",
       maxAge:   60 * 60 * 24 * 7, // 7 days
+    });
+
+    cookieStore.set(PENDING_CHECKOUT_COOKIE, `${sanityOrder._id}|${paymentIntent.id}|${viewToken}`, {
+      httpOnly: true,
+      secure:   process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path:     "/",
+      maxAge:   60 * 60, // 1h — a stale pointer just means a new order is created
     });
 
     return NextResponse.json({

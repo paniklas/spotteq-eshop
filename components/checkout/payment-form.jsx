@@ -56,7 +56,10 @@ const PaymentForm = ({ orderNumber, locale, customerInfo, onBack }) => {
     }
 
     if (paymentIntent?.status === "succeeded") {
-      window.location.href = `/${locale}/checkout/success?order_number=${orderNumber}&payment_confirmed=true`;
+      // replace, not href: leaves no /checkout entry behind the success page, so
+      // browser-back returns to where the customer was before checkout rather than
+      // to a checkout form whose cart has just been cleared.
+      window.location.replace(`/${locale}/checkout/success?order_number=${orderNumber}&payment_confirmed=true`);
     }
 
     setProcessing(false);

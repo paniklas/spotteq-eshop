@@ -1,8 +1,7 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { getShippingMethods } from "@/sanity/getData/getShippingMethods";
 import { getOrCreateUserInfo } from "@/sanity/getData/getOrCreateUserInfo";
-import CheckoutForm from "@/components/checkout/checkout-form";
-import OrderSummary from "@/components/checkout/order-summary";
+import CheckoutContent from "@/components/checkout/checkout-content";
 
 const Checkout = async ({ params }) => {
     const { locale } = await params;
@@ -28,23 +27,12 @@ const Checkout = async ({ params }) => {
         };
     }
 
+    // min-h-dvh: the (checkout) group has no footer, so a short page would
+    // otherwise expose the black <body> background beneath it.
     return (
-        <section className="w-full bg-gray-light py-16 xl:py-32">
+        <section className="w-full min-h-dvh bg-gray-light py-16 xl:py-32">
             <div className="max-w-480 mx-auto page-x">
-                <div className="grid lg:grid-cols-[1fr_700px] gap-8">
-                    {/* Checkout Form — left */}
-                    <div className="flex flex-col">
-                        <h1 className="font-aeonik text-[28px] xl:text-[35px] text-black-custom mb-2">Checkout</h1>
-                        <CheckoutForm shippingMethods={shippingMethods} accountDefaults={accountDefaults} />
-                    </div>
-
-                    {/* Order Summary — right, sticky */}
-                    <div>
-                        <div className="sticky top-28">
-                            <OrderSummary shippingMethods={shippingMethods} />
-                        </div>
-                    </div>
-                </div>
+                <CheckoutContent shippingMethods={shippingMethods} accountDefaults={accountDefaults} />
             </div>
         </section>
     );

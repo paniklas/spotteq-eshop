@@ -106,6 +106,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
     couponDiscount,
     setCheckoutEmail,
     setSelectedShippingMethod,
+    setPaymentLocked,
   } = useCartStore();
 
   const { savedInfo, saveCustomerInfo, clearCustomerInfo } = useCustomerStore();
@@ -313,6 +314,10 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
         boxNowLockerAddress: boxNowLockerInfo?.lockerAddress ?? null,
       });
       setShowPayment(true);
+      // Locks the coupon controls in OrderSummary — a sibling component, so the
+      // flag travels through the cart store. The Payment Intent's amount is fixed
+      // from here on; changing the coupon would show a discount that is not charged.
+      setPaymentLocked(true);
     });
   };
 
@@ -325,9 +330,16 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
     setValue("boxNowLockerId", info.lockerId ?? "");
   }, [setValue]);
 
+  // The store outlives this component, so a lock set here would survive navigating
+  // away mid-payment and leave the coupon field disabled on the next visit.
+  // The only dependency is a Zustand setter, whose identity is stable, so the
+  // cleanup runs on unmount rather than between renders.
+  useEffect(() => () => setPaymentLocked(false), [setPaymentLocked]);
+
   const handleBack = () => {
     setShowPayment(false);
     setPaymentData(null);
+    setPaymentLocked(false);
   };
 
   return (

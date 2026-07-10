@@ -115,10 +115,9 @@ export async function validateCouponWithEmail(couponCode, email) {
 
 export async function recordCouponUsage(couponId, email, orderId) {
     try {
-        const doc = await backendClient.getDocument(couponId)
-        if (!doc) return
-
-        await backendClient
+        // commit() returns the patched document, so the deactivation decision below
+        // reads the post-increment usedCount rather than a stale pre-read value.
+        const updated = await backendClient
             .patch(couponId)
             .setIfMissing({ usageLog: [], usedCount: 0 })
             .append('usageLog', [{
@@ -131,7 +130,7 @@ export async function recordCouponUsage(couponId, email, orderId) {
             .commit()
 
         // Auto-deactivate if maxUses reached
-        if (doc.maxUses != null && (doc.usedCount ?? 0) + 1 >= doc.maxUses) {
+        if (updated.maxUses != null && (updated.usedCount ?? 0) >= updated.maxUses) {
             await backendClient.patch(couponId).set({ isActive: false }).commit()
         }
     } catch (error) {
