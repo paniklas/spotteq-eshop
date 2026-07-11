@@ -74,7 +74,7 @@ function BoxNowLockerPicker({ partnerId, postalCode, city, onSelect }) {
           )}
           <button
             type="button"
-            className="mt-1 text-xs text-green-600 underline"
+            className="mt-1 text-xs text-green-600 cursor-pointer underline"
             onClick={() => {
               setSelected(null);
               onSelectRef.current({ lockerId: "", lockerName: "", lockerAddress: "" });
