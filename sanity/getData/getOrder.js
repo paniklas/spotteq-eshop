@@ -35,6 +35,12 @@ export async function getOrder(orderNumber, viewToken, locale) {
         _key,
         quantity,
         price,
+        selectedFlavours[]{
+          _key,
+          flavourName,
+          quantity,
+          "variantName": variant->title[language == $locale][0].value
+        },
         "bundle": bundle-> {
           _id,
           "name": title[language == $locale][0].value,

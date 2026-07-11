@@ -101,12 +101,19 @@ export const bundleType = defineType({
               initialValue: 1,
               validation: Rule => Rule.required().min(1).integer(),
             }),
+            defineField({
+              name: 'allowFlavourChange',
+              title: 'Let customer choose the flavour',
+              type: 'boolean',
+              description: 'If on, the customer can swap this product for any of its flavour variants before adding the bundle to the cart. If off (default), the flavour is locked to the product selected above.',
+              initialValue: false,
+            }),
           ],
           preview: {
-            select: { titles: 'product.title', qty: 'quantity', media: 'product.image' },
-            prepare({ titles, qty, media }) {
+            select: { titles: 'product.title', qty: 'quantity', media: 'product.image', allowFlavourChange: 'allowFlavourChange' },
+            prepare({ titles, qty, media, allowFlavourChange }) {
               const title = Array.isArray(titles) ? titles.find(t => t._key === 'el')?.value || titles[0]?.value : ''
-              return { title, subtitle: `Qty: ${qty}`, media }
+              return { title, subtitle: `Qty: ${qty}${allowFlavourChange ? ' · flavour: customer choice' : ' · flavour: locked'}`, media }
             },
           },
         }),

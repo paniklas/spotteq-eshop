@@ -64,6 +64,13 @@ const OrderCard = ({ order }) => {
                                         <p className="font-aeonik text-[14px] text-black-custom truncate">
                                             {line.kind === "bundle" ? `[${t("bundle")}] ` : ""}{line.name}
                                         </p>
+                                        {line.selectedFlavours?.length > 0 && (
+                                            <p className="font-aeonik text-[12px] text-black-custom">
+                                                {line.selectedFlavours
+                                                    .map((f) => `${f.variantName}${f.flavourName ? ` – ${f.flavourName}` : ""}`)
+                                                    .join(", ")}
+                                            </p>
+                                        )}
                                         <p className="font-aeonik text-[12px] text-gray-text">
                                             {[line.selectedFlavour, line.sku && `SKU: ${line.sku}`, `${t("qty")}: ${line.quantity}`].filter(Boolean).join(" · ")}
                                         </p>

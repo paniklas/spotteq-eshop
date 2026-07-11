@@ -139,6 +139,10 @@ async function decrementInventory(orderId) {
       },
       bundles[]{
         quantity,
+        "selected": selectedFlavours[]{
+          quantity,
+          "productId": variant->_id
+        },
         "constituents": bundle->products[]{
           quantity,
           "productId": product->_id
@@ -159,7 +163,13 @@ async function decrementInventory(orderId) {
   }
 
   for (const bundle of order.bundles ?? []) {
-    for (const c of bundle.constituents ?? []) {
+    // Decrement the flavours the customer actually chose. Fall back to the bundle's
+    // default constituents for legacy lines (no stored selection) and for a stored
+    // selection that is incomplete — e.g. a chosen variant deleted before this ran,
+    // whose null productId would otherwise leave that slot silently un-decremented.
+    const selectedComplete = bundle.selected?.length && bundle.selected.every((c) => c.productId);
+    const lines = (selectedComplete ? bundle.selected : bundle.constituents) ?? [];
+    for (const c of lines) {
       if (!c.productId) continue;
       demand[c.productId] = (demand[c.productId] ?? 0) + bundle.quantity * c.quantity;
     }

@@ -40,6 +40,9 @@ const StripePaymentWrapper = ({
               type:            i.type,
               qty:             i.qty,
               selectedFlavour: i.selectedFlavour ?? "",
+              ...(i.type === "bundle" && i.selectedFlavours?.length
+                ? { selectedFlavours: i.selectedFlavours }
+                : {}),
             })),
             shippingMethodId,
             boxNowLockerId:      boxNowLockerId      ?? null,

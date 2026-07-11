@@ -84,6 +84,11 @@ const OrderPaid = ({ order, orderNumber, locale }) => {
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="font-aeonik text-[14px] text-black-custom">{line.bundle?.name}</p>
+                  {line.selectedFlavours?.map((f) => (
+                    <p key={f._key} className="font-aeonik text-[12px] text-black-custom leading-snug">
+                      {f.variantName}{f.flavourName ? ` – ${f.flavourName}` : ""}
+                    </p>
+                  ))}
                   <p className="font-aeonik text-[12px] text-gray-text">Bundle · Qty: {line.quantity}</p>
                 </div>
                 <span className="font-tt text-[15px] text-black-custom shrink-0">

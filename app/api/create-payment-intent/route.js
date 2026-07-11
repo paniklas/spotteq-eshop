@@ -23,11 +23,19 @@ function generateViewToken() {
   return randomBytes(24).toString("base64url");
 }
 
+const bundleFlavourSchema = z.object({
+  slotProductId: z.string().min(1),
+  variantId: z.string().min(1),
+  flavourName: z.string().optional(),
+  quantity: z.number().int().min(1).max(99).optional(),
+});
+
 const cartItemSchema = z.object({
   id: z.string().min(1),
   type: z.enum(["product", "bundle"]).optional(),
   qty: z.number().int().min(1).max(99),
   selectedFlavour: z.string().optional(),
+  selectedFlavours: z.array(bundleFlavourSchema).max(20).optional(),
 });
 
 const bodySchema = z.object({
@@ -85,7 +93,15 @@ export async function POST(req) {
         : Promise.resolve([]),
       bundleIds.length
         ? backendClient.fetch(
-            `*[_type == "bundle" && _id in $ids && status == true]{ _id, bundlePrice, saleBundlePrice }`,
+            `*[_type == "bundle" && _id in $ids && status == true]{
+              _id, bundlePrice, saleBundlePrice,
+              products[]{
+                quantity,
+                allowFlavourChange,
+                "defaultId": product->_id,
+                "variants": product->flavours[]->{ _id, "active": status }
+              }
+            }`,
             { ids: bundleIds }
           )
         : Promise.resolve([]),
@@ -117,6 +133,9 @@ export async function POST(req) {
     const bundlePriceMap = Object.fromEntries(
       (sanityBundles ?? []).map((b) => [b._id, b.saleBundlePrice ?? b.bundlePrice])
     );
+    const bundleSlotsMap = Object.fromEntries(
+      (sanityBundles ?? []).map((b) => [b._id, b.products ?? []])
+    );
 
     let subtotal = 0;
     const orderProducts = [];
@@ -143,11 +162,50 @@ export async function POST(req) {
         return NextResponse.json({ error: "One or more bundles are no longer available." }, { status: 400 });
       }
       subtotal += price * item.qty;
+
+      // Validate the customer's flavour choice against the bundle's real slots.
+      // Never trust the client: a locked slot must keep its default, and an unlocked
+      // slot may only take one of that slot's active variants. Quantity comes from
+      // the bundle, not the client. Empty selection = bundle defaults (quick-add/legacy).
+      const slots = bundleSlotsMap[item.id] ?? [];
+      const clientSel = item.selectedFlavours ?? [];
+      let selectedFlavours = null;
+
+      if (clientSel.length) {
+        if (clientSel.length !== slots.length) {
+          return NextResponse.json({ error: "Invalid bundle flavour selection." }, { status: 400 });
+        }
+        selectedFlavours = [];
+        for (let s = 0; s < slots.length; s++) {
+          const slot = slots[s];
+          const entry = clientSel[s];
+          if (!slot?.defaultId || entry.slotProductId !== slot.defaultId) {
+            return NextResponse.json({ error: "Invalid bundle flavour selection." }, { status: 400 });
+          }
+          const activeVariantIds = (slot.variants ?? [])
+            .filter((v) => v?.active !== false)
+            .map((v) => v._id);
+          const allowed = slot.allowFlavourChange
+            ? new Set([slot.defaultId, ...activeVariantIds])
+            : new Set([slot.defaultId]);
+          if (!allowed.has(entry.variantId)) {
+            return NextResponse.json({ error: "Invalid bundle flavour selection." }, { status: 400 });
+          }
+          selectedFlavours.push({
+            _key: `bf_${i}_${s}`,
+            variant: { _type: "reference", _ref: entry.variantId },
+            flavourName: entry.flavourName ?? "",
+            quantity: slot.quantity ?? 1,
+          });
+        }
+      }
+
       orderBundles.push({
         _key: `bndl_${item.id}_${i}`,
         bundle: { _type: "reference", _ref: item.id },
         quantity: item.qty,
         price,
+        ...(selectedFlavours ? { selectedFlavours } : {}),
       });
     }
 
