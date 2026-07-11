@@ -1,11 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
 import { backendClient } from "@/sanity/lib/backendClient";
 import { getOrCreateUserInfo } from "@/sanity/getData/getOrCreateUserInfo";
 
-// Product _ids the signed-in user has favourited. Empty array for guests —
+// Product/bundle _ids the signed-in user has favourited. Empty array for guests —
 // callers treat "not signed in" and "no favourites" the same way on read.
 export async function getFavouriteIds() {
     const { userId } = await auth();
@@ -54,7 +53,8 @@ export async function toggleFavourite(productId) {
         return { ok: false, error: "failed" };
     }
 
-    revalidatePath("/account");
-    revalidatePath("/account/wishlist");
+    // No revalidatePath: the account pages are `force-dynamic`, so they already
+    // re-fetch on every request. (A literal "/account" wouldn't match the
+    // `[locale]`-prefixed routes anyway.)
     return { ok: true, favourited: !isFav };
 }

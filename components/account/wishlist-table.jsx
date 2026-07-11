@@ -25,7 +25,7 @@ export default function WishlistTable({ favourites }) {
 
     const handleRemove = async (id) => {
         if (removing[id]) return;
-        const prev = rows;
+        const removed = rows.find((p) => p._id === id);
         setRemoving((r) => ({ ...r, [id]: true }));
         setRows((rs) => rs.filter((p) => p._id !== id));
 
@@ -38,7 +38,11 @@ export default function WishlistTable({ favourites }) {
         });
 
         if (!result?.ok) {
-            setRows(prev);
+            // Re-insert only this row (functional update), so a failure during
+            // rapid multi-removal doesn't resurrect other already-removed rows.
+            if (removed) {
+                setRows((rs) => (rs.some((p) => p._id === id) ? rs : [...rs, removed]));
+            }
             toast.error(t("wishlistRemoveError"));
         }
     };

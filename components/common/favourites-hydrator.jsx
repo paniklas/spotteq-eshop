@@ -19,9 +19,13 @@ export default function FavouritesHydrator() {
             return;
         }
         let active = true;
-        getFavouriteIds().then((ids) => {
-            if (active) setFavourites(ids);
-        });
+        getFavouriteIds()
+            .then((ids) => {
+                if (active) setFavourites(ids);
+            })
+            // Keep the persisted (localStorage) view on a transient failure
+            // rather than clearing — avoids an unhandled rejection either way.
+            .catch(() => {});
         return () => {
             active = false;
         };

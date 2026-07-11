@@ -19,9 +19,11 @@ export const useFavouritesStore = create(
             ids: [],
             pending: {},
 
-            setFavourites: (ids) => set({ ids: ids ?? [] }),
+            // Also clear `pending` so an in-flight toggle can't leave a stale
+            // flag behind after a reset (e.g. sign-out via the hydrator).
+            setFavourites: (ids) => set({ ids: ids ?? [], pending: {} }),
 
-            clear: () => set({ ids: [] }),
+            clear: () => set({ ids: [], pending: {} }),
 
             // Flip the heart immediately, persist server-side, roll back on failure.
             // Returns the action result so the caller can toast on error / auth prompt.
@@ -35,22 +37,29 @@ export const useFavouritesStore = create(
                     pending: { ...s.pending, [id]: true },
                 }));
 
-                const result = await toggleFavouriteAction(id);
-
-                set((s) => {
-                    const pending = { ...s.pending };
-                    delete pending[id];
-                    if (!result.ok) {
-                        // Restore the pre-click state.
+                // Clears this id's pending flag and, when rolling back, restores
+                // the pre-click membership.
+                const settle = (rollback) =>
+                    set((s) => {
+                        const pending = { ...s.pending };
+                        delete pending[id];
+                        if (!rollback) return { pending };
                         const ids = wasFav
                             ? (s.ids.includes(id) ? s.ids : [...s.ids, id])
                             : s.ids.filter((x) => x !== id);
                         return { ids, pending };
-                    }
-                    return { pending };
-                });
+                    });
 
-                return result;
+                try {
+                    const result = await toggleFavouriteAction(id);
+                    settle(!result.ok);
+                    return result;
+                } catch {
+                    // A thrown action (network/flight error) must still clear
+                    // pending and roll back, or the heart sticks and retries block.
+                    settle(true);
+                    return { ok: false, error: "failed" };
+                }
             },
         }),
         {
