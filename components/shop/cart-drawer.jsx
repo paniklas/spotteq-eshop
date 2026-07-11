@@ -63,7 +63,12 @@ const CartDrawer = ({ allBundles = [] }) => {
 
         return allBundles.filter((bundle) => {
             if (bundleIdsInCart.has(bundle._id)) return false
-            return bundle.products?.every((item) => productIdsInCart.has(item.product?._id))
+            // A slot is satisfied when the cart holds a product that can fill it:
+            // the default only when locked, or any active flavour variant when unlocked
+            // (matchIds is precomputed per slot in getAllBundlesForCart).
+            return bundle.products?.every((item) =>
+                (item.matchIds ?? [item.product?._id]).some((id) => productIdsInCart.has(id))
+            )
         })
     }, [cartItems, allBundles])
     const [couponInput, setCouponInput] = useState("")

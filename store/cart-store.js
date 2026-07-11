@@ -2,14 +2,27 @@
 
 import { create } from "zustand"
 import { persist, createJSONStorage } from "zustand/middleware"
-import { checkProductInventory, checkBundleInventory } from "@/app/actions/cart"
+import { checkProductInventory, checkBundleInventory, checkBundleVariantInventory } from "@/app/actions/cart"
 
-const fetchInventory = (item) =>
-    item.type === "bundle"
-        ? checkBundleInventory(item.id)
-        : checkProductInventory(item.id)
+const fetchInventory = (item) => {
+    if (item.type !== "bundle") return checkProductInventory(item.id)
+    // A bundle's stock depends on the chosen variants, not the admin defaults.
+    // Fall back to the default-based check for legacy lines with no selection.
+    const sel = item.selectedFlavours ?? []
+    if (sel.length) {
+        return checkBundleVariantInventory(sel.map((s) => ({ productId: s.variantId, quantity: s.quantity })))
+    }
+    return checkBundleInventory(item.id)
+}
 
-export const makeCartId = (id) => id
+// A stable key that makes two otherwise-identical bundles distinct cart lines when
+// their chosen flavours differ. Order follows slot order, so it is deterministic.
+export const bundleVariantKey = (selectedFlavours) =>
+    (selectedFlavours ?? []).map((s) => s.variantId).filter(Boolean).join(",")
+
+// Product cart id is just its _id (each flavour is a separate product doc). Bundles
+// append the variant key so different flavour selections do not collapse into one line.
+export const makeCartId = (id, variantKey = "") => (variantKey ? `${id}::${variantKey}` : id)
 
 export const useCartStore = create(
     persist(
@@ -19,7 +32,8 @@ export const useCartStore = create(
             addingIds: {},
 
             addToCart: async (item, qty = 1) => {
-                const cartId = makeCartId(item.id)
+                const variantKey = item.type === "bundle" ? bundleVariantKey(item.selectedFlavours) : ""
+                const cartId = makeCartId(item.id, variantKey)
 
                 set((state) => ({ addingIds: { ...state.addingIds, [cartId]: true } }))
 

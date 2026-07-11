@@ -54,7 +54,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
         ...(product.galleryImageUrls ?? []),
     ]
 
-    const cartId = makeCartId(product._id, product.flavourName ?? "")
+    const cartId = makeCartId(product._id)
     const cartQty = cartItems.find((i) => i.cartId === cartId)?.qty ?? 0
     const effectivePrice = product.salePrice ?? product.price
     const remaining = product.inventory != null ? product.inventory - cartQty : Infinity
@@ -455,7 +455,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                                                     )}
                                                 </span>
                                                 <button
-                                                    onClick={() => addToCart({ id: rp._id, slug: rp.slug, name: rp.title, subtitle: rp.flavourName ? [rp.flavourName] : [], price: rpEffectivePrice, image: rp.imageUrl, flavour: rp.flavourName || "" })}
+                                                    onClick={() => addToCart({ id: rp._id, type: "product", slug: rp.slug, name: rp.title, subtitle: rp.flavourName ? [rp.flavourName] : [], price: rpEffectivePrice, image: rp.imageUrl, flavour: rp.flavourName || "" })}
                                                     className="px-8 h-9 bg-black-custom rounded-full font-aeonik text-[12px] xl:text-[16px] uppercase text-white-custom hover:bg-gray-text transition-colors duration-300 cursor-pointer"
                                                 >
                                                     ADD TO BAG

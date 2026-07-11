@@ -48,6 +48,36 @@ export async function checkBundleInventory(bundleId) {
     }
 }
 
+// Max number of a bundle that can be built from the customer's *chosen* variants.
+// items: [{ productId, quantity }] — the selected variant per slot and its per-bundle qty.
+export async function checkBundleVariantInventory(items) {
+    const list = (items ?? []).filter((i) => i?.productId)
+    if (!list.length) return null
+
+    const ids = [...new Set(list.map((i) => i.productId))]
+    const QUERY = defineQuery(`
+        *[_type == "product" && _id in $ids && status == true] {
+            _id,
+            inventory
+        }
+    `)
+
+    try {
+        const result = await sanityFetch({ query: QUERY, params: { ids } })
+        const invById = Object.fromEntries((result.data ?? []).map((p) => [p._id, p.inventory]))
+
+        let maxQty = Infinity
+        for (const it of list) {
+            const inv = invById[it.productId]
+            if (inv == null) continue // unlimited
+            maxQty = Math.min(maxQty, Math.floor(inv / it.quantity))
+        }
+        return maxQty === Infinity ? null : maxQty
+    } catch {
+        return null
+    }
+}
+
 export async function validateCartInventory(cartItems, locale = "el") {
     if (!cartItems?.length) return { valid: true, issues: [] }
 
@@ -61,8 +91,22 @@ export async function validateCartInventory(cartItems, locale = "el") {
         demand[item.id] = (demand[item.id] ?? 0) + item.qty
     }
 
-    if (bundleItems.length > 0) {
-        const bundleIds = bundleItems.map((i) => i.id)
+    // Bundles carrying chosen flavours: demand comes straight from the cart line's
+    // selected variants — the customer gets those, not the bundle's admin defaults.
+    const bundlesWithSelection = bundleItems.filter((i) => (i.selectedFlavours ?? []).length)
+    const bundlesLegacy = bundleItems.filter((i) => !(i.selectedFlavours ?? []).length)
+
+    for (const b of bundlesWithSelection) {
+        for (const s of b.selectedFlavours) {
+            if (!s.variantId) continue
+            demand[s.variantId] = (demand[s.variantId] ?? 0) + b.qty * (s.quantity ?? 1)
+        }
+    }
+
+    // Legacy bundle lines (added before per-slot selection existed): fall back to the
+    // live bundle's default constituents.
+    if (bundlesLegacy.length > 0) {
+        const bundleIds = bundlesLegacy.map((i) => i.id)
         const BUNDLE_QUERY = defineQuery(`
             *[_type == "bundle" && _id in $bundleIds] {
                 _id,
@@ -77,7 +121,7 @@ export async function validateCartInventory(cartItems, locale = "el") {
             const result = await sanityFetch({ query: BUNDLE_QUERY, params: { bundleIds, locale } })
             const bundles = result.data ?? []
             for (const bundle of bundles) {
-                const cartBundle = bundleItems.find((i) => i.id === bundle._id)
+                const cartBundle = bundlesLegacy.find((i) => i.id === bundle._id)
                 if (!cartBundle || !bundle.products?.length) continue
                 for (const constituent of bundle.products) {
                     if (!constituent.productId) continue
