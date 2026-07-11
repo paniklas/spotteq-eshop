@@ -18,7 +18,9 @@ const fetchInventory = (item) => {
 // A stable key that makes two otherwise-identical bundles distinct cart lines when
 // their chosen flavours differ. Order follows slot order, so it is deterministic.
 export const bundleVariantKey = (selectedFlavours) =>
-    (selectedFlavours ?? []).map((s) => s.variantId).filter(Boolean).join(",")
+    // Positional placeholder rather than dropping falsy ids, so a slot with missing
+    // data cannot make two different selections collapse onto the same cart line.
+    (selectedFlavours ?? []).map((s) => s.variantId || "_").join(",")
 
 // Product cart id is just its _id (each flavour is a separate product doc). Bundles
 // append the variant key so different flavour selections do not collapse into one line.

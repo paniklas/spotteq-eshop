@@ -37,6 +37,7 @@ const FlavourDropdown = ({ options, selectedId, onSelect }) => {
             style={!open ? { transition: "border-radius 0ms 300ms" } : undefined}
         >
             <button
+                type="button"
                 onClick={() => setOpen((v) => !v)}
                 className="w-full flex items-center justify-between px-5 py-3 font-aeonik text-[13px] xl:text-[15px] text-black-custom cursor-pointer"
             >
@@ -52,6 +53,7 @@ const FlavourDropdown = ({ options, selectedId, onSelect }) => {
                             return (
                                 <button
                                     key={o._id}
+                                    type="button"
                                     disabled={soldOut}
                                     onClick={() => { if (!soldOut) { onSelect(o._id); setOpen(false) } }}
                                     className={`w-full text-left px-4 py-2.5 rounded-full font-aeonik text-[13px] xl:text-[15px] flex items-center justify-between transition-colors duration-200 ${isCurrent ? "bg-gray-soft text-black-custom font-semibold" : "text-black-custom hover:bg-gray-soft cursor-pointer"} ${soldOut ? "opacity-40 cursor-not-allowed" : ""}`}

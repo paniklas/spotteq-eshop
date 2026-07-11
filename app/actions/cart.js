@@ -68,6 +68,9 @@ export async function checkBundleVariantInventory(items) {
 
         let maxQty = Infinity
         for (const it of list) {
+            // Absent id = inactive/deleted variant -> unavailable. Distinct from a
+            // present id whose inventory is null, which genuinely means unlimited.
+            if (!(it.productId in invById)) return 0
             const inv = invById[it.productId]
             if (inv == null) continue // unlimited
             maxQty = Math.min(maxQty, Math.floor(inv / it.quantity))
