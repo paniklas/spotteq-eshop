@@ -21,14 +21,24 @@ export async function getBundleBySlug(slug, locale) {
       },
       products[] {
         quantity,
+        allowFlavourChange,
         "product": product-> {
           _id,
           "title": title[language == $locale][0].value,
+          "flavourName": flavourName[language == $locale][0].value,
           image,
           price,
           salePrice,
           inventory,
           "slug": slugs[$locale].current
+        },
+        "flavours": product->flavours[]-> {
+          _id,
+          "flavourName": flavourName[language == $locale][0].value,
+          image,
+          inventory,
+          "slug": slugs[$locale].current,
+          "active": status
         }
       }
     }
@@ -53,6 +63,11 @@ export async function getBundleBySlug(slug, locale) {
         product: item.product
           ? { ...item.product, imageUrl: item.product.image ? urlFor(item.product.image).width(300).url() : null }
           : null,
+        // Only variants that are still active are selectable; the default product
+        // is always included by the admin reference even if flavours is empty.
+        flavours: (item.flavours ?? [])
+          .filter(f => f?.active !== false)
+          .map(f => ({ ...f, imageUrl: f.image ? urlFor(f.image).width(120).url() : null })),
       })) ?? [],
     }
   } catch (error) {
