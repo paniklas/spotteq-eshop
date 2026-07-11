@@ -1,13 +1,72 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Image from "next/image";
-import { Heart } from "lucide-react";
+import { Heart, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
-import { useCartStore, makeCartId } from "@/store/cart-store";
+import { useCartStore, makeCartId, bundleVariantKey } from "@/store/cart-store";
 import { formatPrice } from "@/utils/formatPrice";
 import { PortableText } from "@portabletext/react";
 import { Link } from "@/i18n/navigation";
+
+// The selectable flavours for a slot: the admin's default product plus any active
+// sibling variants, deduped (the default may or may not appear in its own flavours list).
+function buildOptions(item) {
+    const map = new Map()
+    if (item.product?._id) {
+        map.set(item.product._id, {
+            _id: item.product._id,
+            flavourName: item.product.flavourName,
+            inventory: item.product.inventory,
+            imageUrl: item.product.imageUrl,
+        })
+    }
+    for (const f of item.flavours ?? []) {
+        if (f?._id && !map.has(f._id)) map.set(f._id, f)
+    }
+    return [...map.values()]
+}
+
+// One slot's flavour picker. Local open state so slots expand independently.
+const FlavourDropdown = ({ options, selectedId, onSelect }) => {
+    const [open, setOpen] = useState(false)
+    const selected = options.find((o) => o._id === selectedId) ?? options[0]
+    return (
+        <div
+            className={`border border-gray-mint overflow-hidden ${open ? "rounded-2xl" : "rounded-full"}`}
+            style={!open ? { transition: "border-radius 0ms 300ms" } : undefined}
+        >
+            <button
+                onClick={() => setOpen((v) => !v)}
+                className="w-full flex items-center justify-between px-5 py-3 font-aeonik text-[13px] xl:text-[15px] text-black-custom cursor-pointer"
+            >
+                <span className="truncate">{selected?.flavourName || "Choose flavour"}</span>
+                <ChevronDown size={16} strokeWidth={1.5} className={`shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+            </button>
+            <div className={`grid transition-all duration-300 ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
+                <div className="overflow-hidden">
+                    <div className="px-2 pb-2 pt-1 border-t border-gray-mint/40">
+                        {options.map((o) => {
+                            const isCurrent = o._id === selectedId
+                            const soldOut = o.inventory != null && o.inventory <= 0
+                            return (
+                                <button
+                                    key={o._id}
+                                    disabled={soldOut}
+                                    onClick={() => { if (!soldOut) { onSelect(o._id); setOpen(false) } }}
+                                    className={`w-full text-left px-4 py-2.5 rounded-full font-aeonik text-[13px] xl:text-[15px] flex items-center justify-between transition-colors duration-200 ${isCurrent ? "bg-gray-soft text-black-custom font-semibold" : "text-black-custom hover:bg-gray-soft cursor-pointer"} ${soldOut ? "opacity-40 cursor-not-allowed" : ""}`}
+                                >
+                                    <span className="truncate">{o.flavourName}{soldOut ? " — out of stock" : ""}</span>
+                                    {isCurrent && <span className="w-2 h-2 rounded-full bg-black-custom shrink-0" />}
+                                </button>
+                            )
+                        })}
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
 
 
 const BundleInteractive = ({ bundle }) => {
@@ -16,14 +75,42 @@ const BundleInteractive = ({ bundle }) => {
     const [currentImage, setCurrentImage] = useState(0)
     const { addToCart, cartItems } = useCartStore()
 
+    // Chosen variant _id per slot (keyed by slot index — a bundle may repeat a base
+    // product). Defaults to the admin's referenced product for each slot.
+    const [selections, setSelections] = useState(() =>
+        Object.fromEntries((bundle.products ?? []).map((item, i) => [i, item.product?._id]))
+    )
+
+    const slots = useMemo(() =>
+        (bundle.products ?? []).map((item, i) => {
+            const options = buildOptions(item)
+            const selected = options.find((o) => o._id === selections[i]) ?? options[0] ?? null
+            const canChoose = !!item.allowFlavourChange && options.length > 1
+            return { item, index: i, options, selected, canChoose }
+        }), [bundle.products, selections])
+
+    // The customer's chosen variant per slot — drives cart identity, inventory, and
+    // order storage. slotProductId is the admin default (slot identity); variantId is
+    // what the customer actually gets.
+    const selectedFlavours = slots.map((s) => ({
+        slotProductId: s.item.product?._id ?? "",
+        variantId: s.selected?._id ?? "",
+        flavourName: s.selected?.flavourName ?? "",
+        productTitle: s.item.product?.title ?? "",
+        quantity: s.item.quantity,
+    }))
+
     const effectivePrice = bundle.saleBundlePrice ?? bundle.bundlePrice
-    const cartId = makeCartId(bundle._id)
+    // Include the flavour selection so each distinct choice is its own cart line.
+    const cartId = makeCartId(bundle._id, bundleVariantKey(selectedFlavours))
     const cartQty = cartItems.find((i) => i.cartId === cartId)?.qty ?? 0
 
-    const maxBundleQty = bundle.products?.reduce((min, item) => {
-        if (!item.product || item.product.inventory == null) return min
-        return Math.min(min, Math.floor(item.product.inventory / item.quantity))
-    }, Infinity) ?? Infinity
+    // Stock is bounded by the *selected* variant of each slot, not the admin default.
+    const maxBundleQty = slots.reduce((min, s) => {
+        const inv = s.selected?.inventory
+        if (inv == null) return min
+        return Math.min(min, Math.floor(inv / s.item.quantity))
+    }, Infinity)
     const atMax = maxBundleQty !== Infinity && cartQty >= maxBundleQty
 
     const ownImages = [
@@ -46,12 +133,15 @@ const BundleInteractive = ({ bundle }) => {
             type: "bundle",
             slug: bundle.slug,
             name: bundle.title,
-            subtitle: bundle.products
-                ?.map(item => item.product?.title ? `${item.quantity}x ${item.product.title}` : null)
-                .filter(Boolean) ?? [],
+            subtitle: slots
+                .map((s) => s.item.product?.title
+                    ? `${s.item.quantity}x ${s.item.product.title}${s.selected?.flavourName ? ` – ${s.selected.flavourName}` : ""}`
+                    : null)
+                .filter(Boolean),
             price: effectivePrice,
             image: bundle.imageUrl ?? "",
             flavour: "",
+            selectedFlavours,
         })
         setIsAdding(false)
         if (result?.error === "failed") {
@@ -143,18 +233,33 @@ const BundleInteractive = ({ bundle }) => {
                             {bundle.title}
                         </h1>
 
-                        {/* Constituent products */}
-                        {bundle.products?.length > 0 && (
-                            <div className="flex flex-col gap-1">
-                                {bundle.products.map((item, i) => (
-                                    item.product?.title && (
-                                        <div key={item.product._id ?? i} className="flex justify-between items-center">
-                                            <span className="font-aeonik text-[16px] xl:text-[24px] text-black-custom leading-tight">
-                                                {item.product.title}
-                                            </span>
-                                            <span className="font-aeonik text-[16px] xl:text-[18px] text-black-custom/60">
-                                                <span className="text-[14px]">Quantity: </span>x{item.quantity}
-                                            </span>
+                        {/* Constituent products — with per-slot flavour pickers */}
+                        {slots.length > 0 && (
+                            <div className="flex flex-col gap-3">
+                                {slots.map((s) => (
+                                    s.item.product?.title && (
+                                        <div key={s.index} className="flex flex-col gap-1.5">
+                                            <div className="flex justify-between items-center">
+                                                <span className="font-aeonik text-[16px] xl:text-[24px] text-black-custom leading-tight">
+                                                    {s.item.product.title}
+                                                </span>
+                                                <span className="font-aeonik text-[16px] xl:text-[18px] text-black-custom/60">
+                                                    <span className="text-[14px]">Quantity: </span>x{s.item.quantity}
+                                                </span>
+                                            </div>
+                                            {s.canChoose ? (
+                                                <FlavourDropdown
+                                                    options={s.options}
+                                                    selectedId={s.selected?._id}
+                                                    onSelect={(id) => setSelections((prev) => ({ ...prev, [s.index]: id }))}
+                                                />
+                                            ) : (
+                                                s.selected?.flavourName && (
+                                                    <span className="font-aeonik text-[13px] xl:text-[15px] text-gray-text">
+                                                        {s.selected.flavourName}
+                                                    </span>
+                                                )
+                                            )}
                                         </div>
                                     )
                                 ))}
