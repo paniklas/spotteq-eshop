@@ -13,7 +13,7 @@ import ShopBySeriesSkeleton from "@/components/skeletons/shop-by-series-skeleton
 import BundleSectionSkeleton from "@/components/skeletons/bundle-section-skeleton"
 
 export const dynamic = "force-static";
-export const revalidate = 86400;
+export const revalidate = 3600;
 
 const Home = async ({ params }) => {
   const { locale } = await params;

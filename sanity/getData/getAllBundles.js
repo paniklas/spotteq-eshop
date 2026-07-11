@@ -1,5 +1,5 @@
 import { defineQuery } from 'next-sanity'
-import { sanityFetch } from '../lib/live'
+import { catalogFetch } from '../lib/catalogFetch'
 import { urlFor } from '../lib/image'
 
 export async function getAllBundles(locale) {
@@ -29,8 +29,10 @@ export async function getAllBundles(locale) {
   `)
 
   try {
-    const result = await sanityFetch({ query: QUERY, params: { locale } })
-    const bundles = result.data ?? []
+    // Tagged/cached path (via catalogFetch) so a bundle/product publish refreshes
+    // this home section through the existing webhook (`bundles` tag), instead of
+    // being frozen by the page's force-static render. Draft mode still goes live.
+    const bundles = await catalogFetch({ query: QUERY, params: { locale }, tags: ['bundles'] }) ?? []
 
     return bundles.map(bundle => ({
       ...bundle,

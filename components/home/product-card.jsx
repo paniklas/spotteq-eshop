@@ -2,18 +2,42 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { Heart } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 import { Link } from "@/i18n/navigation";
 import { urlFor } from "@/sanity/lib/image";
 import { toast } from "sonner";
 import { useCartStore, makeCartId } from "@/store/cart-store";
+import { useFavouritesStore } from "@/store/favourites-store";
+import { useFavouritesHydrated } from "@/hooks/use-favourites-hydrated";
 import { formatPrice } from "@/utils/formatPrice";
 
-
-const LOVE_ICON = "/icons/love-icon.svg";
 
 const ProductCard = ({ product, priority = false }) => {
     const [isAdding, setIsAdding] = useState(false)
     const { addToCart, cartItems } = useCartStore()
+
+    const { isLoaded, isSignedIn } = useUser()
+    const favHydrated = useFavouritesHydrated()
+    const isFav = useFavouritesStore((s) => s.ids.includes(product._id))
+    const toggleFavourite = useFavouritesStore((s) => s.toggleFavourite)
+    // Keep SSR/first paint neutral (empty) to match the server, then reflect the
+    // persisted state once hydrated — avoids a hydration mismatch and the flash.
+    const favourited = favHydrated && isFav
+
+    const handleToggleFavourite = async () => {
+        if (!isLoaded) return
+        if (!isSignedIn) {
+            toast.error("Please sign in to save favourites.")
+            return
+        }
+        const result = await toggleFavourite(product._id)
+        if (result?.error === "unauthenticated") {
+            toast.error("Please sign in to save favourites.")
+        } else if (result && !result.ok) {
+            toast.error("Could not update your wishlist. Please try again.")
+        }
+    }
 
     const attrs = product.attributes ?? [
         { label: product.subtitleLine1, value: product.size },
@@ -88,14 +112,17 @@ const ProductCard = ({ product, priority = false }) => {
                 </div>
 
                 {/* Wishlist */}
-                <button aria-label="Add to wishlist">
-                    <Image
-                        src={LOVE_ICON}
-                        alt="Love icon"
-                        width={36}
-                        height={36}
-                        sizes="36px"
-                        className="w-full h-full"
+                <button
+                    type="button"
+                    onClick={handleToggleFavourite}
+                    aria-label={favourited ? "Remove from wishlist" : "Add to wishlist"}
+                    aria-pressed={favourited}
+                    className="cursor-pointer transition-transform duration-300 hover:scale-110"
+                >
+                    <Heart
+                        size={26}
+                        strokeWidth={1.5}
+                        className={`transition-colors duration-300 ${favourited ? "fill-orange-accent text-orange-accent" : "text-black-custom"}`}
                     />
                 </button>
             </div>

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { Toaster } from "@/components/ui/sonner";
 // components
 import LocaleLanguageSetter from "@/components/common/locale-lng-setter";
+import FavouritesHydrator from "@/components/common/favourites-hydrator";
 import SmoothScrolling from "@/utils/SmoothScrolling";
 import Navbar from '@/components/common/navbar';
 import { CartProvider } from '@/context/cart-context';
@@ -46,6 +47,7 @@ export default async function LocaleLayout({ children, params }) {
                 <CartProvider allBundles={allBundles}>
                 <SmoothScrolling>
                     <LocaleLanguageSetter locale={locale} />
+                    <FavouritesHydrator />
                     <Navbar categoryGroups={navData.categoryGroups} navBundles={navData.bundles} />
                     <main>
                         {children}

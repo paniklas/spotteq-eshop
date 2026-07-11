@@ -63,12 +63,15 @@ Next page load for that tag  ──►  re-fetches fresh data, re-caches it
 | `getBundlesContainingProduct` | ✅ | `bundles` |
 | `getAllBundlesForCart` | ✅ | `bundles` |
 | `getNavData` | ✅ | `nav`, `categories`, `bundles` |
-| `getAllBundles` (home bundle section) | ❌ always live | — |
+| `getAllBundles` (home bundle section) | ✅ | `bundles` |
 | `getShippingMethods` (checkout) | ❌ always live | — |
 
 `getShippingMethods` is intentionally live so checkout never shows a stale
-shipping price. `getAllBundles` (home) was left live and can be converted later
-if desired.
+shipping price. `getAllBundles` (home) is cached via `catalogFetch` with the
+`bundles` tag — a bundle or product publish refreshes it through the existing
+webhook. (It previously used the live API, which the home page's `force-static`
+render silently froze to the 24h fallback; routing it through `catalogFetch`
+fixed that and preserves the Presentation-tool live preview.)
 
 ### How the cart & checkout get data (not through this cache)
 
