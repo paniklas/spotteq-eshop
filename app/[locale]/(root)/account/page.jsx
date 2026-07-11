@@ -53,6 +53,7 @@ export default async function OverviewPage({ params }) {
         : null;
 
     const recentOrders = (orders ?? []).slice(0, 3);
+    const wishlistCount = userInfo?.favourites?.length ?? 0;
 
     return (
         <div className="flex flex-col gap-6">
@@ -79,7 +80,7 @@ export default async function OverviewPage({ params }) {
                 <StatCard icon={ShoppingBag} value={totalOrders} label={t("stats.totalOrders")} />
                 <StatCard icon={Package} value={deliveredCount} label={t("stats.delivered")} />
                 <StatCard icon={Wallet} value={`${formatPrice(totalSpent)}€`} label={t("stats.totalSpent")} />
-                <StatCard icon={Heart} value={0} label={t("stats.wishlistItems")} />
+                <StatCard icon={Heart} value={wishlistCount} label={t("stats.wishlistItems")} />
             </div>
 
             {/* Recent orders */}

@@ -6,7 +6,10 @@ import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { ChevronDown, Plus, Minus, Heart, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
+import { useUser } from "@clerk/nextjs";
 import { useCartStore, makeCartId } from "@/store/cart-store";
+import { useFavouritesStore } from "@/store/favourites-store";
+import { useFavouritesHydrated } from "@/hooks/use-favourites-hydrated";
 import { formatPrice } from "@/utils/formatPrice";
 import { PortableText } from "@portabletext/react";
 
@@ -44,10 +47,29 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
     const router = useRouter()
     const [quantity, setQuantity] = useState(1)
     const [flavourOpen, setFlavourOpen] = useState(false)
-    const [wishlisted, setWishlisted] = useState(false)
     const [currentImage, setCurrentImage] = useState(0)
     const [isAdding, setIsAdding] = useState(false)
     const { addToCart, cartItems } = useCartStore()
+
+    const { isLoaded, isSignedIn } = useUser()
+    const favHydrated = useFavouritesHydrated()
+    const isFav = useFavouritesStore((s) => s.ids.includes(product._id))
+    const toggleFavourite = useFavouritesStore((s) => s.toggleFavourite)
+    const favourited = favHydrated && isFav
+
+    const handleToggleFavourite = async () => {
+        if (!isLoaded) return
+        if (!isSignedIn) {
+            toast.error("Please sign in to save favourites.")
+            return
+        }
+        const result = await toggleFavourite(product._id)
+        if (result?.error === "unauthenticated") {
+            toast.error("Please sign in to save favourites.")
+        } else if (result && !result.ok) {
+            toast.error("Could not update your wishlist. Please try again.")
+        }
+    }
 
     const displayImages = [
         ...(product.imageUrl ? [product.imageUrl] : []),
@@ -280,14 +302,16 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
 
                             {/* Wishlist */}
                             <button
-                                onClick={() => setWishlisted((v) => !v)}
-                                aria-label="Add to wishlist"
+                                type="button"
+                                onClick={handleToggleFavourite}
+                                aria-label={favourited ? "Remove from wishlist" : "Add to wishlist"}
+                                aria-pressed={favourited}
                                 className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-mint hover:border-black-custom transition-colors duration-300 cursor-pointer"
                             >
                                 <Heart
                                     size={16}
                                     strokeWidth={1.5}
-                                    className={wishlisted ? "fill-black-custom" : ""}
+                                    className={`transition-colors duration-300 ${favourited ? "fill-orange-accent text-orange-accent" : "text-black-custom"}`}
                                 />
                             </button>
                         </div>

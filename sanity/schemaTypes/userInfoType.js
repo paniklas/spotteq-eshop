@@ -77,6 +77,13 @@ export const userInfoType = defineType({
       ],
     }),
     defineField({
+      name: 'favourites',
+      title: 'Favourites',
+      type: 'array',
+      description: 'Products and bundles the customer has saved to their wishlist.',
+      of: [{ type: 'reference', to: [{ type: 'product' }, { type: 'bundle' }] }],
+    }),
+    defineField({
       name: 'createdAt',
       title: 'Created At',
       type: 'datetime',
