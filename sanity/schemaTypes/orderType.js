@@ -88,6 +88,29 @@ export const orderType = defineType({
             defineField({ name: 'bundle', type: 'reference', to: [{ type: 'bundle' }] }),
             defineField({ name: 'quantity', type: 'number', validation: Rule => Rule.required().min(1).integer() }),
             defineField({ name: 'price', type: 'number', validation: Rule => Rule.required() }),
+            defineField({
+              name: 'selectedFlavours',
+              title: 'Selected Flavours',
+              description: 'The flavour variant the customer chose for each slot. Empty means the bundle defaults were used.',
+              type: 'array',
+              of: [
+                defineArrayMember({
+                  type: 'object',
+                  fields: [
+                    defineField({ name: 'variant', title: 'Variant', type: 'reference', to: [{ type: 'product' }] }),
+                    defineField({ name: 'flavourName', title: 'Flavour', type: 'string' }),
+                    defineField({ name: 'quantity', title: 'Quantity per bundle', type: 'number' }),
+                  ],
+                  preview: {
+                    select: { flavour: 'flavourName', titles: 'variant.title', qty: 'quantity' },
+                    prepare({ flavour, titles, qty }) {
+                      const title = Array.isArray(titles) ? titles.find(t => t._key === 'el')?.value || titles[0]?.value : ''
+                      return { title: `${title}${flavour ? ` – ${flavour}` : ''}`, subtitle: `×${qty}` }
+                    },
+                  },
+                }),
+              ],
+            }),
           ],
           preview: {
             select: { titles: 'bundle.title', qty: 'quantity', price: 'price' },

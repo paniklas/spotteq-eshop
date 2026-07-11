@@ -28,6 +28,12 @@ export async function getUserOrders({ userInfoId, email, locale }) {
             bundles[]{
                 quantity,
                 price,
+                selectedFlavours[]{
+                    _key,
+                    flavourName,
+                    quantity,
+                    "variantName": variant->title[language == $locale][0].value
+                },
                 "name": bundle->title[language == $locale][0].value,
                 "imageUrl": bundle->image.asset->url
             },
