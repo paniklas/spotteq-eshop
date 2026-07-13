@@ -33,7 +33,9 @@ export const useCartStore = create(
             cartOpen: false,
             addingIds: {},
 
-            addToCart: async (item, qty = 1) => {
+            // openDrawer: whether to pop the cart drawer on a successful add.
+            // Quick Buy passes false so it can navigate straight to checkout.
+            addToCart: async (item, qty = 1, { openDrawer = true } = {}) => {
                 const variantKey = item.type === "bundle" ? bundleVariantKey(item.selectedFlavours) : ""
                 const cartId = makeCartId(item.id, variantKey)
 
@@ -70,14 +72,14 @@ export const useCartStore = create(
                                         ? { ...i, qty: i.qty + qty, inventory: inventory ?? i.inventory }
                                         : i
                                 ),
-                                cartOpen: true,
+                                cartOpen: openDrawer,
                                 addingIds: next,
                             }
                         }
 
                         return {
                             cartItems: [...state.cartItems, { ...item, qty, cartId, inventory: inventory ?? null }],
-                            cartOpen: true,
+                            cartOpen: openDrawer,
                             addingIds: next,
                         }
                     })

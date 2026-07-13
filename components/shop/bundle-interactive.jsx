@@ -10,7 +10,7 @@ import { useFavouritesStore } from "@/store/favourites-store";
 import { useFavouritesHydrated } from "@/hooks/use-favourites-hydrated";
 import { formatPrice } from "@/utils/formatPrice";
 import { PortableText } from "@portabletext/react";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 
 // The selectable flavours for a slot: the admin's default product plus any active
 // sibling variants, deduped (the default may or may not appear in its own flavours list).
@@ -75,7 +75,9 @@ const FlavourDropdown = ({ options, selectedId, onSelect }) => {
 
 
 const BundleInteractive = ({ bundle }) => {
+    const router = useRouter()
     const [isAdding, setIsAdding] = useState(false)
+    const [isBuying, setIsBuying] = useState(false)
     const [currentImage, setCurrentImage] = useState(0)
     const { addToCart, cartItems } = useCartStore()
 
@@ -170,6 +172,40 @@ const BundleInteractive = ({ bundle }) => {
         setIsAdding(false)
         if (result?.error === "failed") {
             toast.error("Failed to add to bag. Please try again.")
+        }
+    }
+
+    // Quick Buy: add this bundle (with chosen flavours) without popping the cart
+    // drawer, then go straight to checkout where it shows in the order summary.
+    const handleQuickBuy = async () => {
+        if (atMax || isBuying) return
+        setIsBuying(true)
+        const result = await addToCart({
+            id: bundle._id,
+            type: "bundle",
+            slug: bundle.slug,
+            name: bundle.title,
+            subtitle: slots
+                .map((s) => s.item.product?.title
+                    ? `${s.item.quantity}x ${s.item.product.title}${s.selected?.flavourName ? ` – ${s.selected.flavourName}` : ""}`
+                    : null)
+                .filter(Boolean),
+            price: effectivePrice,
+            image: bundle.imageUrl ?? "",
+            flavour: "",
+            selectedFlavours,
+        }, 1, { openDrawer: false })
+        if (result?.error === "out_of_stock") {
+            toast.error("This bundle is out of stock.")
+            setIsBuying(false)
+        } else if (result?.error === "max_quantity") {
+            toast.error("Maximum available quantity reached.")
+            setIsBuying(false)
+        } else if (result?.error === "failed") {
+            toast.error("Failed to add to bag. Please try again.")
+            setIsBuying(false)
+        } else {
+            router.push("/checkout")
         }
     }
 
@@ -340,8 +376,12 @@ const BundleInteractive = ({ bundle }) => {
                             >
                                 {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : "ADD TO BAG"}
                             </button>
-                            <button className="flex-1 h-12 bg-gray-mint rounded-full font-aeonik text-[12px] xl:text-[16px] uppercase text-black-custom hover:bg-white-custom hover:border hover:border-black-custom transition-colors duration-300 cursor-pointer">
-                                QUICK BUY
+                            <button
+                                onClick={handleQuickBuy}
+                                disabled={isBuying || atMax}
+                                className="flex-1 h-12 bg-gray-mint rounded-full font-aeonik text-[12px] xl:text-[16px] uppercase text-black-custom hover:bg-white-custom hover:border hover:border-black-custom transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                            >
+                                {isBuying ? "..." : "QUICK BUY"}
                             </button>
                         </div>
                     </div>

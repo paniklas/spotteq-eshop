@@ -1,7 +1,7 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { ShoppingBag, Package, Wallet, Heart, ArrowRight } from "lucide-react";
+import { ShoppingBag, Package, Heart, ArrowRight } from "lucide-react";
 import { getOrCreateUserInfo } from "@/sanity/getData/getOrCreateUserInfo";
 import { getUserOrders } from "@/sanity/getData/getUserOrders";
 import { formatPrice } from "@/utils/formatPrice";
@@ -40,13 +40,10 @@ export default async function OverviewPage({ params }) {
     const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(" ");
     const initials = [user?.firstName?.[0], user?.lastName?.[0]].filter(Boolean).join("").toUpperCase() || email[0]?.toUpperCase() || "?";
 
-    const orders = await getUserOrders({ userInfoId: userInfo?._id, email, locale });
+    const orders = await getUserOrders({ userInfoId: userInfo?._id, locale });
 
     const totalOrders = orders?.length ?? 0;
     const deliveredCount = orders?.filter((o) => o.status === "delivered").length ?? 0;
-    const totalSpent = (orders ?? [])
-        .filter((o) => ["paid", "shipped", "delivered"].includes(o.status))
-        .reduce((sum, o) => sum + (o.totalPrice ?? 0), 0);
 
     const memberSince = user?.createdAt
         ? new Date(user.createdAt).toLocaleDateString(locale, { month: "long", year: "numeric" })
@@ -76,10 +73,9 @@ export default async function OverviewPage({ params }) {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <StatCard icon={ShoppingBag} value={totalOrders} label={t("stats.totalOrders")} />
                 <StatCard icon={Package} value={deliveredCount} label={t("stats.delivered")} />
-                <StatCard icon={Wallet} value={`${formatPrice(totalSpent)}€`} label={t("stats.totalSpent")} />
                 <StatCard icon={Heart} value={wishlistCount} label={t("stats.wishlistItems")} />
             </div>
 
