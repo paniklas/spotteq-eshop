@@ -46,7 +46,7 @@ export default function SSOCallbackPage() {
     return (
         <main className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gray-light page-x text-center">
             <Spinner />
-            <div className="flex flex-col gap-1">
+            <div role="status" aria-live="polite" className="flex flex-col gap-1">
                 <p className="font-aeonik text-[18px] text-black-custom">{t.title}</p>
                 <p className="font-aeonik text-[14px] text-gray-text">{t.subtitle}</p>
             </div>

@@ -52,6 +52,7 @@ export default function SignInForm() {
     const [newPassword, setNewPassword] = useState('');
     const [step, setStep] = useState('identifier');
     const [isLoading, setIsLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
     const [error, setError] = useState('');
     const router = useRouter();
     const locale = useLocale();
@@ -61,16 +62,19 @@ export default function SignInForm() {
         err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || t('genericError');
 
     const handleGoogle = async () => {
-        if (!isLoaded) return;
+        if (!isLoaded || googleLoading) return;
         setError('');
+        setGoogleLoading(true);
         try {
             await signIn.authenticateWithRedirect({
                 strategy: 'oauth_google',
                 redirectUrl: `${window.location.origin}/sso-callback`,
                 redirectUrlComplete: `${window.location.origin}/${locale}/account`,
             });
+            // On success the browser redirects away, so no need to reset the flag.
         } catch (err) {
             setError(clerkError(err));
+            setGoogleLoading(false);
         }
     };
 
@@ -173,10 +177,15 @@ export default function SignInForm() {
                     <button
                         type="button"
                         onClick={handleGoogle}
+                        disabled={googleLoading}
                         className={`${BTN} bg-white-custom text-black-custom border border-gray-mint hover:bg-gray-light`}
                     >
-                        <GoogleIcon />
-                        <span className="ml-3">{t('continueWithGoogle')}</span>
+                        {googleLoading ? <Spinner /> : (
+                            <>
+                                <GoogleIcon />
+                                <span className="ml-3">{t('continueWithGoogle')}</span>
+                            </>
+                        )}
                     </button>
 
                     <div className="flex items-center gap-3">
