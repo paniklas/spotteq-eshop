@@ -6,6 +6,24 @@ import { useLocale, useTranslations } from "next-intl";
 import { ChevronDown, Package, MapPin, Truck } from "lucide-react";
 import { formatPrice } from "@/utils/formatPrice";
 
+// BoxNow parcel status -> badge style (app badge palette). The pickup-ready state
+// is the most prominent (solid brand green) since it's the one the customer must
+// act on; in-transit is blue, problem/return states orange, cancelled grey.
+const BOXNOW_STATUS_STYLE = {
+    "final-destination": "bg-teal-accent text-black-custom",
+    delivered: "bg-teal-accent/15 text-black-custom",
+    "in-depot": "bg-blue-100 text-blue-700",
+    "accepted-to-locker": "bg-blue-100 text-blue-700",
+    "accepted-for-return": "bg-orange-accent/15 text-orange-accent",
+    returned: "bg-orange-accent/15 text-orange-accent",
+    expired: "bg-orange-accent/15 text-orange-accent",
+    lost: "bg-orange-accent/15 text-orange-accent",
+    missing: "bg-orange-accent/15 text-orange-accent",
+    canceled: "bg-gray-soft text-gray-text",
+    cancelled: "bg-gray-soft text-gray-text",
+};
+const DEFAULT_STATUS_STYLE = "bg-gray-soft text-black-custom";
+
 const OrderCard = ({ order }) => {
     const t = useTranslations("account");
     const locale = useLocale();
@@ -21,6 +39,14 @@ const OrderCard = ({ order }) => {
     const discount = order.amountDiscount ?? 0;
     const addr = order.shippingAddress;
     const hasTracking = order.boxNowParcelId || order.boxNowLockerName || order.boxNowLockerAddress || order.boxNowParcelStatus;
+
+    // Friendly, localized label for the raw BoxNow event (e.g. "final-destination"),
+    // falling back to the raw value for any event we don't have a translation for.
+    const rawStatus = order.boxNowParcelStatus;
+    const statusLabel = rawStatus
+        ? (t.has(`boxNowStatus.${rawStatus}`) ? t(`boxNowStatus.${rawStatus}`) : rawStatus)
+        : null;
+    const statusStyle = rawStatus ? (BOXNOW_STATUS_STYLE[rawStatus] ?? DEFAULT_STATUS_STYLE) : "";
 
     return (
         <div className="bg-white-custom rounded-2xl overflow-hidden">
@@ -64,6 +90,9 @@ const OrderCard = ({ order }) => {
                                         <p className="font-aeonik text-[14px] text-black-custom truncate">
                                             {line.kind === "bundle" ? `[${t("bundle")}] ` : ""}{line.name}
                                         </p>
+                                        {line.kind === "product" && line.flavourName && (
+                                            <p className="font-aeonik text-[12px] text-black-custom">{line.flavourName}</p>
+                                        )}
                                         {line.selectedFlavours?.length > 0 && (
                                             <p className="font-aeonik text-[12px] text-black-custom">
                                                 {line.selectedFlavours
@@ -72,7 +101,7 @@ const OrderCard = ({ order }) => {
                                             </p>
                                         )}
                                         <p className="font-aeonik text-[12px] text-gray-text">
-                                            {[line.selectedFlavour, line.sku && `SKU: ${line.sku}`, `${t("qty")}: ${line.quantity}`].filter(Boolean).join(" · ")}
+                                            {[line.sku && `SKU: ${line.sku}`, `${t("qty")}: ${line.quantity}`].filter(Boolean).join(" · ")}
                                         </p>
                                     </div>
                                     <span className="font-aeonik text-[14px] text-black-custom shrink-0">
@@ -134,10 +163,14 @@ const OrderCard = ({ order }) => {
                                                 <dd className="text-black-custom text-right">{order.boxNowParcelId}</dd>
                                             </div>
                                         )}
-                                        {order.boxNowParcelStatus && (
-                                            <div className="flex justify-between gap-3">
+                                        {statusLabel && (
+                                            <div className="flex justify-between items-center gap-3">
                                                 <dt className="text-gray-text shrink-0">{t("trackingStatus")}</dt>
-                                                <dd className="text-black-custom text-right">{order.boxNowParcelStatus}</dd>
+                                                <dd className="text-right">
+                                                    <span className={`inline-block font-aeonik text-[12px] px-2.5 py-1 rounded-full leading-none ${statusStyle}`}>
+                                                        {statusLabel}
+                                                    </span>
+                                                </dd>
                                             </div>
                                         )}
                                     </dl>

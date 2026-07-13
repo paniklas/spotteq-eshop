@@ -154,12 +154,18 @@ export async function POST(req) {
     const orderProducts = [];
     const orderBundles  = [];
 
+    // Total quantity demanded per product id (incl. bundle constituents/variants),
+    // used for the server-side stock check below. Mirrors the webhook decrement.
+    const demand = {};
+    const addDemand = (id, qty) => { if (id) demand[id] = (demand[id] ?? 0) + qty; };
+
     for (const [i, item] of productItems.entries()) {
       const price = productPriceMap[item.id];
       if (!price) {
         return NextResponse.json({ error: "One or more products are no longer available." }, { status: 400 });
       }
       subtotal += price * item.qty;
+      addDemand(item.id, item.qty);
       orderProducts.push({
         _key: `prod_${item.id}_${i}`,
         product: { _type: "reference", _ref: item.id },
@@ -204,6 +210,7 @@ export async function POST(req) {
           if (!allowed.has(entry.variantId)) {
             return NextResponse.json({ error: "Invalid bundle flavour selection." }, { status: 400 });
           }
+          addDemand(entry.variantId, item.qty * (slot.quantity ?? 1));
           selectedFlavours.push({
             _key: `bf_${i}_${s}`,
             variant: { _type: "reference", _ref: entry.variantId },
@@ -211,6 +218,9 @@ export async function POST(req) {
             quantity: slot.quantity ?? 1,
           });
         }
+      } else {
+        // No explicit selection = bundle defaults; demand falls on each slot's default.
+        for (const slot of slots) addDemand(slot.defaultId, item.qty * (slot.quantity ?? 1));
       }
 
       orderBundles.push({
@@ -220,6 +230,33 @@ export async function POST(req) {
         price,
         ...(selectedFlavours ? { selectedFlavours } : {}),
       });
+    }
+
+    // --- Server-side stock check (H5) ---
+    // The client validates inventory at form submit, but nothing stops a stale tab,
+    // a direct API call, or two buyers of the last unit from reaching here. Re-check
+    // against live inventory before creating the order/PI. Not a hard reservation
+    // (stock is only decremented on the paid webhook), but it shrinks the oversell
+    // window to the seconds between this check and payment confirmation.
+    const demandIds = Object.keys(demand);
+    if (demandIds.length) {
+      const stock = await backendClient.fetch(
+        `*[_type == "product" && _id in $ids]{ _id, inventory }`,
+        { ids: demandIds }
+      );
+      const invById = Object.fromEntries((stock ?? []).map((p) => [p._id, p.inventory]));
+      // inventory null = unlimited; a demanded id missing from stock is already
+      // guarded upstream (price map for products, variant validation for bundles).
+      const outOfStock = demandIds.some((id) => {
+        const inv = invById[id];
+        return inv != null && demand[id] > inv;
+      });
+      if (outOfStock) {
+        return NextResponse.json(
+          { error: "Some items just went out of stock. Please review your bag and try again." },
+          { status: 409 }
+        );
+      }
     }
 
     // --- Validate coupon server-side ---
