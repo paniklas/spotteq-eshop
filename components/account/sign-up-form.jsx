@@ -141,7 +141,6 @@ export default function SignUpForm() {
                         type="button"
                         onClick={handleGoogle}
                         className={`${BTN} bg-white-custom text-black-custom border border-gray-mint hover:bg-gray-light`}
-                        disabled
                     >
                         <GoogleIcon />
                         <span className="ml-3">{t('continueWithGoogle')}</span>

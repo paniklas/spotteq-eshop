@@ -54,3 +54,6 @@ node_modules/
 
 # clerk configuration (can include secrets)
 /.clerk/
+
+# local-only setup notes (can reference instance-specific config)
+/docs/google-auth-setup.md
