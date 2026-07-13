@@ -64,15 +64,18 @@ export async function POST(req) {
   }
 
   const received = body.datasignature ?? "";
-  const expected = createHmac("sha256", secret)
-    .update(rawData)
-    .digest("hex");
+  // Validate the shape first: a SHA-256 hex digest is exactly 64 hex chars. This
+  // rejects malformed signatures early and guarantees both buffers are 32 bytes
+  // so timingSafeEqual can't throw on a length mismatch.
+  if (!/^[0-9a-fA-F]{64}$/.test(received)) {
+    console.error("[boxnow-webhook] Malformed datasignature");
+    return new NextResponse("Unauthorized", { status: 401 });
+  }
 
-  const receivedBuf = Buffer.from(received);
-  const expectedBuf = Buffer.from(expected);
-  const sigValid =
-    receivedBuf.length === expectedBuf.length &&
-    timingSafeEqual(receivedBuf, expectedBuf);
+  // Compare the decoded 32-byte digests, not the hex strings — decoding via hex
+  // normalizes case, so an uppercase signature from BoxNow still verifies.
+  const expected = createHmac("sha256", secret).update(rawData).digest();
+  const sigValid = timingSafeEqual(Buffer.from(received, "hex"), expected);
 
   if (!sigValid) {
     console.error("[boxnow-webhook] Invalid datasignature");
