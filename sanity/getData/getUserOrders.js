@@ -27,6 +27,7 @@ export async function getUserOrders({ userInfoId, locale }) {
                 price,
                 selectedFlavour,
                 "name": product->title[language == $locale][0].value,
+                "flavourName": product->flavourName[language == $locale][0].value,
                 "sku": product->sku,
                 "imageUrl": product->image.asset->url
             },
