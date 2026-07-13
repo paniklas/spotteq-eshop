@@ -178,9 +178,10 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
     if (accountPrefilled.current || !accountDefaults) return;
     accountPrefilled.current = true;
     prefilled.current = true; // skip the guest savedInfo prefill below
+    const nextEmail = accountDefaults.email ?? form.getValues("email");
     form.reset({
       ...form.getValues(),
-      email: accountDefaults.email ?? form.getValues("email"),
+      email: nextEmail,
       firstName: accountDefaults.firstName ?? "",
       lastName: accountDefaults.lastName ?? "",
       company: accountDefaults.company ?? "",
@@ -194,7 +195,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
     // Sync the prefilled email into the cart store — the coupon validator reads
     // `checkoutEmail` from there, and a programmatic reset doesn't fire the input's
     // onChange, so without this a logged-in user hits "enter your email first".
-    setCheckoutEmail(form.getValues("email") ?? "");
+    setCheckoutEmail(nextEmail ?? "");
   }, [accountDefaults, form, setCheckoutEmail]);
 
   // Pre-fill form with saved customer info after Zustand hydrates from localStorage

@@ -72,14 +72,14 @@ export const useCartStore = create(
                                         ? { ...i, qty: i.qty + qty, inventory: inventory ?? i.inventory }
                                         : i
                                 ),
-                                cartOpen: openDrawer,
+                                ...(openDrawer ? { cartOpen: true } : {}),
                                 addingIds: next,
                             }
                         }
 
                         return {
                             cartItems: [...state.cartItems, { ...item, qty, cartId, inventory: inventory ?? null }],
-                            cartOpen: openDrawer,
+                            ...(openDrawer ? { cartOpen: true } : {}),
                             addingIds: next,
                         }
                     })

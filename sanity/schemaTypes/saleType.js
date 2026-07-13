@@ -62,8 +62,8 @@ export const saleType = defineType({
         defineArrayMember({
           type: 'object',
           fields: [
-            defineField({ name: 'email', type: 'string', readOnly: true }),
-            defineField({ name: 'usedAt', type: 'datetime', readOnly: true }),
+            defineField({ name: 'email', type: 'string', readOnly: true, validation: (Rule) => Rule.required() }),
+            defineField({ name: 'usedAt', type: 'datetime', readOnly: true, validation: (Rule) => Rule.required() }),
             defineField({ name: 'orderId', type: 'string', readOnly: true }),
           ],
           preview: {

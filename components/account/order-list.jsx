@@ -20,7 +20,7 @@ const OrderCard = ({ order }) => {
     const shippingCost = order.shippingMethod?.price ?? 0;
     const discount = order.amountDiscount ?? 0;
     const addr = order.shippingAddress;
-    const hasTracking = order.boxNowParcelId || order.boxNowLockerName || order.boxNowLockerAddress;
+    const hasTracking = order.boxNowParcelId || order.boxNowLockerName || order.boxNowLockerAddress || order.boxNowParcelStatus;
 
     return (
         <div className="bg-white-custom rounded-2xl overflow-hidden">
