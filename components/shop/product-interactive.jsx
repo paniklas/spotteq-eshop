@@ -1,8 +1,7 @@
 "use client"
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import Image from "next/image";
 import { ChevronDown, Plus, Minus, Heart, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
@@ -49,6 +48,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
     const [flavourOpen, setFlavourOpen] = useState(false)
     const [currentImage, setCurrentImage] = useState(0)
     const [isAdding, setIsAdding] = useState(false)
+    const [isBuying, setIsBuying] = useState(false)
     const { addToCart, cartItems } = useCartStore()
 
     const { isLoaded, isSignedIn } = useUser()
@@ -85,6 +85,36 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
 
     const decrement = () => setQuantity((q) => Math.max(1, q - 1))
     const increment = () => setQuantity((q) => Math.min(q + 1, Math.max(1, remaining)))
+
+    // Quick Buy: add this product (with the chosen quantity/flavour) then go
+    // straight to checkout, where the cart shows in the order summary.
+    const handleQuickBuy = async () => {
+        if (atMax || isBuying) return
+        setIsBuying(true)
+        const result = await addToCart({
+            id: product._id,
+            type: "product",
+            slug: product.slug,
+            name: product.title,
+            subtitle: product.subtitle,
+            price: effectivePrice,
+            image: displayImages[0] ?? "",
+            flavour: product.flavourName ?? "",
+        }, quantity, { openDrawer: false })
+        if (result?.error === "out_of_stock") {
+            toast.error("This product is out of stock.")
+            setIsBuying(false)
+        } else if (result?.error === "max_quantity") {
+            toast.error(`Maximum available quantity reached (${product.inventory}).`)
+            setIsBuying(false)
+        } else if (result?.error === "failed") {
+            toast.error("Failed to add to bag. Please try again.")
+            setIsBuying(false)
+        } else {
+            // Success — navigate to checkout (leave isBuying set; the page unmounts).
+            router.push("/checkout")
+        }
+    }
 
     const prevImage = () =>
         setCurrentImage((i) => (i === 0 ? displayImages.length - 1 : i - 1))
@@ -347,8 +377,12 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                             >
                                 {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : "ADD TO BAG"}
                             </button>
-                            <button className="flex-1 h-12 bg-gray-mint rounded-full font-aeonik text-[12px] xl:text-[16px] uppercase text-black-custom hover:bg-white-custom hover:border hover:border-black-custom transition-colors duration-300 cursor-pointer">
-                                QUICK BUY
+                            <button
+                                onClick={handleQuickBuy}
+                                disabled={isBuying || atMax}
+                                className="flex-1 h-12 bg-gray-mint rounded-full font-aeonik text-[12px] xl:text-[16px] uppercase text-black-custom hover:bg-white-custom hover:border hover:border-black-custom transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                            >
+                                {isBuying ? "..." : "QUICK BUY"}
                             </button>
                         </div>
 

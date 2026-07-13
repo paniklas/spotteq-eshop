@@ -178,9 +178,10 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
     if (accountPrefilled.current || !accountDefaults) return;
     accountPrefilled.current = true;
     prefilled.current = true; // skip the guest savedInfo prefill below
+    const nextEmail = accountDefaults.email ?? form.getValues("email");
     form.reset({
       ...form.getValues(),
-      email: accountDefaults.email ?? form.getValues("email"),
+      email: nextEmail,
       firstName: accountDefaults.firstName ?? "",
       lastName: accountDefaults.lastName ?? "",
       company: accountDefaults.company ?? "",
@@ -191,7 +192,11 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
       country: accountDefaults.country || "GR",
       phone: accountDefaults.phone ?? "",
     });
-  }, [accountDefaults, form]);
+    // Sync the prefilled email into the cart store — the coupon validator reads
+    // `checkoutEmail` from there, and a programmatic reset doesn't fire the input's
+    // onChange, so without this a logged-in user hits "enter your email first".
+    setCheckoutEmail(nextEmail ?? "");
+  }, [accountDefaults, form, setCheckoutEmail]);
 
   // Pre-fill form with saved customer info after Zustand hydrates from localStorage
   useEffect(() => {
@@ -248,6 +253,32 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
         return;
       }
 
+      // Billing address for invoicing — mirrors shipping unless the customer
+      // entered a separate one. Normalized here so the server just stores it.
+      const billingInfo = data.useShippingAsBilling
+        ? {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            company: data.company ?? "",
+            address: data.address,
+            apartment: data.apartment ?? "",
+            city: data.city,
+            postalCode: data.postalCode,
+            country: data.country,
+            phone: data.phone,
+          }
+        : {
+            firstName: data.billingFirstName,
+            lastName: data.billingLastName,
+            company: data.billingCompany ?? "",
+            address: data.billingAddress,
+            apartment: data.billingApartment ?? "",
+            city: data.billingCity,
+            postalCode: data.billingPostalCode,
+            country: data.billingCountry,
+            phone: data.billingPhone,
+          };
+
       // Build customerInfo for the payment intent
       const customerInfo = {
         firstName: data.firstName,
@@ -260,6 +291,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
         postalCode: data.postalCode,
         country: data.country,
         emailMarketing: data.emailMarketing,
+        billingInfo,
       };
 
       if (data.saveInfo) {

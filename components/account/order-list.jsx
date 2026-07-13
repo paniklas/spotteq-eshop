@@ -20,7 +20,7 @@ const OrderCard = ({ order }) => {
     const shippingCost = order.shippingMethod?.price ?? 0;
     const discount = order.amountDiscount ?? 0;
     const addr = order.shippingAddress;
-    const hasTracking = order.boxNowParcelId || order.boxNowLockerName;
+    const hasTracking = order.boxNowParcelId || order.boxNowLockerName || order.boxNowLockerAddress || order.boxNowParcelStatus;
 
     return (
         <div className="bg-white-custom rounded-2xl overflow-hidden">
@@ -115,9 +115,32 @@ const OrderCard = ({ order }) => {
                                     <p className="flex items-center gap-1.5 font-aeonik text-[11px] uppercase tracking-wide text-gray-text mb-2">
                                         <Truck size={13} /> {t("tracking")}
                                     </p>
-                                    <p className="font-aeonik text-[13px] text-black-custom">
-                                        {order.boxNowLockerName}{order.boxNowParcelStatus ? ` · ${order.boxNowParcelStatus}` : ""}
-                                    </p>
+                                    <dl className="flex flex-col gap-1 font-aeonik text-[13px]">
+                                        {order.boxNowLockerName && (
+                                            <div className="flex justify-between gap-3">
+                                                <dt className="text-gray-text shrink-0">{t("trackingLocker")}</dt>
+                                                <dd className="text-black-custom text-right">{order.boxNowLockerName}</dd>
+                                            </div>
+                                        )}
+                                        {order.boxNowLockerAddress && (
+                                            <div className="flex justify-between gap-3">
+                                                <dt className="text-gray-text shrink-0">{t("trackingLocation")}</dt>
+                                                <dd className="text-black-custom text-right">{order.boxNowLockerAddress}</dd>
+                                            </div>
+                                        )}
+                                        {order.boxNowParcelId && (
+                                            <div className="flex justify-between gap-3">
+                                                <dt className="text-gray-text shrink-0">{t("trackingParcelId")}</dt>
+                                                <dd className="text-black-custom text-right">{order.boxNowParcelId}</dd>
+                                            </div>
+                                        )}
+                                        {order.boxNowParcelStatus && (
+                                            <div className="flex justify-between gap-3">
+                                                <dt className="text-gray-text shrink-0">{t("trackingStatus")}</dt>
+                                                <dd className="text-black-custom text-right">{order.boxNowParcelStatus}</dd>
+                                            </div>
+                                        )}
+                                    </dl>
                                 </div>
                             )}
                         </div>

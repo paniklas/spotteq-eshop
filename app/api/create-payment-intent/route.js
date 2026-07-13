@@ -53,6 +53,19 @@ const bodySchema = z.object({
     postalCode: z.string().optional(),
     country: z.string().optional(),
     phone: z.string().optional(),
+    billingInfo: z
+      .object({
+        firstName: z.string().optional(),
+        lastName: z.string().optional(),
+        company: z.string().optional(),
+        address: z.string().optional(),
+        apartment: z.string().optional(),
+        city: z.string().optional(),
+        postalCode: z.string().optional(),
+        country: z.string().optional(),
+        phone: z.string().optional(),
+      })
+      .optional(),
   }),
   boxNowLockerId: z.string().optional().nullable(),
   boxNowLockerName: z.string().optional().nullable(),
@@ -348,6 +361,19 @@ export async function POST(req) {
         postalCode: customerInfo.postalCode ?? "",
         country:    customerInfo.country    ?? "",
         phone:      customerInfo.phone      ?? "",
+      },
+      // Billing address for invoicing. Falls back to the shipping fields when the
+      // client didn't send a separate billing block (older clients / safety).
+      billingAddress: {
+        firstName:  customerInfo.billingInfo?.firstName  ?? customerInfo.firstName,
+        lastName:   customerInfo.billingInfo?.lastName   ?? customerInfo.lastName,
+        company:    customerInfo.billingInfo?.company    ?? "",
+        address:    customerInfo.billingInfo?.address    ?? customerInfo.address    ?? "",
+        apartment:  customerInfo.billingInfo?.apartment  ?? customerInfo.apartment  ?? "",
+        city:       customerInfo.billingInfo?.city       ?? customerInfo.city       ?? "",
+        postalCode: customerInfo.billingInfo?.postalCode ?? customerInfo.postalCode ?? "",
+        country:    customerInfo.billingInfo?.country    ?? customerInfo.country    ?? "",
+        phone:      customerInfo.billingInfo?.phone      ?? customerInfo.phone      ?? "",
       },
       status:    "pending",
       orderDate: new Date().toISOString(),

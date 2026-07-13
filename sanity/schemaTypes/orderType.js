@@ -174,6 +174,23 @@ export const orderType = defineType({
       ],
     }),
     defineField({
+      name: 'billingAddress',
+      title: 'Billing Address',
+      type: 'object',
+      description: 'Billing address for invoicing. Equals the shipping address when the customer did not enter a separate one.',
+      fields: [
+        defineField({ name: 'firstName', type: 'string' }),
+        defineField({ name: 'lastName', type: 'string' }),
+        defineField({ name: 'company', type: 'string' }),
+        defineField({ name: 'address', type: 'string' }),
+        defineField({ name: 'apartment', type: 'string' }),
+        defineField({ name: 'city', type: 'string' }),
+        defineField({ name: 'postalCode', type: 'string' }),
+        defineField({ name: 'country', type: 'string' }),
+        defineField({ name: 'phone', type: 'string' }),
+      ],
+    }),
+    defineField({
       name: 'status',
       title: 'Status',
       type: 'string',

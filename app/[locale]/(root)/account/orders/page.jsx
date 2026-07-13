@@ -1,4 +1,3 @@
-import { currentUser } from "@clerk/nextjs/server";
 import { getTranslations } from "next-intl/server";
 import { getOrCreateUserInfo } from "@/sanity/getData/getOrCreateUserInfo";
 import { getUserOrders } from "@/sanity/getData/getUserOrders";
@@ -9,14 +8,12 @@ export const dynamic = "force-dynamic";
 export default async function OrdersPage({ params }) {
     const { locale } = await params;
 
-    const [user, userInfo, t] = await Promise.all([
-        currentUser(),
+    const [userInfo, t] = await Promise.all([
         getOrCreateUserInfo(),
         getTranslations("account"),
     ]);
 
-    const email = user?.primaryEmailAddress?.emailAddress ?? userInfo?.email ?? "";
-    const orders = await getUserOrders({ userInfoId: userInfo?._id, email, locale });
+    const orders = await getUserOrders({ userInfoId: userInfo?._id, locale });
 
     return (
         <div className="flex flex-col gap-6">

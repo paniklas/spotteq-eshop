@@ -1,11 +1,16 @@
 import "server-only";
 import { backendClient } from "../lib/backendClient";
 
-// Orders belonging to a signed-in user: those linked to their userInfo doc OR
-// placed (as guest) with the same email before the profile existed.
-export async function getUserOrders({ userInfoId, email, locale }) {
+// Orders belonging to a signed-in user: STRICTLY those linked to their userInfo
+// doc. We intentionally do NOT match on the order's `email`, because a guest
+// order's email is unverified/attacker-controllable — matching on it would let a
+// guest who checks out with someone else's email surface their order (with PII)
+// in that person's dashboard. Guest orders placed before an account existed are
+// therefore not shown here (a future "claim on login" step could link them).
+export async function getUserOrders({ userInfoId, locale }) {
+    if (!userInfoId) return [];
     const query = `
-        *[_type == "order" && (userInfo._ref == $userInfoId || email == $email)]
+        *[_type == "order" && userInfo._ref == $userInfoId]
         | order(orderDate desc) {
             _id,
             orderNumber,
@@ -47,9 +52,5 @@ export async function getUserOrders({ userInfoId, email, locale }) {
             boxNowParcelStatus
         }
     `;
-    return backendClient.fetch(query, {
-        userInfoId: userInfoId ?? "",
-        email: email ?? "",
-        locale,
-    });
+    return backendClient.fetch(query, { userInfoId, locale });
 }

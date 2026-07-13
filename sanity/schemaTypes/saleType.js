@@ -54,15 +54,27 @@ export const saleType = defineType({
       name: 'usageLog',
       title: 'Usage Log',
       type: 'array',
-      readOnly: true,
+      // Array is editable so an admin can delete an entry (e.g. to let an email
+      // use the coupon again). The entry fields stay readOnly so the recorded
+      // values can't be tampered with — only the whole entry can be removed.
+      description: 'Recorded redemptions. Delete an entry to let that email use the coupon again (see note: this does not change "Times Used" or reactivate a maxed-out coupon).',
       of: [
         defineArrayMember({
           type: 'object',
           fields: [
-            defineField({ name: 'email', type: 'string' }),
-            defineField({ name: 'usedAt', type: 'datetime' }),
-            defineField({ name: 'orderId', type: 'string' }),
+            defineField({ name: 'email', type: 'string', readOnly: true, validation: (Rule) => Rule.required() }),
+            defineField({ name: 'usedAt', type: 'datetime', readOnly: true, validation: (Rule) => Rule.required() }),
+            defineField({ name: 'orderId', type: 'string', readOnly: true }),
           ],
+          preview: {
+            select: { email: 'email', usedAt: 'usedAt' },
+            prepare({ email, usedAt }) {
+              return {
+                title: email || '(no email)',
+                subtitle: usedAt ? new Date(usedAt).toLocaleString() : '',
+              }
+            },
+          },
         }),
       ],
     }),
