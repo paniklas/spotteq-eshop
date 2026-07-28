@@ -11,7 +11,7 @@ const QualitySection = () => {
         >
             <div className="max-w-[1920px] mx-auto grid grid-cols-1 xl:grid-cols-2 page-x">
                 {/* Text side */}
-                <div className="py-16 xl:py-20 flex flex-col justify-center gap-8">
+                <div className="order-2 xl:order-1 py-10 xl:py-20 flex flex-col justify-center gap-6 xl:gap-8">
                     <h2 className="font-aeonik text-black text-[28px] xl:text-[35px] leading-[1.45]">
                         Built on certified quality
                     </h2>
@@ -24,18 +24,18 @@ const QualitySection = () => {
                     </p>
 
                     {/* Certification logos */}
-                    <div className="flex items-center gap-6 mt-20">
+                    <div className="flex items-center gap-4 xl:gap-6 mt-4 xl:mt-20">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/images/gmp-logo.png" alt="GMP Certified" className="h-20 w-auto" />
+                        <img src="/images/gmp-logo.png" alt="GMP Certified" className="h-14 xl:h-20 w-auto" />
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/images/haccp-logo.png" alt="HACCP Certified" className="h-[78px] w-auto" />
+                        <img src="/images/haccp-logo.png" alt="HACCP Certified" className="h-[54px] xl:h-[78px] w-auto" />
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/images/isoqar-logo.png" alt="ISOQAR Certified" className="h-[79px] w-auto object-contain" />
+                        <img src="/images/isoqar-logo.png" alt="ISOQAR Certified" className="h-[55px] xl:h-[79px] w-auto object-contain" />
                     </div>
                 </div>
 
-                {/* Athlete image */}
-                <div className="relative h-[400px] xl:h-[606px]">
+                {/* Athlete image — full-bleed on mobile */}
+                <div className="order-1 xl:order-2 relative h-[340px] xl:h-[606px] -mx-4 xl:mx-0">
                     <Image
                         src={ATHLETE_IMG}
                         alt="SPOTTEQ athlete"

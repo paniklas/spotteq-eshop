@@ -9,6 +9,48 @@ const StoriesThatMove = () => {
             className="w-full bg-gray-light"
         >
             <div className="max-w-480 mx-auto page-x">
+                {/* Mobile layout — heading, image, then testimonial + dots */}
+                <div className="md:hidden py-8">
+                    <span className="font-aeonik text-[18px] text-black">
+                        Stories that move
+                    </span>
+
+                    <div className="relative w-full h-[230px] overflow-hidden mt-4">
+                        <Image
+                            src={AMBASSADOR_IMG}
+                            alt="Nassos Ghavelas – Paralympic Champion"
+                            fill
+                            sizes="100vw"
+                            className="object-cover"
+                        />
+                    </div>
+
+                    <h3 className="font-aeonik text-[26px] text-black-custom leading-[1.3] mt-8">
+                        Nassos Ghavelas
+                    </h3>
+                    <p className="font-tt text-[16px] text-black-custom leading-[1.45] mt-1">
+                        Paralympic Champion, SPOTTEQ Ambassador
+                    </p>
+
+                    <blockquote className="font-tt text-[14px] text-black-custom leading-[1.6] mt-8">
+                        In elite sport, it&rsquo;s the small details that make the difference.
+                        What I appreciate about SPOTTEQ is that it doesn&rsquo;t promise
+                        miracles; it delivers clean, targeted formulas and I know exactly what
+                        they do to my body. For me, performance is not just about times and
+                        records, but about feeling safe and confident in every training session
+                        and every race.
+                    </blockquote>
+
+                    <div className="flex items-center justify-center gap-2 mt-8">
+                        <span className="w-6 h-2 rounded-full bg-black-custom" />
+                        <span className="w-2 h-2 rounded-full bg-black-custom/25" />
+                        <span className="w-2 h-2 rounded-full bg-black-custom/25" />
+                        <span className="w-2 h-2 rounded-full bg-black-custom/25" />
+                    </div>
+                </div>
+
+                {/* Tablet / desktop layout */}
+                <div className="hidden md:block">
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-12 items-center">
                     {/* Text */}
                     <div className="flex flex-col justify-between h-full py-6 xl:py-12">
@@ -77,6 +119,7 @@ const StoriesThatMove = () => {
                             priority
                         />
                     </div>
+                </div>
                 </div>
             </div>
         </section>

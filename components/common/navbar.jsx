@@ -45,6 +45,10 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
     // shows the order summary, and a cart drawer over it is redundant.
     const isCheckout = pathname.includes("/checkout");
 
+    // The mobile 15% banner only exists on the home hero, so the extra top
+    // padding that clears it should only apply there.
+    const isHome = pathname === "/" || pathname === `/${locale}`;
+
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 10);
         window.addEventListener('scroll', onScroll, { passive: true });
@@ -65,7 +69,7 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
     const isLightIcons = iconColor === "#ffffff";
 
     // Full-width bg only when menu is open (matches overlay color)
-    const headerBg = isMenuOpen ? "bg-gray-light" : "bg-transparent";
+    const headerBg = isMenuOpen ? "bg-gray-menu-overlay" : "bg-transparent";
     // Blur confined to the max-w container when scrolled
     const innerBg = !isMenuOpen && scrolled ? (sectionStyles?.scrollBg ?? 'backdrop-blur-md bg-white/20') : '';
 
@@ -74,18 +78,18 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
             {/* Menu overlay */}
             <MenuOverlay isOpen={isMenuOpen} isOnClose={() => setIsMenuOpen(false)} categoryGroups={categoryGroups} navBundles={navBundles} />
 
-            <header className={`fixed top-0 left-0 right-0 z-50 h-24 transition-all duration-300 ${headerBg} ${innerBg}`}>
-                <div className={`max-w-480 mx-auto h-full flex items-center justify-between page-x`}>
+            <header className={`fixed top-0 left-0 right-0 z-50 h-24 transition-all duration-300 pointer-events-none ${headerBg} ${innerBg}`}>
+                <div className={`max-w-480 mx-auto h-full flex items-center justify-between page-x ${isMenuOpen ? "pt-0 md:pb-0" : (isHome ? "pt-10 xl:pb-0" : "")}`}>
 
                     {/* Logo — crossfade between black and white versions */}
-                    <Link href="/" className="relative flex items-center" aria-label="SPOTTEQ home">
-                        <div className="relative" style={{ width: 185, height: 40 }}>
+                    <Link href="/" className="relative flex items-center pointer-events-auto" aria-label="SPOTTEQ home">
+                        <div className="relative w-35 h-7.75 md:w-50 md:h-11">
                             <motion.div
                                 animate={{ opacity: isLightIcons ? 0 : 1 }}
                                 transition={{ duration: 0.3 }}
                                 className="absolute inset-0"
                             >
-                                <svg width="200" height="44" viewBox="0 0 200 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <svg width="200" height="44" viewBox="0 0 200 44" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
                                     <path d="M13.2801 8.92771C15.7578 8.92771 17.7663 6.92917 17.7663 4.46385C17.7663 1.99854 15.7578 0 13.2801 0C10.8025 0 8.79395 1.99854 8.79395 4.46385C8.79395 6.92917 10.8025 8.92771 13.2801 8.92771Z" fill="black"/>
                                     <path d="M13.2801 26.4579C15.7578 26.4579 17.7663 24.4594 17.7663 21.9941C17.7663 19.5288 15.7578 17.5302 13.2801 17.5302C10.8025 17.5302 8.79395 19.5288 8.79395 21.9941C8.79395 24.4594 10.8025 26.4579 13.2801 26.4579Z" fill="black"/>
                                     <path d="M13.286 44C15.7636 44 17.7721 42.0015 17.7721 39.5362C17.7721 37.0708 15.7636 35.0723 13.286 35.0723C10.8083 35.0723 8.7998 37.0708 8.7998 39.5362C8.7998 42.0015 10.8083 44 13.286 44Z" fill="black"/>
@@ -108,7 +112,7 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
                                 transition={{ duration: 0.3 }}
                                 className="absolute inset-0"
                             >
-                                <svg width="200" height="44" viewBox="0 0 200 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <svg width="200" height="44" viewBox="0 0 200 44" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
                                     <path d="M13.2803 8.92771C15.7579 8.92771 17.7664 6.92917 17.7664 4.46385C17.7664 1.99854 15.7579 0 13.2803 0C10.8026 0 8.79408 1.99854 8.79408 4.46385C8.79408 6.92917 10.8026 8.92771 13.2803 8.92771Z" fill="white"/>
                                     <path d="M13.2803 26.4579C15.7579 26.4579 17.7664 24.4594 17.7664 21.9941C17.7664 19.5288 15.7579 17.5302 13.2803 17.5302C10.8026 17.5302 8.79408 19.5288 8.79408 21.9941C8.79408 24.4594 10.8026 26.4579 13.2803 26.4579Z" fill="white"/>
                                     <path d="M13.2862 44C15.7638 44 17.7724 42.0015 17.7724 39.5361C17.7724 37.0708 15.7638 35.0723 13.2862 35.0723C10.8085 35.0723 8.80002 37.0708 8.80002 39.5361C8.80002 42.0015 10.8085 44 13.2862 44Z" fill="white"/>
@@ -129,11 +133,11 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
                         </div>
                     </Link>
 
-                    <div className="flex items-center space-x-32">
+                    <div className="flex items-center space-x-4 md:space-x-32 pointer-events-auto">
 
                         {/* Right icons — color animates between white (hero) and dark (scrolled/open) */}
                         <motion.div
-                            className="flex items-center gap-6"
+                            className="flex items-center gap-3 md:gap-6"
                             animate={{ color: iconColor }}
                             transition={{ duration: 0.3 }}
                         >
@@ -141,7 +145,7 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
                             <Link
                                 href={isSignedIn ? "/account" : "/sign-in"}
                                 aria-label={isSignedIn ? "My account" : "Sign in"}
-                                className="hidden md:flex items-center gap-2 cursor-pointer"
+                                className={`${isSignedIn ? "flex" : "hidden md:flex"} items-center gap-2 cursor-pointer`}
                             >
                                 <span className="relative flex items-center">
                                     <AccountIcon />
@@ -154,7 +158,7 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
                                     )}
                                 </span>
                                 {isSignedIn && displayName && (
-                                    <span className="font-aeonik text-[14px] leading-none">{displayName}</span>
+                                    <span className="hidden md:block font-aeonik text-[14px] leading-none">{displayName}</span>
                                 )}
                             </Link>
 
@@ -174,33 +178,49 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
 
                             {/* Cart — hidden on the checkout flow */}
                             {!isCheckout && (
-                            <button
-                                aria-label="Cart"
-                                onClick={openCart}
-                                className="relative flex items-center cursor-pointer"
-                            >
-                                <svg width="25" height="40" viewBox="0 0 31 46" fill="none">
-                                    <path
-                                        d="M23 18.5V7.5C23 3.63401 19.866 0.5 16 0.5C12.134 0.5 9 3.63401 9 7.5V18.5"
-                                        stroke="currentColor"
-                                    />
-                                    <rect x="0.5" y="14" width="30" height="31" stroke="currentColor" />
-                                </svg>
-                                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-sm font-aeonik leading-none" style={{ color: "inherit" }}>
-                                    {cartItems.reduce((sum, i) => sum + i.qty, 0)}
-                                </span>
-                            </button>
+                                <button
+                                    aria-label="Cart"
+                                    onClick={openCart}
+                                    className="relative flex items-center cursor-pointer"
+                                >
+                                    <span className="relative flex items-center">
+                                        <svg viewBox="0 0 31 46" fill="none" className="w-[22px] md:w-[25px] h-auto">
+                                            <path
+                                                d="M23 18.5V7.5C23 3.63401 19.866 0.5 16 0.5C12.134 0.5 9 3.63401 9 7.5V18.5"
+                                                stroke="currentColor"
+                                            />
+                                            <rect x="0.5" y="14" width="30" height="31" stroke="currentColor" />
+                                        </svg>
+
+                                        {/* Desktop — count inside the bag (text only) */}
+                                        <span 
+                                            className="hidden md:block absolute bottom-1 left-1/2 -translate-x-1/2 text-sm font-aeonik leading-none"
+                                            style={{ color: "inherit" }}
+                                        >
+                                            {cartItems.reduce((sum, i) => sum + i.qty, 0)}
+                                        </span>
+                                        {/* Mobile — count inside the bag on a filled badge (white when closed, black when menu open) */}
+                                        <span className="md:hidden absolute bottom-0.75 left-1/2 -translate-x-1/2 flex items-center justify-center min-w-3.25 h-3 px-0.75 leading-none">
+                                            <span className="font-aeonik text-sm leading-none">
+                                                {cartItems.reduce((sum, i) => sum + i.qty, 0)}
+                                            </span>
+                                        </span>
+                                    </span>
+                                </button>
                             )}
                         </motion.div>
 
-                        {/* Burger — motion.span lines animate rotation + color + hover shrink */}
+                        {/* Burger — motion.span lines animate rotation + color + hover shrink.
+                            Scaled down on mobile via this wrapper (not the button itself) so the
+                            line transforms keep tweening cleanly through open/close. */}
+                        <div className="scale-75 md:scale-100 origin-right">
                         <button
                             aria-label={isMenuOpen ? "Close menu" : "Open menu"}
                             aria-expanded={isMenuOpen}
                             onClick={() => { setIsMenuOpen((prev) => !prev); setBurgerHovered(false); }}
                             onMouseEnter={() => !isMenuOpen && setBurgerHovered(true)}
                             onMouseLeave={() => setBurgerHovered(false)}
-                            className="flex flex-col justify-between w-[42px] h-[22px] relative cursor-pointer"
+                            className="flex flex-col justify-between w-10.5 h-5.5 relative cursor-pointer"
                         >
                             {/* Line 1 — shrinks to the right */}
                             <motion.span
@@ -252,6 +272,7 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
                                 }}
                             />
                         </button>
+                        </div>
 
                     </div>
                 </div>

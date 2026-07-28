@@ -35,11 +35,11 @@ const paymentMethods = [
 
 const Footer = () => {
     return (
-        <footer className="w-full bg-white pt-20 xl:pt-42">
+        <footer className="w-full bg-white-custom pt-5 xl:pt-42">
             {/* Top section: Newsletter (left) + Links (right) + Back-to-top */}
-            <div className="max-w-[1920px] mx-auto page-x pt-16 xl:pt-20 pb-10 xl:pb-14 relative">
+            <div className="max-w-480 mx-auto page-x pt-16 xl:pt-20 pb-8 xl:pb-14 relative">
                 <div className="flex flex-col gap-16">
-                    <div className="pb-20">
+                    <div className="hidden xl:block pb-20">
                         <ScrollToTopButton />
                     </div>
 
@@ -48,14 +48,14 @@ const Footer = () => {
                         <FooterNewsletter />
             
                         {/* Link columns — right ~50% */}
-                        <div className="xl:w-1/2 flex items-start justify-end">
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-10 xl:gap-20">
+                        <div className="xl:w-1/2 flex items-start justify-start xl:justify-end">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-10 xl:gap-20">
                                 {footerColumns.map((col) => (
                                     <div key={col.heading}>
                                         <h4 className="font-aeonik text-[16px] text-black mb-4 uppercase">
                                             {col.heading}
                                         </h4>
-                                        <ul className="flex flex-col pt-6">
+                                        <ul className="flex flex-col xl:pt-6">
                                             {col.links.map((link) => (
                                                 <li key={link}>
                                                     <a

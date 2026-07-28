@@ -155,7 +155,7 @@
 
 @layer utilities {
   .page-x {
-    @apply px-10 xl:px-[160px];
+    @apply px-6 xl:px-40;
   }
 
   .shop-glow {

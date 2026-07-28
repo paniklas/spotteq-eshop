@@ -14,7 +14,7 @@ const AnnouncementBar = () => {
         <>
             <button
                 id="announcement-bar-section"
-                className="block w-full bg-gray-mint h-[52px] overflow-hidden cursor-pointer"
+                className="hidden md:block w-full bg-gray-mint h-13 overflow-hidden cursor-pointer"
                 aria-label={PROMO_TEXT}
                 onClick={() => setIsModalOpen(true)}
             >
@@ -23,7 +23,7 @@ const AnnouncementBar = () => {
                         {items.concat(items).map((text, i) => (
                             <span
                                 key={i}
-                                className="font-tt font-light text-[18px] text-black uppercase mx-[60px]"
+                                className="font-tt font-light text-[18px] text-black uppercase mx-15"
                             >
                                 {text}
                             </span>
