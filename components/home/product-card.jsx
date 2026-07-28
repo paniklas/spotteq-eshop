@@ -80,12 +80,12 @@ const ProductCard = ({ product, priority = false }) => {
     }
 
     return (
-        <div data-testid="product-card" className="group/card flex flex-col gap-4 relative pb-10">
+        <div data-testid="product-card" className="group/card flex flex-col gap-4 relative pb-5 xl:pb-10">
             {/* Image area */}
             <div className="relative bg-white rounded-sm overflow-hidden" style={{ aspectRatio: "1/1.2" }}>
 
                 {/* Hover oval background */}
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[75%] aspect-375/572 bg-gray-soft rounded-full opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 ease-in-out z-0" />
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[75%] aspect-375/572 bg-gray-soft rounded-full opacity-100 md:opacity-0 md:group-hover/card:opacity-100 transition-opacity duration-500 ease-in-out z-0" />
                 <Image
                     src={imageSrc}
                     alt={productName}
@@ -95,7 +95,7 @@ const ProductCard = ({ product, priority = false }) => {
                     priority={priority}
                     sizes="(min-width: 1536px) 533px, (min-width: 768px) 50vw, 100vw"
                     quality={100}
-                    className="relative z-1 w-full h-full object-contain p-24"
+                    className="relative z-1 w-full h-full object-contain p-16 md:p-24"
                 />
             </div>
 
@@ -147,7 +147,7 @@ const ProductCard = ({ product, priority = false }) => {
             {/* Details + Buttons */}
             <div className="relative">
                 {/* Details */}
-                <div className="flex justify-between opacity-100 transition-opacity duration-500 ease-in-out group-hover/card:opacity-0 group-hover/card:pointer-events-none">
+                <div className="flex justify-between opacity-0 md:opacity-100 transition-opacity duration-500 ease-in-out md:group-hover/card:opacity-0 md:group-hover/card:pointer-events-none">
                     <div className="font-tt font-light text-[18px] text-black-custom leading-[1.2]">
                         {attrs.map((attr, i) => (
                             <p key={i}>{attr.label}</p>
@@ -161,17 +161,17 @@ const ProductCard = ({ product, priority = false }) => {
                 </div>
 
                 {/* Buttons */}
-                <div className="absolute inset-0 flex gap-3 opacity-0 translate-y-2 group-hover/card:opacity-100 group-hover/card:translate-y-0 transition-all duration-500 ease-in-out">
+                <div className="absolute inset-0 flex gap-3 opacity-100 translate-y-0 md:opacity-0 md:translate-y-2 md:group-hover/card:opacity-100 md:group-hover/card:translate-y-0 transition-all duration-500 ease-in-out">
                     <button
                         onClick={handleAddToCart}
                         disabled={isAdding || atMax}
-                        className="flex-1 h-11.25 bg-black-custom rounded-[20px] font-aeonik text-white-custom text-[16px] cursor-pointer hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="flex-1 h-7 xl:h-11 bg-black-custom rounded-[20px] font-aeonik text-white-custom text-[16px] cursor-pointer hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                         {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : "ADD TO BAG"}
                     </button>
                     <Link
                         href={`/shop/product/${productSlug}`}
-                        className="flex-1 h-11.25 bg-gray-soft rounded-[20px] font-aeonik text-black-custom text-[16px] cursor-pointer hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out flex items-center justify-center"
+                        className="flex-1 h-7 xl:h-11 bg-gray-soft rounded-[20px] font-aeonik text-black-custom text-[16px] cursor-pointer hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out flex items-center justify-center"
                     >
                         VIEW DETAILS
                     </Link>

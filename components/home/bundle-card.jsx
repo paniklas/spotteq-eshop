@@ -2,9 +2,13 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { Heart } from "lucide-react";
 import { toast } from "sonner";
+import { useUser } from "@clerk/nextjs";
 import { Link } from "@/i18n/navigation";
 import { useCartStore, makeCartId } from "@/store/cart-store";
+import { useFavouritesStore } from "@/store/favourites-store";
+import { useFavouritesHydrated } from "@/hooks/use-favourites-hydrated";
 import { formatPrice } from "@/utils/formatPrice";
 
 const BundleCard = ({
@@ -20,6 +24,42 @@ const BundleCard = ({
 }) => {
     const [isAdding, setIsAdding] = useState(false)
     const { addToCart, cartItems } = useCartStore()
+
+    const { isLoaded, isSignedIn } = useUser()
+    const favHydrated = useFavouritesHydrated()
+    const isFav = useFavouritesStore((s) => s.ids.includes(_id))
+    const toggleFavourite = useFavouritesStore((s) => s.toggleFavourite)
+    const favourited = favHydrated && isFav
+
+    const handleToggleFavourite = async () => {
+        if (!isLoaded) return
+        if (!isSignedIn) {
+            toast.error("Please sign in to save favourites.")
+            return
+        }
+        const result = await toggleFavourite(_id)
+        if (result?.error === "unauthenticated") {
+            toast.error("Please sign in to save favourites.")
+        } else if (result && !result.ok) {
+            toast.error("Could not update your wishlist. Please try again.")
+        }
+    }
+
+    const favouriteButton = (
+        <button
+            type="button"
+            onClick={handleToggleFavourite}
+            aria-label={favourited ? "Remove from wishlist" : "Add to wishlist"}
+            aria-pressed={favourited}
+            className="ml-1 w-7 h-7 rounded-full border border-black-custom/25 flex items-center justify-center shrink-0 cursor-pointer transition-transform duration-300 hover:scale-110"
+        >
+            <Heart
+                size={14}
+                strokeWidth={1.5}
+                className={`transition-colors duration-300 ${favourited ? "fill-orange-accent text-orange-accent" : "text-black-custom"}`}
+            />
+        </button>
+    )
 
     const effectivePrice = saleBundlePrice ?? bundlePrice
 
@@ -94,7 +134,7 @@ const BundleCard = ({
                     unoptimized
                     className="object-contain w-auto"
                     style={{
-                        height: variant === "vertical" ? "clamp(280px, 25vw, 380px)" : "clamp(300px, 28vw, 420px)",
+                        height: variant === "mobile" ? "220px" : variant === "vertical" ? "clamp(280px, 25vw, 380px)" : "clamp(300px, 28vw, 420px)",
                         marginLeft: i > 0 ? "-2rem" : 0,
                         zIndex: displayImages.length - i,
                     }}
@@ -102,6 +142,51 @@ const BundleCard = ({
             ))}
         </div>
     )
+
+    if (variant === "mobile") {
+        return (
+            <div className="relative bg-gray-mint rounded-[150px] px-5 pt-9 pb-20 flex flex-col">
+                <div className="mb-2">
+                    {imageStack}
+                </div>
+
+                <h3 className="font-aeonik text-[24px] text-black-custom leading-[1.15] mb-3">
+                    {title}
+                </h3>
+                {productNames}
+                <p className="font-aeonik text-[13px] text-black-custom leading-[1.4] opacity-70 mt-4">
+                    {description}
+                </p>
+
+                <div className="flex items-end justify-between mt-6">
+                    <span className="font-tt font-light text-[42px] text-black-custom leading-none">
+                        {formatPrice(effectivePrice).replace(",00", "")}€
+                    </span>
+                    <div className="flex items-center gap-2 mb-2">
+                        <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${atMax ? "bg-red-400" : "bg-teal-accent"}`} />
+                        <span className="font-aeonik text-[13px] text-black-custom">{atMax ? "OUT OF STOCK" : "IN STOCK"}</span>
+                        {favouriteButton}
+                    </div>
+                </div>
+
+                <div className="flex gap-3 mt-4">
+                    <button
+                        onClick={handleAddToCart}
+                        disabled={isAdding || atMax}
+                        className="flex-1 h-7 xl:h-11 bg-black-custom rounded-[21px] font-aeonik text-white-custom cursor-pointer text-[13px] hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                        {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : "ADD TO BAG"}
+                    </button>
+                    <Link
+                        href={`/shop/bundle/${slug}`}
+                        className="flex-1 h-7 xl:h-11 bg-white-custom rounded-[21px] font-aeonik text-black-custom text-[13px] hover:bg-gray-soft transition-colors duration-500 flex items-center justify-center"
+                    >
+                        VIEW DETAILS
+                    </Link>
+                </div>
+            </div>
+        )
+    }
 
     if (variant === "vertical") {
         return (
@@ -118,7 +203,7 @@ const BundleCard = ({
                             {title}
                         </h3>
                         {productNames}
-                        <p className="font-aeonik text-[13px] xl:text-[18px] text-black-custom leading-[1.4] max-w-[290px] opacity-90">
+                        <p className="font-aeonik text-[13px] xl:text-[18px] text-black-custom leading-[1.4] max-w-72.5 opacity-90">
                             {description}
                         </p>
                     </div>
