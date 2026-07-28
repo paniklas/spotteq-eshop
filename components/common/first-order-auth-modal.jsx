@@ -102,7 +102,7 @@ const FirstOrderAuthModal = ({ isOpen, onClose }) => {
 
                     {/* Create account */}
                     <Link
-                        href="/account"
+                        href="/sign-up"
                         onClick={onClose}
                         className="w-full h-12 flex items-center justify-center bg-black-custom text-white-custom rounded-[15px] font-aeonik text-[15px] hover:opacity-90 transition-opacity"
                     >
