@@ -27,28 +27,39 @@ const KeyFeatures = ({ keyFeatures }) => {
 
             <div className="max-w-480 mx-auto page-x">
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-12 items-center">
-
-                    <div className="flex flex-col gap-20 mt-4">
+                    <div className="flex flex-col gap-10 xl:gap-20 mt-4">
+                        {/* Product image — mobile/tablet only, shown in flow above the description */}
+                        {imageUrl && (
+                            <div className="xl:hidden relative w-full aspect-3/4">
+                                <Image
+                                    src={imageUrl}
+                                    alt="Key features product"
+                                    unoptimized={true}
+                                    fill
+                                    className="object-cover object-center"
+                                    sizes="100vw"
+                                />
+                            </div>
+                        )}
 
                         {description?.length > 0 && (
                             <div className="flex justify-between items-center gap-4 mb-2">
-                                <div className="font-aeonik text-[20px] xl:text-[26px] text-black-custom leading-[1.45] [&_p]:mb-1">
+                                <div className="font-aeonik text-[18px] xl:text-[26px] text-black-custom leading-[1.45] [&_p]:mb-1">
                                     <PortableText value={description} />
                                 </div>
                             </div>
                         )}
 
                         {features?.length > 0 && (
-                            <div className="flex flex-col gap-10">
+                            <div className="flex flex-col gap-5 xl:gap-10">
                                 <h2 className="font-aeonik text-[23px] xl:text-[30px] text-black-custom leading-none">
                                     Key Features
                                 </h2>
-                                <div className="font-aeonik text-[12px] xl:text-[16px] text-black-custom leading-[1.45] max-w-125 [&_ul]:flex [&_ul]:flex-col [&_ul]:gap-4 [&_li]:flex [&_li]:items-start [&_li]:gap-2 [&_li]:before:content-[''] [&_li]:before:w-1.5 [&_li]:before:h-1.5 [&_li]:before:rounded-full [&_li]:before:bg-black-custom [&_li]:before:shrink-0 [&_li]:before:mt-[0.45em]">
+                                <div className="font-aeonik text-[13px] xl:text-[16px] text-black-custom leading-[1.45] max-w-125 [&_ul]:flex [&_ul]:flex-col [&_ul]:gap-4 [&_li]:flex [&_li]:items-start [&_li]:gap-2 [&_li]:before:content-[''] [&_li]:before:w-1.5 [&_li]:before:h-1.5 [&_li]:before:rounded-full [&_li]:before:bg-black-custom [&_li]:before:shrink-0 [&_li]:before:mt-[0.45em]">
                                     <PortableText value={features} />
                                 </div>
                             </div>
                         )}
-
                     </div>
                 </div>
             </div>

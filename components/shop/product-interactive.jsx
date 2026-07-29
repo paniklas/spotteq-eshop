@@ -22,7 +22,7 @@ const AccordionItem = ({ label, children }) => {
         >
             <button
                 onClick={() => setOpen((v) => !v)}
-                className="w-full flex items-center justify-between px-6 py-4 font-aeonik text-[13px] xl:text-[16px] uppercase tracking-wide text-black-custom"
+                className="w-full flex items-center justify-between px-6 py-2 xl:py-4 font-aeonik text-[13px] xl:text-[16px] uppercase tracking-wide text-black-custom"
             >
                 {label}
                 <ChevronDown
@@ -122,31 +122,29 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
         setCurrentImage((i) => (i === displayImages.length - 1 ? 0 : i + 1))
 
     return (
-        <div className="bg-white-custom pt-40 pb-20">
+        <div className="bg-white-custom pt-20 xl:pt-40 pb-20">
             <div className="max-w-480 mx-auto page-x">
-                <div className="flex flex-col md:flex-row gap-12 xl:gap-20 items-start">
+                <div className="flex flex-col md:flex-row gap-16 xl:gap-20 items-start">
 
-                    <div className="product-page-glow" style={{ top: '35%', right: '0px', transform: 'translateY(-50%)' }} />
+                    <div className="hidden xl:block product-page-glow" style={{ top: '35%', right: '0px', transform: 'translateY(-50%)' }} />
 
                     {/* ── LEFT: Image + Certs + Tagline ── */}
                     <div className="w-full md:w-1/2 flex flex-col gap-4">
 
                         {/* Back button */}
-                        <Link href="/shop/shop-all">
-                            <button className="group flex items-center w-fit cursor-pointer">
-                                <Image
-                                    src="/icons/arrow-left.svg"
-                                    alt=""
-                                    width={36}
-                                    height={36}
-                                    className="transition-transform duration-300 group-hover:-translate-x-1"
-                                />
-                                <span className="relative font-aeonik text-[14px] xl:text-[16px] text-black-custom">
-                                    Back
-                                    <span className="absolute bottom-0 left-0 h-px w-0 bg-black-custom group-hover:w-full transition-all duration-500 ease-out" />
-                                </span>
-                            </button>
-                        </Link>
+                        <button onClick={() => router.back()} className="group flex items-center w-fit cursor-pointer">
+                            <Image
+                                src="/icons/arrow-left.svg"
+                                alt=""
+                                width={36}
+                                height={36}
+                                className="transition-transform duration-300 group-hover:-translate-x-1"
+                            />
+                            <span className="relative font-aeonik text-[14px] xl:text-[16px] text-black-custom">
+                                Back
+                                <span className="absolute bottom-0 left-0 h-px w-0 bg-black-custom group-hover:w-full transition-all duration-500 ease-out" />
+                            </span>
+                        </button>
 
                         {/* Image circle with navigation */}
                         <div className="relative flex items-center justify-center">
@@ -191,44 +189,68 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                             )}
                         </div>
 
-                        {/* Certification badges */}
-                        <div className="flex items-center gap-4">
+                        {/* Certification badges — desktop (moves under highlights on mobile) */}
+                        <div className="hidden md:flex items-center gap-4">
                             <Image
                                 src="/images/certification-badges.png"
                                 alt="GMP Certified"
                                 width={56}
                                 height={56}
                                 unoptimized={true}
-                                className="w-60 h-60 object-contain"
+                                className="xl:w-60 xl:h-60 object-contain"
                             />
                         </div>
 
                         {/* Additional information */}
                         {product.productDetails?.additionalInfo?.length > 0 && (
-                            <div className="font-aeonik text-[28px] xl:text-[35px] leading-normal text-black-custom [&_p]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5">
+                            <div className="hidden xl:block font-aeonik text-[14px] xl:text-[35px] leading-snug xl:leading-normal text-black-custom [&_p]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5">
                                 <PortableText value={product.productDetails.additionalInfo} />
                             </div>
                         )}
                     </div>
 
                     {/* ── RIGHT: Product details ── */}
-                    <div className="w-full md:w-1/2 flex flex-col gap-6">
+                    <div className="w-full md:w-1/2 flex flex-col gap-4 xl:gap-6">
 
-                        {/* Badge */}
+                        {/* Badge — desktop, above the name */}
                         {product.badge && (
-                            <span className="inline-flex w-fit bg-orange-accent text-white font-aeonik text-[12px] xl:text-[14px] uppercase px-4 py-1 rounded-full">
+                            <span className="hidden md:inline-flex w-fit bg-orange-accent text-white font-aeonik text-[12px] xl:text-[14px] uppercase px-4 py-1 rounded-full">
                                 {product.badge}
                             </span>
                         )}
 
                         {/* Name + size */}
-                        <div className="flex items-baseline gap-4 flex-wrap">
-                            <h1 className="font-aeonik text-[48px] xl:text-[50px] leading-none text-black-custom">
-                                {product.title}
-                            </h1>
-                            <span className="font-tt text-[14px] xl:text-[18px] text-black-custom">
-                                {product.size} / {product.tagline}
-                            </span>
+                        <div className="flex flex-col md:flex-row md:items-baseline md:gap-4 md:flex-wrap">
+                            <div className="flex items-start justify-between gap-4">
+                                <h1 className="font-aeonik text-[35px] xl:text-[50px] leading-none text-black-custom">
+                                    {product.title}
+                                </h1>
+                                {/* Wishlist — mobile, beside the title */}
+                                <button
+                                    type="button"
+                                    onClick={handleToggleFavourite}
+                                    aria-label={favourited ? "Remove from wishlist" : "Add to wishlist"}
+                                    aria-pressed={favourited}
+                                    className="md:hidden w-9 h-9 shrink-0 flex items-center justify-center rounded-full border border-gray-mint hover:border-black-custom transition-colors duration-300 cursor-pointer"
+                                >
+                                    <Heart
+                                        size={16}
+                                        strokeWidth={1.5}
+                                        className={`transition-colors duration-300 ${favourited ? "fill-orange-accent text-orange-accent" : "text-black-custom"}`}
+                                    />
+                                </button>
+                            </div>
+                            <div className="flex items-center justify-between gap-4 mt-2 md:mt-0">
+                                <span className="font-tt text-[14px] xl:text-[18px] text-black-custom">
+                                    {product.size} / {product.tagline}
+                                </span>
+                                {/* Badge — mobile, beside the size */}
+                                {product.badge && (
+                                    <span className="md:hidden inline-flex shrink-0 bg-orange-accent text-white font-aeonik text-[12px] uppercase px-4 py-1 rounded-full">
+                                        {product.badge}
+                                    </span>
+                                )}
+                            </div>
                         </div>
 
                         {/* Description */}
@@ -240,10 +262,22 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
 
                         {/* Highlights */}
                         {product.highlights?.length > 0 && (
-                            <div className="font-aeonik text-[14px] xl:text-[18px] text-black-custom leading-normal [&_p]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5">
+                            <div className="font-aeonik text-[14px] xl:text-[18px] text-black-custom leading-none xl:leading-normal [&_p]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5">
                                 <PortableText value={product.highlights} />
                             </div>
                         )}
+
+                        {/* Certification badges — mobile only */}
+                        <div className="flex md:hidden items-center gap-4">
+                            <Image
+                                src="/images/certification-badges.png"
+                                alt="GMP Certified"
+                                width={56}
+                                height={56}
+                                unoptimized={true}
+                                className="w-40 xl:w-60 xl:h-60 object-contain"
+                            />
+                        </div>
 
                         {/* Flavour selector */}
                         {product.flavours?.length > 0 && (
@@ -253,7 +287,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                             >
                                 <button
                                     onClick={() => setFlavourOpen((v) => !v)}
-                                    className="w-full flex items-center justify-between px-6 py-4 font-aeonik text-[13px] xl:text-[16px] uppercase tracking-wide text-black-custom"
+                                    className="w-full flex items-center justify-between px-6 py-2 xl:py-4 font-aeonik text-[13px] xl:text-[16px] uppercase tracking-wide text-black-custom"
                                 >
                                     {product.flavourName || "FLAVOUR"}
                                     <ChevronDown
@@ -330,13 +364,13 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                                 </span>
                             </div>
 
-                            {/* Wishlist */}
+                            {/* Wishlist — desktop (mobile version sits beside the title) */}
                             <button
                                 type="button"
                                 onClick={handleToggleFavourite}
                                 aria-label={favourited ? "Remove from wishlist" : "Add to wishlist"}
                                 aria-pressed={favourited}
-                                className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-mint hover:border-black-custom transition-colors duration-300 cursor-pointer"
+                                className="hidden md:flex w-9 h-9 items-center justify-center rounded-full border border-gray-mint hover:border-black-custom transition-colors duration-300 cursor-pointer"
                             >
                                 <Heart
                                     size={16}
@@ -347,7 +381,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                         </div>
 
                         {/* CTA buttons */}
-                        <div className="flex gap-3">
+                        <div className="flex flex-col md:flex-row gap-3">
                             <button
                                 disabled={isAdding || atMax}
                                 onClick={async () => {
@@ -373,18 +407,20 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                                         setQuantity(1)
                                     }
                                 }}
-                                className="flex-1 h-12 bg-black-custom rounded-full font-aeonik text-[12px] xl:text-[16px] uppercase text-white-custom hover:bg-gray-text transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="flex-1 flex items-center justify-center px-6 py-4 md:h-12 md:px-0 md:py-0 bg-black-custom rounded-full font-aeonik text-[16px] uppercase text-white-custom hover:bg-gray-text transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                             >
                                 {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : "ADD TO BAG"}
                             </button>
                             <button
                                 onClick={handleQuickBuy}
                                 disabled={isBuying || atMax}
-                                className="flex-1 h-12 bg-gray-mint rounded-full font-aeonik text-[12px] xl:text-[16px] uppercase text-black-custom hover:bg-white-custom hover:border hover:border-black-custom transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="flex-1 flex items-center justify-center px-6 py-4 md:h-12 md:px-0 md:py-0 bg-gray-mint rounded-full font-aeonik text-[16px] uppercase text-black-custom hover:bg-white-custom hover:border hover:border-black-custom transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                             >
                                 {isBuying ? "..." : "QUICK BUY"}
                             </button>
                         </div>
+
+                        <hr className="border-gray-mint mt-2" />
 
                         {/* Accordions */}
                         <div className="flex flex-col gap-3 pt-2">
@@ -481,28 +517,31 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                                         const rpEffectivePrice = rp.salePrice ?? rp.price
                                         return (
                                         <div key={rp._id} className="flex-1 flex flex-col gap-3">
-                                            <div className="relative aspect-square flex flex-col items-center justify-end gap-1 pb-3">
-                                                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[65%] aspect-375/572 bg-gray-soft rounded-full z-0" />
+                                            <div className="relative aspect-square flex flex-col items-center justify-end gap-1 pb-3 mt-4 xl:mt-0">
+                                                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[88%] md:w-[75%] xl:w-[65%] aspect-425/625 bg-gray-soft rounded-full z-0" />
                                                 {rp.imageUrl && (
                                                     <Image
                                                         src={rp.imageUrl}
                                                         alt={rp.title}
                                                         width={200}
                                                         height={200}
-                                                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[58%] h-[58%] object-contain z-1"
+                                                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[82%] h-[82%] md:w-[70%] md:h-[70%] object-contain z-1"
                                                     />
                                                 )}
-                                                <p className="relative z-1 font-aeonik text-[13px] xl:text-[16px] text-black-custom leading-tight text-center">
-                                                    {rp.title}
-                                                </p>
-                                                {rp.flavourName && (
-                                                    <p className="relative z-1 font-tt text-[12px] xl:text-[14px] text-black-custom/90 text-center">
-                                                        {rp.flavourName}
+                                                <div className="relative z-1 flex flex-col items-center gap-1 top-14 md:top-0">
+                                                    <p className="font-aeonik text-[13px] xl:text-[16px] text-black-custom leading-tight text-center">
+                                                        {rp.title}
                                                     </p>
-                                                )}
+                                                    {rp.flavourName && (
+                                                        <p className="font-tt text-[12px] xl:text-[14px] text-black-custom/90 text-center">
+                                                            {rp.flavourName}
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
                                             <div className="flex justify-center items-center gap-3">
-                                                <span className="flex items-baseline gap-1.5">
+                                                {/* Price — desktop only, shown beside the button (as before) */}
+                                                <span className="hidden md:flex items-baseline gap-1.5">
                                                     <span className="font-aeonik text-[15px] xl:text-[24px] text-black-custom">
                                                         {formatPrice(rpEffectivePrice)}€
                                                     </span>
@@ -514,9 +553,18 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                                                 </span>
                                                 <button
                                                     onClick={() => addToCart({ id: rp._id, type: "product", slug: rp.slug, name: rp.title, subtitle: rp.flavourName ? [rp.flavourName] : [], price: rpEffectivePrice, image: rp.imageUrl, flavour: rp.flavourName || "" })}
-                                                    className="px-8 h-9 bg-black-custom rounded-full font-aeonik text-[12px] xl:text-[16px] uppercase text-white-custom hover:bg-gray-text transition-colors duration-300 cursor-pointer"
+                                                    className="w-full md:w-auto flex items-center justify-center gap-2 px-4 md:px-8 h-9 xl:h-11 bg-black-custom rounded-full font-aeonik text-[11px] xl:text-[16px] mt-10 xl:mt-0 uppercase text-white-custom hover:bg-gray-text transition-colors duration-300 cursor-pointer"
                                                 >
-                                                    ADD TO BAG
+                                                    <span>Add to Bag</span>
+                                                    {/* Price — mobile only, shown inside the button */}
+                                                    <span className="md:hidden flex items-baseline gap-1.5">
+                                                        <span>{formatPrice(rpEffectivePrice)}€</span>
+                                                        {rp.salePrice && (
+                                                            <span className="text-white-custom/50 line-through">
+                                                                {formatPrice(rp.price)}€
+                                                            </span>
+                                                        )}
+                                                    </span>
                                                 </button>
                                             </div>
                                         </div>

@@ -10,7 +10,7 @@ import { useFavouritesStore } from "@/store/favourites-store";
 import { useFavouritesHydrated } from "@/hooks/use-favourites-hydrated";
 import { formatPrice } from "@/utils/formatPrice";
 import { PortableText } from "@portabletext/react";
-import { Link, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 
 // The selectable flavours for a slot: the admin's default product plus any active
 // sibling variants, deduped (the default may or may not appear in its own flavours list).
@@ -42,7 +42,7 @@ const FlavourDropdown = ({ options, selectedId, onSelect }) => {
             <button
                 type="button"
                 onClick={() => setOpen((v) => !v)}
-                className="w-full flex items-center justify-between px-5 py-3 font-aeonik text-[13px] xl:text-[15px] text-black-custom cursor-pointer"
+                className="w-full flex items-center justify-between px-5 py-2 xl:py-3 font-aeonik text-[13px] xl:text-[15px] text-black-custom cursor-pointer"
             >
                 <span className="truncate">{selected?.flavourName || "Choose flavour"}</span>
                 <ChevronDown size={16} strokeWidth={1.5} className={`shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
@@ -210,27 +210,25 @@ const BundleInteractive = ({ bundle }) => {
     }
 
     return (
-        <div className="bg-white-custom pt-40 pb-20">
+        <div className="bg-white-custom pb-10 xl:pb-20 pt-20 xl:pt-40 relative overflow-hidden">
             <div className="max-w-480 mx-auto page-x">
 
                 {/* Back button — above the two columns */}
-                <Link href="/shop/shop-all">
-                    <button className="group flex items-center w-fit cursor-pointer mb-6">
-                        <Image
-                            src="/icons/arrow-left.svg"
-                            alt=""
-                            width={36}
-                            height={36}
-                            className="transition-transform duration-300 group-hover:-translate-x-1"
-                        />
-                        <span className="relative font-aeonik text-[14px] xl:text-[16px] text-black-custom">
-                            Back
-                            <span className="absolute bottom-0 left-0 h-px w-0 bg-black-custom group-hover:w-full transition-all duration-500 ease-out" />
-                        </span>
-                    </button>
-                </Link>
+                <button onClick={() => router.back()} className="group flex items-center w-fit cursor-pointer mb-6">
+                    <Image
+                        src="/icons/arrow-left.svg"
+                        alt=""
+                        width={36}
+                        height={36}
+                        className="transition-transform duration-300 group-hover:-translate-x-1"
+                    />
+                    <span className="relative font-aeonik text-[14px] xl:text-[16px] text-black-custom">
+                        Back
+                        <span className="absolute bottom-0 left-0 h-px w-0 bg-black-custom group-hover:w-full transition-all duration-500 ease-out" />
+                    </span>
+                </button>
 
-                <div className="product-page-glow" style={{ top: "35%", right: "-120px", transform: "translateY(-50%)" }} />
+                <div className="hidden xl:block product-page-glow" style={{ top: "35%", right: "-120px", transform: "translateY(-50%)" }} />
 
                 {/* Two columns — image height only drives alignment */}
                 <div className="flex flex-col md:flex-row gap-12 xl:gap-20 items-center relative">
@@ -289,13 +287,13 @@ const BundleInteractive = ({ bundle }) => {
                             </span>
                         )}
 
-                        <h1 className="font-aeonik text-[40px] xl:text-[50px] leading-none text-black-custom">
+                        <h1 className="font-aeonik text-[35px] xl:text-[50px] leading-none text-black-custom">
                             {bundle.title}
                         </h1>
 
                         {/* Constituent products — with per-slot flavour pickers */}
                         {slots.length > 0 && (
-                            <div className="flex flex-col gap-3">
+                            <div className="flex flex-col gap-2 xl:gap-3">
                                 {slots.map((s) => (
                                     s.item.product?.title && (
                                         <div key={s.index} className="flex flex-col gap-1.5">
@@ -331,6 +329,18 @@ const BundleInteractive = ({ bundle }) => {
                                 {bundle.description}
                             </p>
                         )}
+
+                        {/* Certification badges — mobile only */}
+                        <div className="flex md:hidden items-center gap-4">
+                            <Image
+                                src="/images/certification-badges.png"
+                                alt="GMP Certified"
+                                width={240}
+                                height={240}
+                                unoptimized={true}
+                                className="w-40 xl:w-60 xl:h-60 object-contain"
+                            />
+                        </div>
 
                         {/* Price + stock + wishlist */}
                         <div className="flex items-center gap-4 flex-wrap border-t border-gray-mint pt-4">
@@ -368,18 +378,18 @@ const BundleInteractive = ({ bundle }) => {
                         </div>
 
                         {/* CTA */}
-                        <div className="flex gap-3">
+                        <div className="flex flex-col md:flex-row gap-3">
                             <button
                                 onClick={handleAddToCart}
                                 disabled={isAdding || atMax}
-                                className="flex-1 h-12 bg-black-custom rounded-full font-aeonik text-[12px] xl:text-[16px] uppercase text-white-custom hover:bg-gray-text transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="flex-1 flex items-center justify-center px-6 py-4 md:h-12 md:px-0 md:py-0 bg-black-custom rounded-full font-aeonik text-[16px] uppercase text-white-custom hover:bg-gray-text transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                             >
                                 {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : "ADD TO BAG"}
                             </button>
                             <button
                                 onClick={handleQuickBuy}
                                 disabled={isBuying || atMax}
-                                className="flex-1 h-12 bg-gray-mint rounded-full font-aeonik text-[12px] xl:text-[16px] uppercase text-black-custom hover:bg-white-custom hover:border hover:border-black-custom transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="flex-1 flex items-center justify-center px-6 py-4 md:h-12 md:px-0 md:py-0 bg-gray-mint rounded-full font-aeonik text-[16px] uppercase text-black-custom hover:bg-white-custom hover:border hover:border-black-custom transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                             >
                                 {isBuying ? "..." : "QUICK BUY"}
                             </button>
@@ -389,7 +399,7 @@ const BundleInteractive = ({ bundle }) => {
 
                 {/* Certification badges + additional info — left half only */}
                 <div className="w-full md:w-1/2 flex flex-col gap-4 mt-4">
-                    <div className="flex items-center gap-4">
+                    <div className="hidden md:flex items-center gap-4">
                         <Image
                             src="/images/certification-badges.png"
                             alt="GMP Certified"
@@ -401,7 +411,7 @@ const BundleInteractive = ({ bundle }) => {
                     </div>
 
                     {bundle.productDetails?.additionalInfo?.length > 0 && (
-                        <div className="font-aeonik text-[28px] xl:text-[35px] leading-normal text-black-custom [&_p]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5">
+                        <div className="hidden xl:block font-aeonik text-[18px] xl:text-[35px] leading-normal text-black-custom [&_p]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5">
                             <PortableText value={bundle.productDetails.additionalInfo} />
                         </div>
                     )}

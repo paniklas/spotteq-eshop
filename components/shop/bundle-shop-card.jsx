@@ -70,10 +70,10 @@ const BundleShopCard = ({ bundle }) => {
     }
 
     return (
-        <div className="group/card flex flex-col gap-4 relative">
+        <div className="group/card flex flex-col gap-2 xl:gap-4 relative pb-5 xl:pb-10">
             {/* Image area */}
             <div className="relative bg-white rounded-sm overflow-hidden" style={{ aspectRatio: "1/1.2" }}>
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[75%] aspect-375/572 bg-gray-soft rounded-full opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 ease-in-out z-0" />
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[75%] aspect-375/572 bg-gray-soft rounded-full opacity-100 md:opacity-0 md:group-hover/card:opacity-100 transition-opacity duration-500 ease-in-out z-0" />
                 {bundle.imageUrl && (
                     <Image
                         src={bundle.imageUrl}
@@ -82,7 +82,7 @@ const BundleShopCard = ({ bundle }) => {
                         height={380}
                         unoptimized
                         sizes="(min-width: 1536px) 533px, (min-width: 768px) 50vw, 100vw"
-                        className="relative z-1 w-full h-full object-contain p-24"
+                        className="relative z-1 w-full h-full object-contain p-16 md:p-24"
                     />
                 )}
             </div>
@@ -113,7 +113,7 @@ const BundleShopCard = ({ bundle }) => {
             </div>
 
             <div className="flex justify-between items-center gap-4">
-                <h3 className="font-aeonik text-[20px] text-black-custom leading-[1.45]">
+                <h3 className="font-aeonik text-[18px] xl:text-[20px] text-black-custom leading-[1.45]">
                     {bundle.title}
                 </h3>
                 <div className="flex items-baseline gap-2 shrink-0">
@@ -128,25 +128,25 @@ const BundleShopCard = ({ bundle }) => {
 
             {/* Details + Button */}
             <div className="relative">
-                {/* Bundle description — visible at rest */}
-                <div className="opacity-100 transition-opacity duration-500 ease-in-out group-hover/card:opacity-0 group-hover/card:pointer-events-none">
+                {/* Bundle description — visible at rest on desktop, hidden on mobile */}
+                <div className="opacity-0 md:opacity-100 transition-opacity duration-500 ease-in-out md:group-hover/card:opacity-0 md:group-hover/card:pointer-events-none">
                     <p className="font-tt font-light text-[16px] text-black-custom leading-[1.4] line-clamp-3">
                         {bundle.description}
                     </p>
                 </div>
 
-                {/* Buttons — visible on hover */}
-                <div className="absolute inset-0 flex gap-3 opacity-0 translate-y-2 group-hover/card:opacity-100 group-hover/card:translate-y-0 transition-all duration-500 ease-in-out">
+                {/* Buttons — always visible on mobile, on hover for desktop */}
+                <div className="absolute inset-0 flex gap-3 opacity-100 translate-y-0 md:opacity-0 md:translate-y-2 md:group-hover/card:opacity-100 md:group-hover/card:translate-y-0 transition-all duration-500 ease-in-out">
                     <button
                         onClick={handleAddToCart}
                         disabled={isAdding || atMax}
-                        className="flex-1 h-11.25 bg-black-custom rounded-[20px] font-aeonik text-white-custom text-[16px] cursor-pointer hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="flex-1 h-7 xl:h-11 bg-black-custom rounded-[20px] font-aeonik text-white-custom text-[16px] cursor-pointer hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                         {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : "ADD TO BAG"}
                     </button>
                     <Link
                         href={`/shop/bundle/${bundle.slug}`}
-                        className="flex-1 h-11.25 bg-gray-soft rounded-[20px] font-aeonik text-black-custom text-[16px] cursor-pointer hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out flex items-center justify-center"
+                        className="flex-1 h-7 xl:h-11 bg-gray-soft rounded-[20px] font-aeonik text-black-custom text-[16px] cursor-pointer hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out flex items-center justify-center"
                     >
                         VIEW DETAILS
                     </Link>

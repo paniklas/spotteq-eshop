@@ -55,7 +55,7 @@ const ShopSkeleton = () => (
                 </aside>
 
                 {/* Product grid skeleton */}
-                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-16">
+                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 xl:gap-y-16">
                     {Array.from({ length: 6 }).map((_, i) => (
                         <ProductCardSkeleton key={i} />
                     ))}
