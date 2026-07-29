@@ -17,7 +17,7 @@ export default async function BundlePage({ params }) {
             <Suspense fallback={<ProductPageSkeleton />}>
                 <BundleContent locale={locale} slug={slug} />
             </Suspense>
-            <KeyFeatures />
+            <KeyFeaturesForSlug slug={slug} locale={locale} />
             <FeaturedProducts compact locale={locale} />
             <QualitySection />
             <SpotteqImage />
@@ -30,4 +30,10 @@ async function BundleContent({ locale, slug }) {
     if (!bundle) notFound()
 
     return <BundleInteractive bundle={bundle} />
+}
+
+async function KeyFeaturesForSlug({ slug, locale }) {
+    const bundle = await getBundleBySlug(slug, locale)
+    if (!bundle?.keyFeatures) return null
+    return <KeyFeatures keyFeatures={bundle.keyFeatures} />
 }

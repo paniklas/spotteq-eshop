@@ -12,7 +12,7 @@ const FeaturedProducts = async ({ compact = false, locale }) => {
     return (
         <section
             id="featured-products-section"
-            className="w-full bg-white py-12 xl:py-24"
+            className="w-full bg-white-custom py-10 xl:py-24"
         >
             <div className="max-w-480 mx-auto page-x pt-10 xl:pt-20">
 

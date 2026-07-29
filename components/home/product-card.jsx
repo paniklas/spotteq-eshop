@@ -80,7 +80,7 @@ const ProductCard = ({ product, priority = false }) => {
     }
 
     return (
-        <div data-testid="product-card" className="group/card flex flex-col gap-4 relative pb-5 xl:pb-10">
+        <div data-testid="product-card" className="group/card flex flex-col gap-2 xl:gap-4 relative pb-5 xl:pb-10">
             {/* Image area */}
             <div className="relative bg-white rounded-sm overflow-hidden" style={{ aspectRatio: "1/1.2" }}>
 
@@ -129,7 +129,7 @@ const ProductCard = ({ product, priority = false }) => {
 
             <div className="flex justify-between items-center">
                 {/* Product name */}
-                <h3 className="font-aeonik text-[20px] text-black-custom leading-[1.45]">
+                <h3 className="font-aeonik text-[18px] xl:text-[20px] text-black-custom leading-[1.45]">
                     {productName}
                 </h3>
                 {/* Price */}

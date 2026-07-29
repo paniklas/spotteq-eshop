@@ -1,8 +1,9 @@
+import { cache } from 'react'
 import { defineQuery } from 'next-sanity'
 import { catalogFetch } from '../lib/catalogFetch'
 import { urlFor } from '../lib/image'
 
-export async function getBundleBySlug(slug, locale) {
+export const getBundleBySlug = cache(async (slug, locale) => {
   const QUERY = defineQuery(`
     *[_type == "bundle" && slugs[$locale].current == $slug && status == true][0] {
       _id,
@@ -18,6 +19,11 @@ export async function getBundleBySlug(slug, locale) {
       status,
       productDetails {
         "additionalInfo": additionalInfo[language == $locale][0].value
+      },
+      keyFeatures {
+        "description": description[language == $locale][0].value,
+        "features": features[language == $locale][0].value,
+        image
       },
       products[] {
         quantity,
@@ -58,6 +64,10 @@ export async function getBundleBySlug(slug, locale) {
       ...bundle,
       imageUrl: bundle.image ? urlFor(bundle.image).width(800).url() : null,
       galleryImageUrls: bundle.galleryImages?.filter(img => img?.asset?._ref).map(img => urlFor(img).width(800).url()) ?? [],
+      keyFeatures: bundle.keyFeatures ? {
+        ...bundle.keyFeatures,
+        imageUrl: bundle.keyFeatures.image ? urlFor(bundle.keyFeatures.image).width(1200).url() : null,
+      } : null,
       products: bundle.products?.map(item => ({
         ...item,
         product: item.product
@@ -74,4 +84,4 @@ export async function getBundleBySlug(slug, locale) {
     console.error('Error fetching bundle by slug', error)
     return null
   }
-}
+})

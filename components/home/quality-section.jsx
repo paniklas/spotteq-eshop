@@ -9,14 +9,14 @@ const QualitySection = () => {
             id="quality-section-section"
             className="w-full bg-gray-light overflow-hidden"
         >
-            <div className="max-w-[1920px] mx-auto grid grid-cols-1 xl:grid-cols-2 page-x">
+            <div className="max-w-480 mx-auto grid grid-cols-1 xl:grid-cols-2 page-x">
                 {/* Text side */}
                 <div className="order-2 xl:order-1 py-10 xl:py-20 flex flex-col justify-center gap-6 xl:gap-8">
                     <h2 className="font-aeonik text-black text-[28px] xl:text-[35px] leading-[1.45]">
                         Built on certified quality
                     </h2>
 
-                    <p className="font-aeonik text-black text-[16px] xl:text-[20px] leading-[1.2] max-w-[917px]">
+                    <p className="font-aeonik text-black text-[16px] xl:text-[20px] leading-[1.2] max-w-229.25">
                         SPOTTEQ products are manufactured in the European Union, in GMP- and
                         HACCP-certified facilities that comply with EU food and food
                         supplement standards. Each batch is produced under strict quality

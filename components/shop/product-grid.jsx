@@ -28,7 +28,7 @@ const ProductGrid = ({ initialProducts, total, locale, categoryIds = [], product
 
     return (
         <div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-16">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 xl:gap-y-16">
                 {bundles.map((bundle) => (
                     <BundleShopCard key={bundle._id} bundle={bundle} />
                 ))}

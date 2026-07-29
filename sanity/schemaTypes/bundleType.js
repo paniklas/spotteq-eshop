@@ -163,6 +163,33 @@ export const bundleType = defineType({
         }),
       ],
     }),
+    // Key Features Section
+    defineField({
+      name: 'keyFeatures',
+      title: 'Key Features Section',
+      type: 'object',
+      fields: [
+        defineField({
+          name: 'description',
+          title: 'Description',
+          type: 'internationalizedArrayBlockContent',
+          description: 'Introductory paragraph shown above the features list',
+        }),
+        defineField({
+          name: 'features',
+          title: 'Features List',
+          type: 'internationalizedArrayBlockContent',
+          description: 'Use a bulleted list for the individual key features',
+        }),
+        defineField({
+          name: 'image',
+          title: 'Key Features Image',
+          type: 'image',
+          options: { hotspot: true },
+          description: 'Product image shown on the right side of the section',
+        }),
+      ],
+    }),
     // Show on Home Page Flag
     defineField({
       name: 'showOnHomePage',
