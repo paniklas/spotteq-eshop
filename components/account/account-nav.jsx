@@ -27,27 +27,34 @@ const AccountNav = () => {
 
     return (
         <nav className="lg:sticky lg:top-28">
-            <ul className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
-                {items.map((item) => {
-                    const Icon = item.icon;
-                    const active = isActive(item);
-                    return (
-                        <li key={item.key} className="shrink-0">
-                            <Link
-                                href={item.href}
-                                className={`flex items-center gap-3 rounded-xl px-4 py-3 font-aeonik text-[14px] whitespace-nowrap transition-colors ${
-                                    active
-                                        ? "bg-black-custom text-white-custom"
-                                        : "text-gray-text hover:bg-white-custom hover:text-black-custom"
-                                }`}
-                            >
-                                <Icon size={18} strokeWidth={1.5} />
-                                {t(item.key)}
-                            </Link>
-                        </li>
-                    );
-                })}
-            </ul>
+            <div className="flex items-center gap-3 lg:block">
+                <ul className="flex-1 min-w-0 flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pt-8 xl:pt-0 pb-2 lg:pb-0">
+                    {items.map((item) => {
+                        const Icon = item.icon;
+                        const active = isActive(item);
+                        return (
+                            <li key={item.key} className="shrink-0">
+                                <Link
+                                    href={item.href}
+                                    className={`flex items-center gap-3 rounded-xl px-4 xl:py-3 font-aeonik text-[14px] whitespace-nowrap transition-colors ${
+                                        active
+                                            ? "text-black-custom font-semibold"
+                                            : "text-gray-text hover:bg-white-custom hover:text-black-custom"
+                                    }`}
+                                >
+                                    <Icon size={18} strokeWidth={1.5} />
+                                    {t(item.key)}
+                                </Link>
+                            </li>
+                        );
+                    })}
+                </ul>
+
+                {/* Sign out — mobile: pinned right of the scrolling tabs so it stays visible */}
+                <div className="lg:hidden shrink-0 mt-5">
+                    <SignOutButton />
+                </div>
+            </div>
 
             <div className="hidden lg:block mt-6 px-4">
                 <SignOutButton />

@@ -4,7 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { useCartStore } from "@/store/cart-store";
 import { useCartHydrated } from "@/hooks/use-cart-hydrated";
 import CheckoutForm from "./checkout-form";
-import OrderSummary from "./order-summary";
+import OrderSummary, { PaymentAndLinks } from "./order-summary";
 
 // Owns the empty-cart decision because it covers both the form and the summary —
 // a guard inside CheckoutForm cannot hide its sibling OrderSummary.
@@ -35,18 +35,31 @@ const CheckoutContent = ({ shippingMethods = [], accountDefaults = null }) => {
   }
 
   return (
-    <div className="grid lg:grid-cols-[1fr_700px] gap-8">
-      {/* Checkout Form — left */}
-      <div className="flex flex-col">
-        <h1 className="font-aeonik text-[28px] xl:text-[35px] text-black-custom mb-2">Checkout</h1>
-        <CheckoutForm shippingMethods={shippingMethods} accountDefaults={accountDefaults} />
+    <div className="flex flex-col gap-4 xl:gap-8 lg:grid lg:grid-cols-[1fr_700px] lg:items-start">
+      {/* Order Summary — mobile only, collapsible, above the form */}
+      <div className="order-1 lg:hidden mt-8">
+        <OrderSummary shippingMethods={shippingMethods} collapsible showFooterLinks={false} />
       </div>
 
-      {/* Order Summary — right, sticky */}
-      <div>
+      {/* Checkout Form — left on desktop */}
+      <div className="order-2 lg:order-1 flex flex-col">
+        <h1 className="hidden xl:block font-aeonik text-[28px] xl:text-[35px] text-black-custom mb-2">Checkout</h1>
+        <CheckoutForm
+          shippingMethods={shippingMethods}
+          accountDefaults={accountDefaults}
+        />
+      </div>
+
+      {/* Order Summary — desktop only, right, sticky */}
+      <div className="hidden lg:block lg:order-2">
         <div className="sticky top-28">
           <OrderSummary shippingMethods={shippingMethods} />
         </div>
+      </div>
+
+      {/* Payment icons + footer links — mobile only, at the bottom */}
+      <div className="order-3 lg:hidden">
+        <PaymentAndLinks />
       </div>
     </div>
   );

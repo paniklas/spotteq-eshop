@@ -125,6 +125,8 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
   );
   const [boxNowLockerInfo, setBoxNowLockerInfo] = useState(null);
   const [boxNowLockerError, setBoxNowLockerError] = useState(false);
+  const boxNowSectionRef = useRef(null);
+  const boxNowFirstRender = useRef(true);
 
   // Mirrors the total calculation in order-summary.jsx so the button reflects the actual charge
   const activeShippingMethod = shippingMethods.find((m) => m._id === selectedMethodId) ?? shippingMethods[0] ?? null;
@@ -229,6 +231,19 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
       form.setValue("boxNowLockerId", "");
     }
   };
+
+  // Scroll the locker picker into view once it opens after the customer picks
+  // BoxNow — skips the initial mount so a pre-selected BoxNow method (the only
+  // shipping option) doesn't auto-scroll on page load.
+  useEffect(() => {
+    if (boxNowFirstRender.current) {
+      boxNowFirstRender.current = false;
+      return;
+    }
+    if (isBoxNow && boxNowSectionRef.current) {
+      boxNowSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [isBoxNow]);
 
   const onSubmit = (data) => {
     setInventoryIssues([]);
@@ -789,19 +804,21 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
 
           {/* ── BoxNow Locker Picker ────────────────────────────────────── */}
           {isBoxNow && (
-            <SectionCard title="Select BoxNow Locker">
-              <BoxNowLockerPicker
-                partnerId={process.env.NEXT_PUBLIC_BOXNOW_PARTNER_ID}
-                postalCode={watchedPostalCode}
-                city={watchedCity}
-                onSelect={handleLockerSelect}
-              />
-              {boxNowLockerError && (
-                <p className="font-aeonik text-[12px] text-red-500 mt-2">
-                  Please select a BoxNow locker before continuing.
-                </p>
-              )}
-            </SectionCard>
+            <div ref={boxNowSectionRef}>
+              <SectionCard title="Select BoxNow Locker">
+                <BoxNowLockerPicker
+                  partnerId={process.env.NEXT_PUBLIC_BOXNOW_PARTNER_ID}
+                  postalCode={watchedPostalCode}
+                  city={watchedCity}
+                  onSelect={handleLockerSelect}
+                />
+                {boxNowLockerError && (
+                  <p className="font-aeonik text-[12px] text-red-500 mt-2">
+                    Please select a BoxNow locker before continuing.
+                  </p>
+                )}
+              </SectionCard>
+            </div>
           )}
 
           {/* ── Terms + Submit ───────────────────────────────────────────── */}
@@ -866,7 +883,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="h-14 w-full bg-black-custom font-aeonik text-[16px] uppercase text-white-custom rounded-xl hover:bg-gray-text cursor-pointer transition-colors duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="h-11 xl:h-14 w-full bg-black-custom font-aeonik text-[16px] uppercase text-white-custom rounded-xl hover:bg-gray-text cursor-pointer transition-colors duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {isPending ? "Checking…" : `Continue to Payment - ${formatPrice(total)}€`}
                 </button>

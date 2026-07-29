@@ -18,11 +18,11 @@ const STATUS_STYLES = {
 };
 
 const StatCard = ({ icon: Icon, value, label }) => (
-    <div className="bg-white-custom rounded-2xl p-5 xl:p-6 flex flex-col gap-3">
-        <Icon size={20} strokeWidth={1.5} className="text-gray-text" />
+    <div className="bg-white-custom rounded-xl xl:rounded-2xl p-3 xl:p-6 flex flex-col gap-1.5 xl:gap-3">
+        <Icon size={18} strokeWidth={1.5} className="text-gray-text shrink-0" />
         <div>
-            <p className="font-aeonik text-[24px] xl:text-[28px] text-black-custom leading-none">{value}</p>
-            <p className="font-aeonik text-[13px] text-gray-text mt-1">{label}</p>
+            <p className="font-aeonik text-[20px] xl:text-[28px] text-black-custom leading-none">{value}</p>
+            <p className="font-aeonik text-[11px] xl:text-[13px] text-gray-text leading-tight mt-0.5 xl:mt-1">{label}</p>
         </div>
     </div>
 );
@@ -73,7 +73,7 @@ export default async function OverviewPage({ params }) {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-3 xl:gap-4">
                 <StatCard icon={ShoppingBag} value={totalOrders} label={t("stats.totalOrders")} />
                 <StatCard icon={Package} value={deliveredCount} label={t("stats.delivered")} />
                 <StatCard icon={Heart} value={wishlistCount} label={t("stats.wishlistItems")} />
@@ -81,7 +81,7 @@ export default async function OverviewPage({ params }) {
 
             {/* Recent orders */}
             <div className="bg-white-custom rounded-2xl p-6 xl:p-8">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col items-start xl:flex-row xl:items-center xl:justify-between mb-6">
                     <h2 className="font-aeonik text-[20px] text-black-custom">{t("recentOrders")}</h2>
                     <Link href="/account/orders" className="flex items-center gap-1 font-aeonik text-[13px] text-black-custom hover:opacity-70 transition-opacity">
                         {t("viewAll")} <ArrowRight size={15} />
