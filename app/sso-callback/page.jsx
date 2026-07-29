@@ -1,7 +1,7 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
-import { AuthenticateWithRedirectCallback } from '@clerk/nextjs';
+import { useEffect, useSyncExternalStore } from 'react';
+import { AuthenticateWithRedirectCallback, useAuth } from '@clerk/nextjs';
 
 // This route sits outside the [locale] tree, so there's no next-intl provider
 // here. Read the locale from the cookie next-intl sets; default to the app's
@@ -42,6 +42,19 @@ function Spinner() {
 export default function SSOCallbackPage() {
     const locale = useSyncExternalStore(subscribe, getLocaleSnapshot, getServerLocaleSnapshot);
     const t = MESSAGES[locale];
+    const { isLoaded, isSignedIn } = useAuth();
+
+    // Once the OAuth handshake has established a session, navigate to /account
+    // ourselves with a full page load. The forms set redirectUrlComplete back to
+    // this public page (not the protected /account), so Clerk's own post-OAuth
+    // navigation never gets bounced to /sign-in by the middleware; this hard
+    // navigation then guarantees the freshly-set session cookie accompanies the
+    // request to /account (a soft navigation can beat the cookie there on mobile).
+    useEffect(() => {
+        if (isLoaded && isSignedIn) {
+            window.location.href = `/${locale}/account`;
+        }
+    }, [isLoaded, isSignedIn, locale]);
 
     return (
         <main className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gray-light page-x text-center">
@@ -51,8 +64,11 @@ export default function SSOCallbackPage() {
                 <p className="font-aeonik text-[14px] text-gray-text">{t.subtitle}</p>
             </div>
 
-            {/* Invisibly processes the OAuth callback and redirects on completion. */}
-            <AuthenticateWithRedirectCallback />
+            {/* Process the OAuth ticket only while signed out. Once signed in, the
+                effect above owns navigation — rendering this after completion (when
+                the SDK soft-navigates back here with no ticket) would make it redirect
+                to /sign-in, reintroducing the bounce. */}
+            {isLoaded && !isSignedIn && <AuthenticateWithRedirectCallback />}
         </main>
     );
 }

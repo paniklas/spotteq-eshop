@@ -130,10 +130,10 @@ const CartDrawer = ({ allBundles = [] }) => {
                 className={`fixed top-0 right-0 z-50 h-full w-full max-w-200 bg-white flex flex-col transform transition-transform duration-500 ease-in-out ${cartOpen ? "translate-x-0" : "translate-x-full"}`}
             >
                 {/* Header */}
-                <div className="px-8 pt-8 pb-0">
+                <div className="px-4 xl:px-8 pt-8 pb-0">
                     <div className="flex items-center justify-between">
                         <div className="flex items-baseline gap-3">
-                            <h2 className="font-aeonik text-[28px] xl:text-[35px] text-black-custom">Your bag</h2>
+                            <h2 className="font-aeonik text-[20px] md:text-[28px] xl:text-[35px] text-black-custom">Your bag</h2>
                             <span className="font-aeonik text-[13px] xl:text-[18px] text-black-custom underline">
                                 {cartItems.reduce((sum, i) => sum + i.qty, 0)} {cartItems.reduce((sum, i) => sum + i.qty, 0) === 1 ? "ITEM" : "ITEMS"}
                             </span>
@@ -152,7 +152,7 @@ const CartDrawer = ({ allBundles = [] }) => {
                 </div>
 
                 {/* Free shipping banner */}
-                <div className="px-8 pt-4 pb-4">
+                <div className="px-4 xl:px-8 pt-4 pb-4">
                     <p className="font-aeonik text-[13px] xl:text-[22px] text-black-custom">
                         {remaining > 0
                             ? `You are ${remaining.toFixed(2).replace(".", ",")}€ away from FREE SHIPPING!`
@@ -161,7 +161,7 @@ const CartDrawer = ({ allBundles = [] }) => {
                 </div>
 
                 {/* Items */}
-                <div data-lenis-prevent className="flex-1 overflow-y-auto px-8">
+                <div data-lenis-prevent className="flex-1 overflow-y-auto px-4 xl:px-8">
                     {cartItems.length === 0 && (
                         <p className="font-aeonik text-[14px] xl:text-[22px] text-gray-text text-center mt-12">Your bag is empty.</p>
                     )}
@@ -301,7 +301,13 @@ const CartDrawer = ({ allBundles = [] }) => {
                 )}
 
                 {/* Footer */}
-                <div className={`px-8 pb-8 pt-5 ${bundleSuggestions.length === 0 ? "border-t border-gray-mint" : ""}`}>
+                <div className="pb-8">
+                    {bundleSuggestions.length === 0 && (
+                        <div className="px-4 xl:px-8">
+                            <hr className="border-black-custom" />
+                        </div>
+                    )}
+                    <div className="px-4 xl:px-8 pt-5">
                     {/* Coupon — hidden when the cart is empty */}
                     {cartItems.length > 0 && (appliedCoupon ? (
                         <div className="flex items-center justify-between mb-6 px-3 py-2.5 bg-teal-accent/10 border border-teal-accent rounded-sm">
@@ -359,7 +365,7 @@ const CartDrawer = ({ allBundles = [] }) => {
                         )}
                         <div className="flex items-center justify-between">
                             <span className="font-aeonik text-[13px] xl:text-[14px] uppercase text-black-custom">TOTAL</span>
-                            <span className="font-aeonik text-[30px] font-bold text-black-custom">{total.toFixed(2).replace(".", ",")}€</span>
+                            <span className="font-aeonik text-[20px] xl:text-[30px] font-bold text-black-custom">{total.toFixed(2).replace(".", ",")}€</span>
                         </div>
                     </div>
 
@@ -367,10 +373,11 @@ const CartDrawer = ({ allBundles = [] }) => {
                     <button
                         onClick={handleCheckoutClick}
                         disabled={!userLoaded || cartItems.length === 0}
-                        className="w-full h-14 bg-black-custom font-aeonik text-[13px] xl:text-[16px] uppercase text-white-custom rounded-[18px] hover:bg-gray-text transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+                        className="w-full h-12 bg-black-custom font-aeonik text-[14px] xl:text-[16px] uppercase text-white-custom rounded-[18px] hover:bg-gray-text transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
                     >
                         PROCEED TO CHECKOUT
                     </button>
+                    </div>
                 </div>
             </div>
 

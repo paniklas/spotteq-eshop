@@ -14,7 +14,7 @@ export default async function AccountLayout({ children, params }) {
     return (
         <section className="w-full bg-gray-light py-16 xl:py-28 min-h-screen">
             <div className="max-w-480 mx-auto page-x">
-                <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-8 xl:gap-12">
+                <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-4 xl:gap-12">
                     <aside>
                         <AccountNav />
                     </aside>

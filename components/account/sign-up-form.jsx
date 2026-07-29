@@ -2,7 +2,6 @@
 
 import { useSignUp } from '@clerk/nextjs/legacy';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 
@@ -60,7 +59,6 @@ export default function SignUpForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
     const [error, setError] = useState('');
-    const router = useRouter();
     const locale = useLocale();
     const t = useTranslations('auth');
 
@@ -75,7 +73,11 @@ export default function SignUpForm() {
             await signUp.authenticateWithRedirect({
                 strategy: 'oauth_google',
                 redirectUrl: `${window.location.origin}/sso-callback`,
-                redirectUrlComplete: `${window.location.origin}/${locale}/account`,
+                // Land back on the public /sso-callback page (not the auth-protected
+                // /account) so Clerk's post-OAuth soft navigation can't get bounced to
+                // /sign-in by the middleware before the session cookie propagates — the
+                // callback page then performs a hard navigation to /account itself.
+                redirectUrlComplete: `${window.location.origin}/sso-callback`,
             });
             // On success the browser redirects away, so no need to reset the flag.
         } catch (err) {
@@ -109,7 +111,11 @@ export default function SignUpForm() {
             const result = await signUp.attemptEmailAddressVerification({ code });
             if (result.status === 'complete') {
                 await setActive({ session: result.createdSessionId });
-                router.push(`/${locale}/account`);
+                // Hard navigation, not router.push: the session cookie setActive() just wrote
+                // can otherwise lose the race with Next.js's client-side transition, especially
+                // on mobile — the auth-protected /account route's middleware check would then
+                // see no session yet and bounce to /sign-in.
+                window.location.href = `/${locale}/account`;
             } else {
                 setError(t('verificationFailed'));
             }

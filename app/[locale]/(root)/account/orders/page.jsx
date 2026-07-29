@@ -19,7 +19,7 @@ export default async function OrdersPage({ params }) {
         <div className="flex flex-col gap-6">
             <div>
                 <h1 className="font-aeonik text-[24px] xl:text-[32px] text-black-custom">{t("ordersTitle")}</h1>
-                <p className="font-aeonik text-[14px] text-gray-text mt-1">
+                <p className="font-aeonik text-[14px] text-gray-text">
                     {t("totalOrdersCount", { count: orders?.length ?? 0 })}
                 </p>
             </div>

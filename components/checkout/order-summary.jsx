@@ -2,14 +2,46 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Check, X } from "lucide-react";
+import { Check, X, ChevronDown } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useCartStore } from "@/store/cart-store";
 import { useCartHydrated } from "@/hooks/use-cart-hydrated";
 import { validateCouponWithEmail } from "@/app/actions/coupon";
 import OrderSummarySkeleton from "./order-summary-skeleton";
 
-const OrderSummary = ({ shippingMethods = [] }) => {
+// Payment icons + footer links — shared between the desktop summary card and
+// the standalone mobile block (rendered at the bottom of the checkout page).
+export const PaymentAndLinks = () => (
+    <>
+        {/* Payment icons */}
+        <div className="flex justify-end xl:mt-28">
+            <Image
+                src="/images/payment-icons.png"
+                alt="Accepted payment methods"
+                width={240}
+                height={32}
+                unoptimized
+                className="h-5 w-auto object-contain"
+            />
+        </div>
+
+        {/* Footer links */}
+        <div className="flex items-center justify-end gap-6 mt-6 flex-wrap">
+            <Link href="/contact" className="font-aeonik text-[11px] xl:text-[13px] uppercase tracking-wide text-black-custom underline">
+                Contact Us
+            </Link>
+            <Link href="/payment-security" className="font-aeonik text-[11px] xl:text-[13px] uppercase tracking-wide text-black-custom underline">
+                Payment &amp; Security
+            </Link>
+            <Link href="/shipping-returns" className="font-aeonik text-[11px] xl:text-[13px] uppercase tracking-wide text-black-custom underline">
+                Shipping &amp; Returns
+            </Link>
+        </div>
+    </>
+)
+
+const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLinks = true }) => {
+    const [open, setOpen] = useState(false)
     const cartHydrated = useCartHydrated()
     const { cartItems, appliedCoupon, couponDiscount, couponEmailVerified, applyCoupon, removeCoupon, checkoutEmail, selectedShippingMethod, paymentLocked } = useCartStore()
     const activeShippingMethod = selectedShippingMethod ?? shippingMethods[0] ?? null
@@ -68,9 +100,31 @@ const OrderSummary = ({ shippingMethods = [] }) => {
     if (!cartHydrated) return <OrderSummarySkeleton />
 
     return (
-        <div className="bg-white-custom rounded-2xl p-6 h-full overflow-y-auto">
-            <h2 className="font-aeonik text-[22px] xl:text-[35px] text-black-custom mb-4">Order Summary</h2>
+        <div className="bg-white-custom rounded-2xl p-3 h-full overflow-y-auto">
+            {collapsible ? (
+                <button
+                    type="button"
+                    onClick={() => setOpen((v) => !v)}
+                    aria-expanded={open}
+                    className="w-full flex items-center justify-between cursor-pointer"
+                >
+                    <span className="flex items-center gap-2">
+                        <span className="font-aeonik text-[16px] xl:text-[22px] text-black-custom">Order Summary</span>
+                        <ChevronDown
+                            size={18}
+                            strokeWidth={1.5}
+                            className={`shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+                        />
+                    </span>
+                    <span className="font-aeonik text-[22px] font-bold text-black-custom">{total.toFixed(2).replace(".", ",")}€</span>
+                </button>
+            ) : (
+                <h2 className="font-aeonik text-[22px] xl:text-[35px] text-black-custom mb-4">Order Summary</h2>
+            )}
 
+            <div className={`grid transition-all duration-300 ease-out ${(!collapsible || open) ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
+            <div className="overflow-hidden">
+            <div className={collapsible ? "mt-4" : ""}>
             {/* Items */}
             <div className="flex flex-col">
                 {cartItems.length === 0 && (
@@ -207,34 +261,14 @@ const OrderSummary = ({ shippingMethods = [] }) => {
 
                 <div className="flex justify-between items-center">
                     <span className="font-aeonik text-[16px] uppercase tracking-wide text-black-custom">Total</span>
-                    <span className="font-aeonik text-[30px] font-bold text-black-custom">{total.toFixed(2).replace(".", ",")}€</span>
+                    <span className="font-aeonik text-[22px] xl:text-[30px] font-bold text-black-custom">{total.toFixed(2).replace(".", ",")}€</span>
                 </div>
             </div>
-
-            {/* Payment icons */}
-            <div className="flex justify-end mt-28">
-                <Image
-                    src="/images/payment-icons.png"
-                    alt="Accepted payment methods"
-                    width={240}
-                    height={32}
-                    unoptimized
-                    className="h-5 w-auto object-contain"
-                />
+            </div>
+            </div>
             </div>
 
-            {/* Footer links */}
-            <div className="flex items-center justify-end gap-6 mt-6 flex-wrap">
-                <Link href="/contact" className="font-aeonik text-[11px] xl:text-[13px] uppercase tracking-wide text-black-custom underline">
-                    Contact Us
-                </Link>
-                <Link href="/payment-security" className="font-aeonik text-[11px] xl:text-[13px] uppercase tracking-wide text-black-custom underline">
-                    Payment &amp; Security
-                </Link>
-                <Link href="/shipping-returns" className="font-aeonik text-[11px] xl:text-[13px] uppercase tracking-wide text-black-custom underline">
-                    Shipping &amp; Returns
-                </Link>
-            </div>
+            {showFooterLinks && <PaymentAndLinks />}
         </div>
     )
 }

@@ -2,7 +2,6 @@
 
 import { useSignIn } from '@clerk/nextjs/legacy';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 
@@ -54,7 +53,6 @@ export default function SignInForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
     const [error, setError] = useState('');
-    const router = useRouter();
     const locale = useLocale();
     const t = useTranslations('auth');
 
@@ -69,7 +67,11 @@ export default function SignInForm() {
             await signIn.authenticateWithRedirect({
                 strategy: 'oauth_google',
                 redirectUrl: `${window.location.origin}/sso-callback`,
-                redirectUrlComplete: `${window.location.origin}/${locale}/account`,
+                // Land back on the public /sso-callback page (not the auth-protected
+                // /account) so Clerk's post-OAuth soft navigation can't get bounced to
+                // /sign-in by the middleware before the session cookie propagates — the
+                // callback page then performs a hard navigation to /account itself.
+                redirectUrlComplete: `${window.location.origin}/sso-callback`,
             });
             // On success the browser redirects away, so no need to reset the flag.
         } catch (err) {
@@ -87,7 +89,8 @@ export default function SignInForm() {
             const result = await signIn.create({ identifier: email });
             if (result.status === 'complete') {
                 await setActive({ session: result.createdSessionId });
-                router.push(`/${locale}/account`);
+                // Hard navigation, not router.push: see sign-up-form.jsx for why.
+                window.location.href = `/${locale}/account`;
                 return;
             }
             const hasPassword = result.supportedFirstFactors?.some(f => f.strategy === 'password');
@@ -112,7 +115,8 @@ export default function SignInForm() {
             const result = await signIn.attemptFirstFactor({ strategy: 'password', password });
             if (result.status === 'complete') {
                 await setActive({ session: result.createdSessionId });
-                router.push(`/${locale}/account`);
+                // Hard navigation, not router.push: see sign-up-form.jsx for why.
+                window.location.href = `/${locale}/account`;
             } else {
                 setError(t('signInIncomplete'));
             }
@@ -151,7 +155,8 @@ export default function SignInForm() {
             });
             if (result.status === 'complete') {
                 await setActive({ session: result.createdSessionId });
-                router.push(`/${locale}/account`);
+                // Hard navigation, not router.push: see sign-up-form.jsx for why.
+                window.location.href = `/${locale}/account`;
             } else {
                 setError(t('signInIncomplete'));
             }

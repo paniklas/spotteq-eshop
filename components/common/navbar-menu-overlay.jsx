@@ -52,7 +52,7 @@ const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }
             {/* ─────────────── Mobile menu (below lg) ─────────────── */}
             <div className="lg:hidden max-w-480 mx-auto page-x pb-16" style={fade(80)}>
                 {/* Accordion groups + plain links */}
-                <div className="border-t border-black/15">
+                <div>
                     {categoryGroups.map((group) => (
                         <MobileAccordion
                             key={group.slug}
