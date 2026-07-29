@@ -214,7 +214,7 @@ const BundleInteractive = ({ bundle }) => {
             <div className="max-w-480 mx-auto page-x">
 
                 {/* Back button — above the two columns */}
-                <button onClick={() => router.back()} className="group flex items-center w-fit cursor-pointer mb-6">
+                <button type="button" onClick={() => router.back()} className="group flex items-center w-fit cursor-pointer mb-6">
                     <Image
                         src="/icons/arrow-left.svg"
                         alt=""
