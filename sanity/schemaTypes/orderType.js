@@ -149,6 +149,12 @@ export const orderType = defineType({
       type: 'number',
       readOnly: true,
       initialValue: 0,
+      // min(0) but deliberately NOT required(): every order predating this field
+      // lacks it, and required() would light up validation errors across the whole
+      // historical order list in Studio to guard against a value this code never
+      // writes. The mapping treats a missing value as 0 and then refuses anything
+      // that does not reconcile to the charged total, which is the real check.
+      validation: Rule => Rule.min(0),
     }),
     defineField({
       name: 'appliedCoupon',

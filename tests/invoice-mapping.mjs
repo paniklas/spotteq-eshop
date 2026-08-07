@@ -140,7 +140,7 @@ check("shipping is never discounted — the coupon applies before it", () => {
   assertEq(gatewayTotal(p), 22, "document total");
 });
 
-check("the rounding residue lands on the largest line, so the total still reconciles", () => {
+check("a discount that does not divide evenly still sums to the exact amount", () => {
   // 10% of 33.33 = 3.333 → per-line rounding cannot sum to 3.33 on its own.
   const p = buildInvoicePayload(
     order({
@@ -156,6 +156,46 @@ check("the rounding residue lands on the largest line, so the total still reconc
   const summed = round2(p.lines.reduce((s, l) => s + (l.discount ?? 0), 0));
   assertEq(summed, 3.33, "discounts must sum to amountDiscount");
   assertEq(gatewayTotal(p), 30, "document total");
+});
+
+check("a tiny discount over many lines never produces a NEGATIVE line discount", () => {
+  // Ten lines whose pro-rata share each sits just above half a cent. Rounding the
+  // shares independently makes them all round up, overshooting the 0.05 total and
+  // leaving a negative correction — a surcharge on a tax document. Note the totals
+  // still reconcile in that case, so the total check below cannot catch it: the
+  // per-line assertion is the one that matters here.
+  const p = buildInvoicePayload(
+    order({
+      products: Array.from({ length: 10 }, (_, i) => ({ quantity: 1, price: 10, title: el(`P${i}`) })),
+      amountDiscount: 0.05,
+      totalPrice: 99.95,
+    }),
+  );
+  for (const l of p.lines) {
+    assert((l.discount ?? 0) >= 0, `negative discount ${l.discount} on "${l.description}"`);
+  }
+  const summed = round2(p.lines.reduce((s, l) => s + (l.discount ?? 0), 0));
+  assertEq(summed, 0.05, "discounts must still sum to amountDiscount");
+  assertEq(gatewayTotal(p), 99.95, "document total");
+});
+
+check("no line is ever discounted below zero value", () => {
+  // A 100% coupon: every line's discount equals its gross, never exceeds it.
+  const p = buildInvoicePayload(
+    order({
+      products: [
+        { quantity: 1, price: 19.99, title: el("A") },
+        { quantity: 3, price: 4.33, title: el("B") },
+      ],
+      amountDiscount: 32.98,
+      totalPrice: 0,
+    }),
+  );
+  for (const l of p.lines) {
+    assert((l.discount ?? 0) >= 0, `negative discount on "${l.description}"`);
+    assert((l.discount ?? 0) <= round2(l.quantity * l.unitPrice) + 0.005, `discount exceeds line value on "${l.description}"`);
+  }
+  assertEq(gatewayTotal(p), 0, "document total");
 });
 
 console.log("\nbuildInvoicePayload — bundles");
