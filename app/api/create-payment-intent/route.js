@@ -388,6 +388,10 @@ export async function POST(req) {
       totalPrice:     parseFloat(total.toFixed(2)),
       currency:       "eur",
       amountDiscount: parseFloat(discountAmount.toFixed(2)),
+      // Persisted because the invoice needs the exact amount charged for shipping.
+      // It is not recoverable from shippingMethod->price alone: the free-shipping
+      // threshold may have zeroed it.
+      shippingCost:   parseFloat(shippingCost.toFixed(2)),
       shippingMethod: { _type: "reference", _ref: shippingMethodId },
       shippingAddress: {
         firstName:  customerInfo.firstName,
