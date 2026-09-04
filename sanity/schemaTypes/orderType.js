@@ -143,6 +143,20 @@ export const orderType = defineType({
       validation: Rule => Rule.required().min(0),
     }),
     defineField({
+      name: 'shippingCost',
+      title: 'Shipping Cost (€)',
+      description: 'What was actually charged for shipping — 0 when the free-shipping threshold was met. Stored rather than re-derived, because the invoice needs the exact figure and the shipping method\'s price alone does not give it.',
+      type: 'number',
+      readOnly: true,
+      initialValue: 0,
+      // min(0) but deliberately NOT required(): every order predating this field
+      // lacks it, and required() would light up validation errors across the whole
+      // historical order list in Studio to guard against a value this code never
+      // writes. The mapping treats a missing value as 0 and then refuses anything
+      // that does not reconcile to the charged total, which is the real check.
+      validation: Rule => Rule.min(0),
+    }),
+    defineField({
       name: 'appliedCoupon',
       title: 'Applied Coupon',
       type: 'object',
@@ -250,6 +264,56 @@ export const orderType = defineType({
       name: 'boxNowParcelStatus',
       title: 'BoxNow Parcel Status',
       type: 'string',
+      readOnly: true,
+    }),
+
+    // --- Compliance Gateway (myDATA / ΑΑΔΕ via Elorus) -----------------------
+    // An invoice is a legal obligation, but the Stripe webhook must still return
+    // 200 for the steps that already succeeded (order paid, inventory, BoxNow).
+    // So submission is non-fatal and its outcome is recorded here instead, which
+    // is what makes a failure visible and retryable rather than merely logged.
+    defineField({
+      name: 'invoiceStatus',
+      title: 'Invoice Status',
+      description: 'Outcome of the myDATA submission. Retry is keyed on the order id, so a "Failed" order is genuinely re-attempted while "Submitted" and "Ambiguous" replay the recorded outcome without filing a second document. "Ambiguous" means the gateway could not confirm whether the document was filed: retrying will not resolve it — check the document in Elorus and reconcile there.',
+      type: 'string',
+      readOnly: true,
+      options: {
+        list: [
+          { title: 'Not submitted', value: 'pending' },
+          { title: 'Submitted', value: 'submitted' },
+          { title: 'Failed', value: 'failed' },
+          { title: 'Ambiguous — unconfirmed', value: 'ambiguous' },
+          { title: 'Skipped (not configured)', value: 'skipped' },
+        ],
+        layout: 'radio',
+      },
+    }),
+    defineField({
+      name: 'invoiceSubmissionId',
+      title: 'Gateway Submission ID',
+      description: 'Compliance Gateway SubmissionLog id — the handle for GET /v1/invoices/:id.',
+      type: 'string',
+      readOnly: true,
+    }),
+    defineField({
+      name: 'invoiceExternalId',
+      title: 'Provider Document ID',
+      description: 'The Elorus document id. The myDATA MARK is obtained against this document; the gateway does not return it at creation time (myDATA submission is asynchronous).',
+      type: 'string',
+      readOnly: true,
+    }),
+    defineField({
+      name: 'invoiceError',
+      title: 'Invoice Error',
+      type: 'text',
+      rows: 3,
+      readOnly: true,
+    }),
+    defineField({
+      name: 'invoiceSubmittedAt',
+      title: 'Invoice Submitted At',
+      type: 'datetime',
       readOnly: true,
     }),
   ],

@@ -4,6 +4,7 @@ import { stripe } from "@/lib/stripe";
 import { backendClient } from "@/sanity/lib/backendClient";
 import { recordCouponUsage } from "@/app/actions/coupon";
 import { createDeliveryRequest } from "@/lib/boxnow";
+import { submitInvoiceAndRecord, isGatewayConfigured } from "@/lib/compliance-gateway";
 
 // Must be Node.js runtime — Edge runtime cannot read the raw request body
 // required for Stripe signature verification.
@@ -73,12 +74,28 @@ async function handlePaymentSucceeded(paymentIntent) {
     })
     .commit();
 
+  // ⚠ Everything past this point must be individually non-fatal.
+  //
+  // The order is now "paid", so the guard above turns any Stripe redelivery into
+  // an early return. A throw here would therefore return 500, and the retry it
+  // triggers would skip every remaining step — inventory, coupon, BoxNow AND the
+  // invoice — permanently, rather than re-running them. Each side effect owns its
+  // own failure so one cannot silently cancel the others.
+
   // Decrement inventory for all products (direct + inside bundles)
-  await decrementInventory(orderId);
+  try {
+    await decrementInventory(orderId);
+  } catch (err) {
+    console.error("[webhook] Inventory decrement failed for order", orderId, err);
+  }
 
   // Record coupon usage only after confirmed payment
   if (couponId && couponEmail && orderNumber) {
-    await recordCouponUsage(couponId, couponEmail, orderNumber);
+    try {
+      await recordCouponUsage(couponId, couponEmail, orderNumber);
+    } catch (err) {
+      console.error("[webhook] Coupon usage recording failed for order", orderId, err);
+    }
   }
 
   // Auto-create BoxNow delivery request if this is a BoxNow order
@@ -115,6 +132,34 @@ async function handlePaymentSucceeded(paymentIntent) {
     // TODO: add a Sanity Studio document action to manually retry createDeliveryRequest()
     // for orders stuck with shippingProvider "boxnow" and no boxNowParcelId.
     console.error("[webhook] BoxNow delivery request failed for order", orderId, err);
+  }
+
+  // File the retail receipt (ΑΠΥ) with the Compliance Gateway → myDATA/ΑΑΔΕ.
+  //
+  // Non-fatal for the same reason BoxNow is, and the reasoning is worth keeping:
+  // an invoice IS a legal obligation, so throwing looks like the responsible
+  // choice. It is not. Throwing makes Stripe redeliver the whole event, and the
+  // `status === "paid"` guard at the top returns early on redelivery — so the
+  // retry would skip the invoice too, while re-running nothing else either. It
+  // would trade a visible failure for an invisible one.
+  //
+  // Instead the outcome is recorded on the order (`invoiceStatus`), which makes
+  // it visible in Studio and retryable via POST /api/orders/invoice/retry.
+  if (isGatewayConfigured()) {
+    try {
+      const result = await submitInvoiceAndRecord(backendClient, orderId);
+      if (result.status !== "submitted") {
+        console.error(
+          `[webhook] Invoice ${result.status} for order ${orderId}:`,
+          result.error,
+        );
+      }
+    } catch (err) {
+      // submitInvoiceAndRecord already swallows gateway and mapping failures;
+      // reaching here means Sanity itself failed, so the order has no
+      // invoiceStatus at all. Log loudly — this one is invisible in Studio.
+      console.error("[webhook] Could not record invoice outcome for order", orderId, err);
+    }
   }
 }
 
