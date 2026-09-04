@@ -1,5 +1,7 @@
 import { Suspense } from "react"
 import { notFound } from "next/navigation"
+import { permanentRedirect } from "@/i18n/navigation"
+import { normalizeSlug } from "@/utils/normalizeSlug"
 import { getProductBySlug } from "@/sanity/getData/getProductBySlug"
 import { getRelatedProducts } from "@/sanity/getData/getRelatedProducts"
 import { getBundlesContainingProduct } from "@/sanity/getData/getBundlesContainingProduct"
@@ -15,7 +17,12 @@ export const dynamic = "force-dynamic"
 export const revalidate = 86400;
 
 export default async function ProductPage({ params }) {
-    const { slug, locale } = await params
+    const { slug: rawSlug, locale } = await params
+    const { slug, stripped } = normalizeSlug(rawSlug)
+    if (stripped && slug) {
+        permanentRedirect({ href: `/shop/product/${encodeURIComponent(slug)}`, locale })
+    }
+
     return (
         <>
             <Suspense fallback={<ProductPageSkeleton />}>
