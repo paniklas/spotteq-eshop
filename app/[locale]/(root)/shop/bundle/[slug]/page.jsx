@@ -14,8 +14,8 @@ export const dynamic = "force-dynamic";
 
 export default async function BundlePage({ params }) {
     const { locale, slug: rawSlug } = await params;
-    const slug = normalizeSlug(rawSlug);
-    if (slug !== rawSlug && slug) {
+    const { slug, stripped } = normalizeSlug(rawSlug);
+    if (stripped && slug) {
         permanentRedirect({ href: `/shop/bundle/${encodeURIComponent(slug)}`, locale });
     }
 

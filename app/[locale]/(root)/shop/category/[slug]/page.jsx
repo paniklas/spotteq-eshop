@@ -15,8 +15,8 @@ export const dynamic = "force-dynamic";
 
 export default async function CategoryPageBySlug({ params }) {
     const { locale, slug: rawSlug } = await params;
-    const slug = normalizeSlug(rawSlug);
-    if (slug !== rawSlug && slug) {
+    const { slug, stripped } = normalizeSlug(rawSlug);
+    if (stripped && slug) {
         permanentRedirect({ href: `/shop/category/${encodeURIComponent(slug)}`, locale });
     }
 
