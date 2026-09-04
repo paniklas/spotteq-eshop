@@ -1,5 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
+import { permanentRedirect } from "@/i18n/navigation";
+import { normalizeSlug } from "@/utils/normalizeSlug";
 import BundleInteractive from "@/components/shop/bundle-interactive";
 import ProductPageSkeleton from "@/components/skeletons/product-page-skeleton";
 import QualitySection from "@/components/home/quality-section";
@@ -11,7 +13,12 @@ import { getBundleBySlug } from "@/sanity/getData/getBundleBySlug";
 export const dynamic = "force-dynamic";
 
 export default async function BundlePage({ params }) {
-    const { locale, slug } = await params;
+    const { locale, slug: rawSlug } = await params;
+    const slug = normalizeSlug(rawSlug);
+    if (slug !== rawSlug && slug) {
+        permanentRedirect({ href: `/shop/bundle/${encodeURIComponent(slug)}`, locale });
+    }
+
     return (
         <>
             <Suspense fallback={<ProductPageSkeleton />}>

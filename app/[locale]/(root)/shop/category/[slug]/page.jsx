@@ -1,5 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
+import { permanentRedirect } from "@/i18n/navigation";
+import { normalizeSlug } from "@/utils/normalizeSlug";
 import ShopView from "@/components/shop/shop-view";
 import ShopSkeleton from "@/components/shop/shop-skeleton";
 import ProductGrid from "@/components/shop/product-grid";
@@ -12,7 +14,12 @@ import { getShopBundles } from "@/sanity/getData/getShopBundles";
 export const dynamic = "force-dynamic";
 
 export default async function CategoryPageBySlug({ params }) {
-    const { locale, slug } = await params;
+    const { locale, slug: rawSlug } = await params;
+    const slug = normalizeSlug(rawSlug);
+    if (slug !== rawSlug && slug) {
+        permanentRedirect({ href: `/shop/category/${encodeURIComponent(slug)}`, locale });
+    }
+
     return (
         <>
             <Suspense fallback={<ShopSkeleton />}>
