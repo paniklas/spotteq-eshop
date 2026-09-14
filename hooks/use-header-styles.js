@@ -56,6 +56,13 @@ const SECTION_CONFIGS = [
         color: '#ffffff',
         scrollBg: 'backdrop-blur-md bg-black/20',
     },
+    // Footer follows the dark spotteq image on most pages — without an entry the
+    // header keeps the image's white icons over the light footer.
+    {
+        id: 'footer-section',
+        color: '#000000',
+        scrollBg: 'backdrop-blur-md bg-white/30',
+    },
 ];
 
 // Returns { color, scrollBg } for the section currently at the top of the viewport,
