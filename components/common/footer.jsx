@@ -35,7 +35,7 @@ const paymentMethods = [
 
 const Footer = () => {
     return (
-        <footer className="w-full bg-white-custom pt-5 xl:pt-42">
+        <footer id="footer-section" className="w-full bg-white-custom pt-5 xl:pt-42">
             {/* Top section: Newsletter (left) + Links (right) + Back-to-top */}
             <div className="max-w-480 mx-auto page-x pt-16 xl:pt-20 pb-8 xl:pb-14 relative">
                 <div className="flex flex-col gap-16">

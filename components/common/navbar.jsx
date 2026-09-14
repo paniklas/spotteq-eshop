@@ -10,6 +10,7 @@ import MenuOverlay from "./navbar-menu-overlay";
 import { useHeaderStyles } from "@/hooks/use-header-styles";
 import { getStylesForCurrentPage } from "@/hooks/get-header-styles-current-page";
 import { useCartStore } from "@/store/cart-store";
+import { useLocaleSwitch } from "@/hooks/use-locale-switch";
 
 const AccountIcon = () => (
     <svg width="18" height="21" viewBox="0 0 18 21" fill="none">
@@ -31,6 +32,7 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
     const [burgerHovered, setBurgerHovered] = useState(false);
     const { openCart, cartItems } = useCartStore();
     const { isSignedIn, user } = useUser();
+    const { otherLocale, switchLocale, isPending: isSwitchingLocale } = useLocaleSwitch();
 
     // Clerk email/password sign-up doesn't collect a name, so fall back gracefully.
     const displayName =
@@ -208,6 +210,18 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
                                     </span>
                                 </button>
                             )}
+
+                            {/* Language toggle — shows the language you switch TO. Mobile uses the menu overlay switcher. */}
+                            <button
+                                type="button"
+                                onClick={() => switchLocale()}
+                                disabled={isSwitchingLocale}
+                                lang={otherLocale}
+                                aria-label={otherLocale === "en" ? "Switch to English" : "Αλλαγή σε Ελληνικά"}
+                                className={`hidden md:flex items-center font-aeonik text-[14px] md:text-[16px] leading-none uppercase cursor-pointer transition-opacity ${isSwitchingLocale ? "opacity-50" : "hover:opacity-60"}`}
+                            >
+                                {otherLocale}
+                            </button>
                         </motion.div>
 
                         {/* Burger — motion.span lines animate rotation + color + hover shrink.
