@@ -31,28 +31,53 @@ function generateViewToken() {
 
 // Takes the one-per-customer hold on the first-order discount, or refuses.
 //
-// Conditional on the revision that was read, so of two simultaneous requests
-// exactly one commits and the other is told no. A hold belonging to this same
-// browser (its id came back in the pending-checkout cookie) is renewed rather
-// than refused — otherwise stepping Back and forward again in checkout would
-// lock a customer out of their own discount. A hold older than the TTL is
-// treated as abandoned and taken over.
+// The profile is read here rather than passed in, so the conditional write below
+// is checked against a revision read moments earlier: of two simultaneous
+// requests exactly one commits and the other is refused.
+//
+// Three ways a hold can be available:
+//   - nobody holds one;
+//   - this same browser holds it (its id came back in the pending-checkout
+//     cookie) — renewed, so stepping Back and forward again in checkout cannot
+//     lock a customer out of their own discount;
+//   - the holder abandoned it and the TTL has passed.
+//
+// Taking over an abandoned hold is not just a matter of overwriting it: the
+// intent it authorised may still be sitting confirmable in a forgotten tab, and
+// two confirmable discounted intents means the discount can be spent twice. So
+// the old intent is cancelled first, and if it cannot be cancelled because it is
+// already in flight, the takeover is refused.
 //
 // Returns the claim id on success, or null when the discount is not available.
-async function claimFirstOrderDiscount(userInfoDoc, browserClaimId) {
-  const held = userInfoDoc.firstOrderDiscountClaim;
+async function claimFirstOrderDiscount(userInfoId, browserClaimId) {
+  const profile = await backendClient.fetch(
+    `*[_id == $id][0]{ _id, _rev, firstOrderDiscountUsed, firstOrderDiscountClaim }`,
+    { id: userInfoId }
+  );
+  if (!profile || profile.firstOrderDiscountUsed === true) return null;
+
+  const held = profile.firstOrderDiscountClaim;
   const heldAt = held?.at ? Date.parse(held.at) : NaN;
   const heldIsLive = Number.isFinite(heldAt) && Date.now() - heldAt < FIRST_ORDER_CLAIM_TTL_MS;
+  const heldByThisBrowser = Boolean(held?.id) && held.id === browserClaimId;
 
   // Someone else's checkout is using it right now.
-  if (heldIsLive && held.id !== browserClaimId) return null;
+  if (heldIsLive && !heldByThisBrowser) return null;
 
-  const claimId = heldIsLive ? held.id : randomBytes(12).toString("base64url");
+  // Expired hold belonging to someone else — retire its intent before taking it.
+  if (held?.intentId && !heldByThisBrowser) {
+    const retired = await retireIntent(held.intentId);
+    if (!retired) return null;
+  }
+
+  const claimId = heldByThisBrowser ? held.id : randomBytes(12).toString("base64url");
 
   try {
     await backendClient
-      .patch(userInfoDoc._id)
-      .ifRevisionId(userInfoDoc._rev)
+      .patch(profile._id)
+      .ifRevisionId(profile._rev)
+      // Replaces the whole object, so a renewed hold drops the previous intentId
+      // and the caller rebinds it to the intent it is about to create.
       .set({ firstOrderDiscountClaim: { id: claimId, at: new Date().toISOString() } })
       .commit({ visibility: "async" });
     return claimId;
@@ -60,6 +85,41 @@ async function claimFirstOrderDiscount(userInfoDoc, browserClaimId) {
     // Revision moved under us — another request claimed it first, or the profile
     // changed. Either way this checkout does not get the discount.
     return null;
+  }
+}
+
+// True when the intent is safely out of the way: cancelled by us, already
+// cancelled, or gone. False when it is succeeded/processing or its state cannot
+// be established — in which case the discount must be treated as still in use.
+async function retireIntent(intentId) {
+  try {
+    const intent = await stripe.paymentIntents.retrieve(intentId);
+    if (["succeeded", "processing", "requires_capture"].includes(intent.status)) return false;
+    if (intent.status !== "canceled") await stripe.paymentIntents.cancel(intentId);
+    return true;
+  } catch (err) {
+    console.warn("[create-payment-intent] could not retire intent", intentId, err?.message ?? err);
+    return false;
+  }
+}
+
+// Hands a hold back, but only if it is still the one we took.
+async function releaseFirstOrderClaim(userInfoId, claimId) {
+  if (!userInfoId || !claimId) return;
+  try {
+    const profile = await backendClient.fetch(
+      `*[_id == $id][0]{ _id, _rev, firstOrderDiscountClaim }`,
+      { id: userInfoId }
+    );
+    if (profile?.firstOrderDiscountClaim?.id !== claimId) return;
+    await backendClient
+      .patch(profile._id)
+      .ifRevisionId(profile._rev)
+      .unset(["firstOrderDiscountClaim"])
+      .commit();
+  } catch (err) {
+    // Non-fatal: an unreleased hold still expires on its own.
+    console.warn("[create-payment-intent] could not release claim:", err?.message ?? err);
   }
 }
 
@@ -113,6 +173,10 @@ const bodySchema = z.object({
 });
 
 export async function POST(req) {
+  // Tracked outside the try so a failure anywhere below can hand the hold back.
+  let claimedProfileId = null;
+  let claimedId = null;
+
   try {
     const rawBody = await req.json();
     const parsed = bodySchema.safeParse(rawBody);
@@ -390,22 +454,13 @@ export async function POST(req) {
     if (!validatedCouponId && userInfoRef && userInfoDoc?.firstOrderDiscountUsed !== true) {
       const firstOrderPercent = await getFirstOrderPromoPercent();
       if (firstOrderPercent > 0) {
-        const claimId = await claimFirstOrderDiscount(userInfoDoc, pendingClaimId);
-        if (!claimId) {
-          // The checkout page showed this customer their discount, so charging
-          // them without it would bill a total they never agreed to. Fail loudly
-          // instead, the same way a coupon we will not honour does.
-          return NextResponse.json(
-            {
-              error:
-                "Your first order discount is currently held by another checkout in progress. Complete that one, or wait for the hold to expire and try again.",
-            },
-            { status: 409 }
-          );
-        }
+        // Only DECIDES here — the hold itself is taken further down, immediately
+        // before the Payment Intent exists. Claiming this early would strand the
+        // hold on every path that aborts in between (a below-minimum total, a
+        // Stripe or Sanity failure), locking the customer out of their own
+        // discount for the whole TTL over an error they did not cause.
         discountAmount = (subtotal * firstOrderPercent) / 100;
         firstOrderDiscountApplied = true;
-        firstOrderClaimId = claimId;
       }
     }
 
@@ -569,6 +624,27 @@ export async function POST(req) {
       });
     }
 
+    // --- Take the first-order discount hold, last thing before the intent ---
+    // Everything that could still abort has already happened, so a hold taken
+    // here is one that a Payment Intent is actually about to use.
+    if (firstOrderDiscountApplied) {
+      firstOrderClaimId = await claimFirstOrderDiscount(userInfoRef, pendingClaimId);
+      claimedProfileId = userInfoRef;
+      claimedId = firstOrderClaimId;
+      if (!firstOrderClaimId) {
+        // The checkout page showed this customer their discount, so charging
+        // them without it would bill a total they never agreed to. Fail loudly
+        // instead, the same way a coupon we will not honour does.
+        return NextResponse.json(
+          {
+            error:
+              "Your first order discount is currently held by another checkout in progress. Complete that one, or wait for the hold to expire and try again.",
+          },
+          { status: 409 }
+        );
+      }
+    }
+
     // --- Create Stripe Payment Intent ---
     // orderId in metadata lets the webhook find and update this order
     const paymentIntent = await stripe.paymentIntents.create({
@@ -586,11 +662,28 @@ export async function POST(req) {
         // Set only when the automatic first-order discount was actually applied,
         // so the webhook marks the profile for exactly the orders that used it.
         firstOrderUserInfoId: firstOrderDiscountApplied && userInfoRef ? userInfoRef : "",
-        // Lets the webhook release this exact hold on failure without touching a
-        // newer one the customer may have taken in the meantime.
+        // Not read by the webhook — kept so an intent can be traced back to the
+        // hold that authorised it when reconciling a disputed discount.
         firstOrderClaimId: firstOrderClaimId ?? "",
       },
     });
+
+    // Bind the hold to the intent it authorised. A hold that names its intent can
+    // be taken over safely once it expires: the takeover cancels that intent
+    // first, so an abandoned tab cannot confirm an old discounted intent
+    // alongside the new one.
+    if (firstOrderClaimId && userInfoRef) {
+      try {
+        await backendClient
+          .patch(userInfoRef)
+          .set({ "firstOrderDiscountClaim.intentId": paymentIntent.id })
+          .commit({ visibility: "async" });
+      } catch (err) {
+        // Non-fatal: the hold still expires on its own. Worst case a takeover
+        // cannot cancel the old intent and falls back to refusing the discount.
+        console.warn("[create-payment-intent] could not bind claim to intent:", err?.message ?? err);
+      }
+    }
 
     // Order-scoped, httpOnly cookie — proves the browser that started this checkout
     // is the one viewing the success page, without putting the secret in the URL
@@ -617,6 +710,10 @@ export async function POST(req) {
     });
   } catch (err) {
     console.error("[create-payment-intent]", err);
+    // A hold taken moments ago must not outlive the request that took it — the
+    // customer would be locked out of their own discount for the whole TTL by a
+    // failure on our side.
+    await releaseFirstOrderClaim(claimedProfileId, claimedId);
     return NextResponse.json({ error: "Failed to initialise payment." }, { status: 500 });
   }
 }

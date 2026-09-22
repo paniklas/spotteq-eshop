@@ -98,6 +98,12 @@ export const userInfoType = defineType({
       fields: [
         defineField({ name: 'id', title: 'Claim ID', type: 'string' }),
         defineField({ name: 'at', title: 'Claimed At', type: 'datetime' }),
+        defineField({
+          name: 'intentId',
+          title: 'Stripe Payment Intent',
+          description: 'The intent this hold authorised. An expired hold is only taken over after this intent has been cancelled, so an abandoned tab cannot spend the discount a second time.',
+          type: 'string',
+        }),
       ],
     }),
     defineField({

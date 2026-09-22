@@ -190,7 +190,7 @@ async function handlePaymentSucceeded(paymentIntent) {
 }
 
 async function handlePaymentFailed(paymentIntent) {
-  const { orderId, firstOrderUserInfoId, firstOrderClaimId } = paymentIntent.metadata ?? {};
+  const { orderId } = paymentIntent.metadata ?? {};
   if (!orderId) return;
 
   await backendClient
@@ -199,28 +199,13 @@ async function handlePaymentFailed(paymentIntent) {
     .commit()
     .catch((err) => console.error("[webhook] Failed to cancel order:", err));
 
-  // Hand the first-order discount straight back. Without this the customer waits
-  // out the claim TTL before they can retry with their discount, having done
-  // nothing wrong but have a card declined. Matched on the claim id so a newer
-  // attempt's hold is never released by an older attempt's failure.
-  if (firstOrderUserInfoId && firstOrderClaimId) {
-    try {
-      const profile = await backendClient.fetch(
-        `*[_id == $id][0]{ _id, _rev, firstOrderDiscountClaim }`,
-        { id: firstOrderUserInfoId }
-      );
-      if (profile?.firstOrderDiscountClaim?.id === firstOrderClaimId) {
-        await backendClient
-          .patch(profile._id)
-          .ifRevisionId(profile._rev)
-          .unset(["firstOrderDiscountClaim"])
-          .commit();
-      }
-    } catch (err) {
-      // Non-fatal: the claim expires on its own, so the worst case is a delay.
-      console.error("[webhook] Failed to release first-order discount claim for order", orderId, err);
-    }
-  }
+  // The first-order discount hold is deliberately NOT released here. A failed
+  // payment leaves the intent confirmable — the customer can put in another card
+  // and pay that same discounted intent. Releasing the hold would let a second
+  // checkout claim the discount while this intent can still settle, so the
+  // discount could be spent twice. The hold stays with the intent that carries
+  // it, and is freed when that intent succeeds, or when it expires and the next
+  // checkout takes it over (cancelling this intent as it does).
 }
 
 async function decrementInventory(orderId) {
