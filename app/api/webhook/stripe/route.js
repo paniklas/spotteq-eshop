@@ -1,4 +1,5 @@
 import "server-only";
+import { createHash } from "crypto";
 import { headers } from "next/headers";
 import { stripe } from "@/lib/stripe";
 import { backendClient } from "@/sanity/lib/backendClient";
@@ -130,7 +131,17 @@ async function handlePaymentSucceeded(paymentIntent) {
   // Record coupon usage only after confirmed payment
   if (couponId && couponEmail && orderNumber) {
     try {
-      await recordCouponUsage(couponId, couponEmail, orderNumber);
+      const recorded = await recordCouponUsage(couponId, couponEmail, orderNumber);
+      // Drop the hold ONLY once the redemption is on record. The usage log is
+      // what the next checkout checks, so releasing after a failed write would
+      // leave nothing at all stopping this email redeeming the coupon again.
+      // Holding on instead costs the customer nothing — the hold expires — and
+      // the failure is logged for a human to reconcile.
+      if (recorded) {
+        await releaseCouponHold(couponId, couponEmail, paymentIntent.id);
+      } else {
+        console.error("[webhook] Coupon usage not recorded for order", orderId, "— hold left in place");
+      }
     } catch (err) {
       console.error("[webhook] Coupon usage recording failed for order", orderId, err);
     }
@@ -199,6 +210,34 @@ async function handlePaymentSucceeded(paymentIntent) {
       console.error("[webhook] Could not record invoice outcome for order", orderId, err);
     }
   }
+}
+
+// Mirrors couponClaimDocId in create-payment-intent — same address, so the hold
+// taken there is the one dropped here.
+//
+// Conditioned on the intent that just succeeded. Stripe can deliver events
+// concurrently, so an older handler must not delete a hold that a later checkout
+// has since taken: it would leave that checkout's intent live with nothing
+// reserving the coupon. A hold naming a different intent is simply left alone.
+async function releaseCouponHold(saleId, email, intentId) {
+  const emailKey = createHash("sha256").update(email.trim().toLowerCase()).digest("hex").slice(0, 32);
+  const docId = `couponClaim.${saleId}.${emailKey}`;
+
+  const held = await backendClient.fetch(`*[_id == $id][0]{ _rev, intentId }`, { id: docId });
+  if (!held) return;
+  if (held.intentId && held.intentId !== intentId) {
+    console.warn("[webhook] coupon hold belongs to a newer intent — leaving it in place:", docId);
+    return;
+  }
+
+  // ifRevisionId so a takeover landing between the read and the delete is not
+  // silently discarded: the delete simply fails and the newer hold survives.
+  await backendClient
+    .patch(docId)
+    .ifRevisionId(held._rev)
+    .set({ releasedAt: new Date().toISOString() })
+    .commit();
+  await backendClient.delete(docId);
 }
 
 async function handlePaymentFailed(paymentIntent) {
