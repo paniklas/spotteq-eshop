@@ -69,8 +69,14 @@ async function claimFirstOrderDiscount(userInfoId, browserClaimId) {
   // Someone else's checkout is using it right now.
   if (heldIsLive && !renewable) return null;
 
-  // Abandoned hold — retire the intent it authorised before taking it over.
-  if (!renewable && held?.intentId) {
+  // Retire the intent the hold authorised — on RENEWAL too, not just takeover.
+  // This request is about to create a replacement intent, so the old one must
+  // not stay confirmable either way. Renewal used to skip this on the strength
+  // of the cookie alone, which let a browser whose first intent had already
+  // succeeded (its webhook not yet landed, so no usage recorded) renew its own
+  // hold and buy a second discounted intent. retireIntent refuses when the
+  // intent is succeeded or in flight, which is exactly the case to block.
+  if (held?.intentId) {
     const retired = await retireIntent(held.intentId);
     if (!retired) return null;
   }
