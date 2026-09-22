@@ -123,13 +123,19 @@ export async function POST(req) {
         `*[_type == "shipping" && _id == $id && isActive == true][0]{ _id, price, freeShippingMinimum, provider }`,
         { id: shippingMethodId }
       ),
-      couponId
+      couponId && couponCode
         ? backendClient.fetch(
-            `*[_type == "sale" && _id == $id && isActive == true][0]{
+            // Matched on BOTH id and code: the id alone is not a secret (sale
+            // documents are world-readable), so trusting it would let a caller
+            // post any active sale's id with an arbitrary code and take its
+            // discount. Requiring the pair also keeps the code recorded on the
+            // order honest.
+            `*[_type == "sale" && _id == $id && isActive == true
+               && upper(couponCode) == upper($code)][0]{
               _id, discountAmount, validFrom, validUntil, maxUses, usedCount,
               "emailUsed": defined(usageLog[lower(email) == lower($email)][0])
             }`,
-            { id: couponId, email: customerInfo.email }
+            { id: couponId, code: couponCode, email: customerInfo.email }
           )
         : Promise.resolve(null),
     ]);
@@ -283,6 +289,18 @@ export async function POST(req) {
     let validatedCouponId = null;
     let firstOrderDiscountApplied = false;
 
+    // A coupon the client sent but the server will not honour must fail loudly.
+    // Falling through would charge a total the customer was never shown: the
+    // summary still displays the coupon, and the amount silently becomes either
+    // full price or the first-order discount instead. The payment wrapper renders
+    // this message with a "go back and try again" link.
+    if (couponId && !coupon) {
+      return NextResponse.json(
+        { error: "That coupon is no longer valid. Please go back and review your order." },
+        { status: 400 }
+      );
+    }
+
     if (coupon) {
       const now       = new Date();
       const notStarted = coupon.validFrom  && new Date(coupon.validFrom)  > now;
@@ -294,11 +312,20 @@ export async function POST(req) {
       // the same email could redeem an email-tied coupon on every order.
       const usedByThisEmail = coupon.emailUsed === true;
 
-      if (!notStarted && !expired && !maxedOut && !usedByThisEmail) {
-        // discountAmount is stored as a percentage (e.g. 10 = 10%) — match the UI calculation
-        discountAmount    = (subtotal * (coupon.discountAmount ?? 0)) / 100;
-        validatedCouponId = coupon._id;
+      if (notStarted || expired || maxedOut || usedByThisEmail) {
+        return NextResponse.json(
+          {
+            error: usedByThisEmail
+              ? "This coupon has already been used with this email address."
+              : "That coupon is no longer valid. Please go back and review your order.",
+          },
+          { status: 400 }
+        );
       }
+
+      // discountAmount is stored as a percentage (e.g. 10 = 10%) — match the UI calculation
+      discountAmount    = (subtotal * (coupon.discountAmount ?? 0)) / 100;
+      validatedCouponId = coupon._id;
     }
 
     // --- Automatic first-order discount (registered customers only) ---

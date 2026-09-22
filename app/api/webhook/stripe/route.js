@@ -58,6 +58,30 @@ async function handlePaymentSucceeded(paymentIntent) {
     return;
   }
 
+  // Spend the customer's one-time first-order discount. Only set here, never at
+  // intent creation: an abandoned checkout must not burn the discount.
+  //
+  // Deliberately ABOVE the already-paid guard. Setting a flag to the same value
+  // is idempotent, so re-running it on a redelivery costs nothing — whereas the
+  // guard exists for the steps below that are NOT idempotent (coupon usage
+  // appends to a log and increments a counter, inventory decrements), which
+  // would double-count. Keeping it here means a failure is recoverable: replay
+  // the event in Stripe and the flag is re-applied, instead of being skipped
+  // forever because the order is already marked paid.
+  if (firstOrderUserInfoId) {
+    try {
+      await backendClient
+        .patch(firstOrderUserInfoId)
+        .set({
+          firstOrderDiscountUsed: true,
+          firstOrderDiscountUsedAt: new Date().toISOString(),
+        })
+        .commit();
+    } catch (err) {
+      console.error("[webhook] First-order discount flag failed for order", orderId, err);
+    }
+  }
+
   // Idempotency guard — Stripe can fire the same event more than once on retries
   const order = await backendClient.fetch(
     `*[_type == "order" && _id == $orderId][0]{ status }`,
@@ -95,23 +119,6 @@ async function handlePaymentSucceeded(paymentIntent) {
       await recordCouponUsage(couponId, couponEmail, orderNumber);
     } catch (err) {
       console.error("[webhook] Coupon usage recording failed for order", orderId, err);
-    }
-  }
-
-  // Spend the customer's one-time first-order discount. Only set here, never at
-  // intent creation: an abandoned checkout must not burn the discount. Setting a
-  // flag to the same value is idempotent, so a Stripe redelivery is harmless.
-  if (firstOrderUserInfoId) {
-    try {
-      await backendClient
-        .patch(firstOrderUserInfoId)
-        .set({
-          firstOrderDiscountUsed: true,
-          firstOrderDiscountUsedAt: new Date().toISOString(),
-        })
-        .commit();
-    } catch (err) {
-      console.error("[webhook] First-order discount flag failed for order", orderId, err);
     }
   }
 
