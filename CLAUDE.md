@@ -165,7 +165,7 @@ When instructions conflict, follow this order:
 - lib/stripe.js — server-only Stripe singleton
 - app/api/create-payment-intent/route.js — fetches server-side prices, creates Sanity order + Stripe PI
 - app/api/webhook/stripe/route.js — marks order paid, decrements inventory, records coupon usage
-- Remaining: StripePaymentWrapper, PaymentForm, checkout-form rewrite, success page
+- components/checkout/ — stripe-payment-wrapper.jsx, payment-form.jsx, checkout-form.jsx, order-success.jsx all implemented; checkout flow complete
 
 ---
 
