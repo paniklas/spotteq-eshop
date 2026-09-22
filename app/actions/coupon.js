@@ -113,6 +113,10 @@ export async function validateCouponWithEmail(couponCode, email) {
     }
 }
 
+// Returns true only when the redemption was actually written. The caller uses
+// that to decide whether the checkout's hold on this coupon may be dropped —
+// releasing it after a failed write would remove the only thing standing between
+// an unrecorded redemption and the same email redeeming again.
 export async function recordCouponUsage(couponId, email, orderId) {
     try {
         // commit() returns the patched document, so the deactivation decision below
@@ -129,11 +133,15 @@ export async function recordCouponUsage(couponId, email, orderId) {
             .inc({ usedCount: 1 })
             .commit()
 
-        // Auto-deactivate if maxUses reached
+        // Auto-deactivate if maxUses reached. A failure here does not undo the
+        // redemption above, which is what the return value is about.
         if (updated.maxUses != null && (updated.usedCount ?? 0) >= updated.maxUses) {
             await backendClient.patch(couponId).set({ isActive: false }).commit()
         }
+
+        return true
     } catch (error) {
         console.error('Failed to record coupon usage:', error)
+        return false
     }
 }

@@ -131,11 +131,17 @@ async function handlePaymentSucceeded(paymentIntent) {
   // Record coupon usage only after confirmed payment
   if (couponId && couponEmail && orderNumber) {
     try {
-      await recordCouponUsage(couponId, couponEmail, orderNumber);
-      // The hold has done its job: from here the usage log is the permanent
-      // record that this email redeemed this coupon, and it is what the next
-      // checkout checks. Deleting is safe to repeat on a redelivery.
-      await releaseCouponHold(couponId, couponEmail);
+      const recorded = await recordCouponUsage(couponId, couponEmail, orderNumber);
+      // Drop the hold ONLY once the redemption is on record. The usage log is
+      // what the next checkout checks, so releasing after a failed write would
+      // leave nothing at all stopping this email redeeming the coupon again.
+      // Holding on instead costs the customer nothing — the hold expires — and
+      // the failure is logged for a human to reconcile.
+      if (recorded) {
+        await releaseCouponHold(couponId, couponEmail);
+      } else {
+        console.error("[webhook] Coupon usage not recorded for order", orderId, "— hold left in place");
+      }
     } catch (err) {
       console.error("[webhook] Coupon usage recording failed for order", orderId, err);
     }

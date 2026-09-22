@@ -158,7 +158,12 @@ async function claimCouponForEmail(saleId, email, browserClaimId) {
 
   if (heldIsLive && !renewable) return null;
 
-  if (!renewable && held.intentId) {
+  // Retired on RENEWAL too — a replacement intent is about to be created, so the
+  // previous one must not stay confirmable. See claimFirstOrderDiscount: a
+  // cookie outlives an intent that already succeeded, and renewing on the
+  // cookie alone would buy a second discounted intent before the first one's
+  // usage was recorded.
+  if (held.intentId) {
     const retired = await retireIntent(held.intentId);
     if (!retired) return null;
   }
