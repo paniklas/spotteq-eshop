@@ -76,6 +76,8 @@ async function handlePaymentSucceeded(paymentIntent) {
           firstOrderDiscountUsed: true,
           firstOrderDiscountUsedAt: new Date().toISOString(),
         })
+        // The hold has served its purpose — the discount is now spent outright.
+        .unset(["firstOrderDiscountClaim"])
         .commit();
     } catch (err) {
       console.error("[webhook] First-order discount flag failed for order", orderId, err);
@@ -188,7 +190,7 @@ async function handlePaymentSucceeded(paymentIntent) {
 }
 
 async function handlePaymentFailed(paymentIntent) {
-  const { orderId } = paymentIntent.metadata ?? {};
+  const { orderId, firstOrderUserInfoId, firstOrderClaimId } = paymentIntent.metadata ?? {};
   if (!orderId) return;
 
   await backendClient
@@ -196,6 +198,29 @@ async function handlePaymentFailed(paymentIntent) {
     .set({ status: "cancelled" })
     .commit()
     .catch((err) => console.error("[webhook] Failed to cancel order:", err));
+
+  // Hand the first-order discount straight back. Without this the customer waits
+  // out the claim TTL before they can retry with their discount, having done
+  // nothing wrong but have a card declined. Matched on the claim id so a newer
+  // attempt's hold is never released by an older attempt's failure.
+  if (firstOrderUserInfoId && firstOrderClaimId) {
+    try {
+      const profile = await backendClient.fetch(
+        `*[_id == $id][0]{ _id, _rev, firstOrderDiscountClaim }`,
+        { id: firstOrderUserInfoId }
+      );
+      if (profile?.firstOrderDiscountClaim?.id === firstOrderClaimId) {
+        await backendClient
+          .patch(profile._id)
+          .ifRevisionId(profile._rev)
+          .unset(["firstOrderDiscountClaim"])
+          .commit();
+      }
+    } catch (err) {
+      // Non-fatal: the claim expires on its own, so the worst case is a delay.
+      console.error("[webhook] Failed to release first-order discount claim for order", orderId, err);
+    }
+  }
 }
 
 async function decrementInventory(orderId) {

@@ -12,6 +12,11 @@ import { getFirstOrderPromoPercent } from "@/sanity/getData/getFirstOrderPromo";
 // Back → Continue cycle updates that order instead of creating another one.
 const PENDING_CHECKOUT_COOKIE = "pending_checkout";
 
+// How long a first-order discount stays held for one in-flight checkout. Long
+// enough to finish paying, short enough that walking away gives the discount
+// back without support having to intervene.
+const FIRST_ORDER_CLAIM_TTL_MS = 30 * 60 * 1000;
+
 function generateOrderNumber() {
   const ymd = new Date().toISOString().slice(0, 10).replace(/-/g, "");
   const rand = Math.random().toString(36).slice(2, 7).toUpperCase();
@@ -22,6 +27,40 @@ function generateOrderNumber() {
 // the checkout success page — prevents PII exposure via order number enumeration.
 function generateViewToken() {
   return randomBytes(24).toString("base64url");
+}
+
+// Takes the one-per-customer hold on the first-order discount, or refuses.
+//
+// Conditional on the revision that was read, so of two simultaneous requests
+// exactly one commits and the other is told no. A hold belonging to this same
+// browser (its id came back in the pending-checkout cookie) is renewed rather
+// than refused — otherwise stepping Back and forward again in checkout would
+// lock a customer out of their own discount. A hold older than the TTL is
+// treated as abandoned and taken over.
+//
+// Returns the claim id on success, or null when the discount is not available.
+async function claimFirstOrderDiscount(userInfoDoc, browserClaimId) {
+  const held = userInfoDoc.firstOrderDiscountClaim;
+  const heldAt = held?.at ? Date.parse(held.at) : NaN;
+  const heldIsLive = Number.isFinite(heldAt) && Date.now() - heldAt < FIRST_ORDER_CLAIM_TTL_MS;
+
+  // Someone else's checkout is using it right now.
+  if (heldIsLive && held.id !== browserClaimId) return null;
+
+  const claimId = heldIsLive ? held.id : randomBytes(12).toString("base64url");
+
+  try {
+    await backendClient
+      .patch(userInfoDoc._id)
+      .ifRevisionId(userInfoDoc._rev)
+      .set({ firstOrderDiscountClaim: { id: claimId, at: new Date().toISOString() } })
+      .commit({ visibility: "async" });
+    return claimId;
+  } catch {
+    // Revision moved under us — another request claimed it first, or the profile
+    // changed. Either way this checkout does not get the discount.
+    return null;
+  }
 }
 
 const bundleFlavourSchema = z.object({
@@ -267,27 +306,36 @@ export async function POST(req) {
       }
     }
 
+    const cookieStore = await cookies();
+
+    // Points at the pending order, its Payment Intent, the order's viewToken and
+    // the first-order discount claim this browser already holds. Read here rather
+    // than further down because the claim id decides whether a re-entry into
+    // checkout may reuse its own hold on the discount.
+    const [pendingOrderId, pendingIntentId, pendingViewToken, pendingClaimId] =
+      (cookieStore.get(PENDING_CHECKOUT_COOKIE)?.value ?? "").split("|");
+
     // --- Link the order to a signed-in user's profile (guests stay guest) ---
     // Resolved before the discount is computed: the automatic first-order discount
     // is granted off this profile, never off anything the client sends.
     const { userId } = await auth();
     let userInfoRef = null;
-    let firstOrderDiscountAvailable = false;
+    let userInfoDoc = null;
     if (userId) {
-      const userInfo = await backendClient.fetch(
-        `*[_type == "userInfo" && userId == $userId][0]{ _id, firstOrderDiscountUsed }`,
+      userInfoDoc = await backendClient.fetch(
+        `*[_type == "userInfo" && userId == $userId][0]{
+          _id, _rev, firstOrderDiscountUsed, firstOrderDiscountClaim
+        }`,
         { userId }
       );
-      if (userInfo?._id) {
-        userInfoRef = userInfo._id;
-        firstOrderDiscountAvailable = userInfo.firstOrderDiscountUsed !== true;
-      }
+      if (userInfoDoc?._id) userInfoRef = userInfoDoc._id;
     }
 
     // --- Validate coupon server-side ---
     let discountAmount    = 0;
     let validatedCouponId = null;
     let firstOrderDiscountApplied = false;
+    let firstOrderClaimId = null;
 
     // A coupon the client sent but the server will not honour must fail loudly.
     // Falling through would charge a total the customer was never shown: the
@@ -332,11 +380,32 @@ export async function POST(req) {
     // Deliberately never stacks with a coupon: a valid coupon replaces it, which
     // is what the order summary shows. Granted once per profile — the Stripe
     // webhook marks the profile as having spent it, only after payment succeeds.
-    if (!validatedCouponId && firstOrderDiscountAvailable) {
+    //
+    // Reading "not used yet" and then charging is not by itself single-use: two
+    // requests can both read false and both get a discounted intent before either
+    // webhook lands. So the discount is CLAIMED here with a conditional write —
+    // only one request can win — and the claim is released on payment failure or
+    // by expiring, so an abandoned checkout does not cost the customer their
+    // discount permanently.
+    if (!validatedCouponId && userInfoRef && userInfoDoc?.firstOrderDiscountUsed !== true) {
       const firstOrderPercent = await getFirstOrderPromoPercent();
       if (firstOrderPercent > 0) {
+        const claimId = await claimFirstOrderDiscount(userInfoDoc, pendingClaimId);
+        if (!claimId) {
+          // The checkout page showed this customer their discount, so charging
+          // them without it would bill a total they never agreed to. Fail loudly
+          // instead, the same way a coupon we will not honour does.
+          return NextResponse.json(
+            {
+              error:
+                "Your first order discount is currently held by another checkout in progress. Complete that one, or wait for the hold to expire and try again.",
+            },
+            { status: 409 }
+          );
+        }
         discountAmount = (subtotal * firstOrderPercent) / 100;
         firstOrderDiscountApplied = true;
+        firstOrderClaimId = claimId;
       }
     }
 
@@ -367,8 +436,6 @@ export async function POST(req) {
       stripeCustomerId = customer.id;
     }
 
-    const cookieStore = await cookies();
-
     // --- Reuse the order this browser already started, if any ---
     // Going Back from the payment step unmounts the payment component, so a second
     // "Continue to Payment" would otherwise create a fresh order + PI every cycle.
@@ -381,9 +448,6 @@ export async function POST(req) {
     // person holding the devtools. It must therefore prove which order it names, so
     // it carries the order's viewToken and the query matches on it. Otherwise anyone
     // who learned an order _id could steer this endpoint at someone else's checkout.
-    const [pendingOrderId, pendingIntentId, pendingViewToken] =
-      (cookieStore.get(PENDING_CHECKOUT_COOKIE)?.value ?? "").split("|");
-
     let reusableOrder = null;
     if (pendingOrderId && pendingViewToken) {
       reusableOrder = await backendClient.fetch(
@@ -522,6 +586,9 @@ export async function POST(req) {
         // Set only when the automatic first-order discount was actually applied,
         // so the webhook marks the profile for exactly the orders that used it.
         firstOrderUserInfoId: firstOrderDiscountApplied && userInfoRef ? userInfoRef : "",
+        // Lets the webhook release this exact hold on failure without touching a
+        // newer one the customer may have taken in the meantime.
+        firstOrderClaimId: firstOrderClaimId ?? "",
       },
     });
 
@@ -536,7 +603,7 @@ export async function POST(req) {
       maxAge:   60 * 60 * 24 * 7, // 7 days
     });
 
-    cookieStore.set(PENDING_CHECKOUT_COOKIE, `${sanityOrder._id}|${paymentIntent.id}|${viewToken}`, {
+    cookieStore.set(PENDING_CHECKOUT_COOKIE, `${sanityOrder._id}|${paymentIntent.id}|${viewToken}|${firstOrderClaimId ?? ""}`, {
       httpOnly: true,
       secure:   process.env.NODE_ENV === "production",
       sameSite: "lax",

@@ -90,6 +90,17 @@ export const userInfoType = defineType({
       readOnly: true,
     }),
     defineField({
+      name: 'firstOrderDiscountClaim',
+      title: 'First Order Discount Claim',
+      description: 'Short-lived hold taken while a checkout that uses the discount is in progress, so the same discount cannot be spent by two checkouts at once. It clears itself when the payment succeeds or fails, and expires on its own if the customer walks away. Nothing here needs managing by hand.',
+      type: 'object',
+      readOnly: true,
+      fields: [
+        defineField({ name: 'id', title: 'Claim ID', type: 'string' }),
+        defineField({ name: 'at', title: 'Claimed At', type: 'datetime' }),
+      ],
+    }),
+    defineField({
       name: 'favourites',
       title: 'Favourites',
       type: 'array',
