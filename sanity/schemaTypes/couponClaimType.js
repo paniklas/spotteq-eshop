@@ -32,6 +32,12 @@ export const couponClaimType = defineType({
       description: 'The intent this hold authorised. An expired hold is only taken over after this intent has been cancelled.',
       type: 'string',
     }),
+    defineField({
+      name: 'releasedAt',
+      title: 'Released At',
+      description: 'Stamped immediately before the hold is deleted, so the delete is conditional on nothing having taken the hold over in between.',
+      type: 'datetime',
+    }),
   ],
   preview: {
     select: { email: 'email', at: 'at' },

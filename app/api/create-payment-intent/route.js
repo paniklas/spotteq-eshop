@@ -782,6 +782,28 @@ export async function POST(req) {
       claimedCouponSaleId = validatedCouponId;
       claimedCouponEmail = customerInfo.email;
       claimedCouponClaim = couponClaim;
+
+      // The emailUsed read happened before the order was even created. Another
+      // checkout could have paid and had its usage recorded in the meantime —
+      // and recording deletes the hold, so this request would have been handed a
+      // brand new one for a coupon that is now spent. Re-read now that the hold
+      // is ours: from this point nobody else can redeem underneath us.
+      const stillUnused = await backendClient.fetch(
+        `!defined(*[_type == "sale" && _id == $id][0].usageLog[lower(email) == lower($email)][0])`,
+        { id: validatedCouponId, email: customerInfo.email }
+      );
+      if (stillUnused !== true) {
+        await releaseCouponClaim(validatedCouponId, customerInfo.email, couponClaim);
+        if (!reusableOrder) {
+          await backendClient
+            .delete(sanityOrder._id)
+            .catch((e) => console.warn("[create-payment-intent] could not discard order:", e?.message ?? e));
+        }
+        return NextResponse.json(
+          { error: "You have already used this coupon with this email address." },
+          { status: 409 }
+        );
+      }
     }
 
     // --- Take the first-order discount hold, last thing before the intent ---
@@ -849,9 +871,20 @@ export async function POST(req) {
         await backendClient
           .patch(couponClaimDocId(claimedCouponSaleId, claimedCouponEmail))
           .set({ intentId: paymentIntent.id })
-          .commit({ visibility: "async" });
+          .commit();
       } catch (err) {
-        console.warn("[create-payment-intent] could not bind coupon claim to intent:", err?.message ?? err);
+        // Not survivable, unlike the first-order bind: an unbound hold names no
+        // intent, so once it expires the next checkout takes it over WITHOUT
+        // cancelling this intent — and this one stays confirmable in the
+        // customer's tab. Undo rather than proceed: cancel the intent we just
+        // made, hand the hold back, and let the customer start again.
+        console.error("[create-payment-intent] coupon claim bind failed — undoing intent", err?.message ?? err);
+        await retireIntent(paymentIntent.id);
+        await releaseCouponClaim(claimedCouponSaleId, claimedCouponEmail, claimedCouponClaim);
+        return NextResponse.json(
+          { error: "Could not reserve your coupon. Please try again." },
+          { status: 500 }
+        );
       }
     }
 

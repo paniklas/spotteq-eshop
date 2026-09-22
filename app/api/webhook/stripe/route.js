@@ -138,7 +138,7 @@ async function handlePaymentSucceeded(paymentIntent) {
       // Holding on instead costs the customer nothing — the hold expires — and
       // the failure is logged for a human to reconcile.
       if (recorded) {
-        await releaseCouponHold(couponId, couponEmail);
+        await releaseCouponHold(couponId, couponEmail, paymentIntent.id);
       } else {
         console.error("[webhook] Coupon usage not recorded for order", orderId, "— hold left in place");
       }
@@ -214,9 +214,30 @@ async function handlePaymentSucceeded(paymentIntent) {
 
 // Mirrors couponClaimDocId in create-payment-intent — same address, so the hold
 // taken there is the one dropped here.
-async function releaseCouponHold(saleId, email) {
+//
+// Conditioned on the intent that just succeeded. Stripe can deliver events
+// concurrently, so an older handler must not delete a hold that a later checkout
+// has since taken: it would leave that checkout's intent live with nothing
+// reserving the coupon. A hold naming a different intent is simply left alone.
+async function releaseCouponHold(saleId, email, intentId) {
   const emailKey = createHash("sha256").update(email.trim().toLowerCase()).digest("hex").slice(0, 32);
-  await backendClient.delete(`couponClaim.${saleId}.${emailKey}`);
+  const docId = `couponClaim.${saleId}.${emailKey}`;
+
+  const held = await backendClient.fetch(`*[_id == $id][0]{ _rev, intentId }`, { id: docId });
+  if (!held) return;
+  if (held.intentId && held.intentId !== intentId) {
+    console.warn("[webhook] coupon hold belongs to a newer intent — leaving it in place:", docId);
+    return;
+  }
+
+  // ifRevisionId so a takeover landing between the read and the delete is not
+  // silently discarded: the delete simply fails and the newer hold survives.
+  await backendClient
+    .patch(docId)
+    .ifRevisionId(held._rev)
+    .set({ releasedAt: new Date().toISOString() })
+    .commit();
+  await backendClient.delete(docId);
 }
 
 async function handlePaymentFailed(paymentIntent) {

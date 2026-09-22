@@ -133,10 +133,16 @@ export async function recordCouponUsage(couponId, email, orderId) {
             .inc({ usedCount: 1 })
             .commit()
 
-        // Auto-deactivate if maxUses reached. A failure here does not undo the
-        // redemption above, which is what the return value is about.
+        // Auto-deactivate if maxUses reached. Isolated, because the redemption is
+        // already on record at this point: letting a failure here fall into the
+        // outer catch would report the redemption as unwritten, and the caller
+        // would then keep a hold that no longer needs holding.
         if (updated.maxUses != null && (updated.usedCount ?? 0) >= updated.maxUses) {
-            await backendClient.patch(couponId).set({ isActive: false }).commit()
+            try {
+                await backendClient.patch(couponId).set({ isActive: false }).commit()
+            } catch (error) {
+                console.error('Coupon redeemed but auto-deactivation failed:', couponId, error)
+            }
         }
 
         return true
