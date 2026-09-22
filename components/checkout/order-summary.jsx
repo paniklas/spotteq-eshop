@@ -8,6 +8,7 @@ import { useCartStore } from "@/store/cart-store";
 import { useCartHydrated } from "@/hooks/use-cart-hydrated";
 import { validateCouponWithEmail } from "@/app/actions/coupon";
 import OrderSummarySkeleton from "./order-summary-skeleton";
+import { effectiveShippingCost } from "@/utils/shippingCost";
 
 // Payment icons + footer links — shared between the desktop summary card and
 // the standalone mobile block (rendered at the bottom of the checkout page).
@@ -59,7 +60,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
     const freeThreshold = activeShippingMethod?.freeShippingMinimum ?? 0
     const shippingPrice  = activeShippingMethod?.price ?? 0
     const remaining = Math.max(0, freeThreshold - subTotal)
-    const shipping  = freeThreshold > 0 && subTotal >= freeThreshold ? 0 : shippingPrice
+    const shipping  = effectiveShippingCost(activeShippingMethod, subTotal)
     const total = discountedSubTotal + shipping
 
     // Silently re-validate a coupon applied from the cart drawer once the checkout email is known
@@ -135,14 +136,16 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
                 )}
                 <hr className="border-black-custom mb-5" />
 
-                {/* Free shipping banner */}
-                <div className="mb-10">
-                    <p className="font-aeonik text-[13px] xl:text-[22px] text-black-custom">
-                        {remaining > 0
-                            ? `You are ${remaining.toFixed(2).replace(".", ",")}€ away from FREE SHIPPING!`
-                            : "You've unlocked FREE SHIPPING!"}
-                    </p>
-                </div>
+                {/* Free shipping banner — only when this method actually offers it */}
+                {freeThreshold > 0 && (
+                    <div className="mb-10">
+                        <p className="font-aeonik text-[13px] xl:text-[22px] text-black-custom">
+                            {remaining > 0
+                                ? `You are ${remaining.toFixed(2).replace(".", ",")}€ away from FREE SHIPPING!`
+                                : "You've unlocked FREE SHIPPING!"}
+                        </p>
+                    </div>
+                )}
 
                 {cartItems.map((item, i) => (
                     <div key={item.cartId}>

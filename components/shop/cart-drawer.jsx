@@ -10,8 +10,6 @@ import { formatPrice } from "@/utils/formatPrice"
 import { validateCoupon } from "@/app/actions/coupon"
 
 
-const FREE_SHIPPING_THRESHOLD = 95.50
-
 const CheckoutModal = ({ onClose, onCloseAll, onGuest }) => (
     <>
         <div
@@ -49,7 +47,7 @@ const CheckoutModal = ({ onClose, onCloseAll, onGuest }) => (
     </>
 )
 
-const CartDrawer = ({ allBundles = [] }) => {
+const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
     const { cartItems, cartOpen, closeCart, removeFromCart, updateQty, appliedCoupon, couponDiscount, applyCoupon, removeCoupon } = useCartStore()
 
     const bundleSuggestions = useMemo(() => {
@@ -82,7 +80,10 @@ const CartDrawer = ({ allBundles = [] }) => {
     const subTotal = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0)
     const discountAmount = couponDiscount > 0 ? (subTotal * couponDiscount) / 100 : 0
     const total = subTotal - discountAmount
-    const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subTotal)
+    // Threshold comes from Sanity (lowest freeShippingMinimum across active
+    // shipping methods); 0 means no method offers free shipping, so say nothing.
+    const showFreeShippingBanner = freeShippingThreshold > 0
+    const remaining = Math.max(0, freeShippingThreshold - subTotal)
 
     const handleApplyCoupon = async () => {
         setCouponError("")
@@ -152,13 +153,15 @@ const CartDrawer = ({ allBundles = [] }) => {
                 </div>
 
                 {/* Free shipping banner */}
-                <div className="px-4 xl:px-8 pt-4 pb-4">
-                    <p className="font-aeonik text-[13px] xl:text-[22px] text-black-custom">
-                        {remaining > 0
-                            ? `You are ${remaining.toFixed(2).replace(".", ",")}€ away from FREE SHIPPING!`
-                            : "You've unlocked FREE SHIPPING!"}
-                    </p>
-                </div>
+                {showFreeShippingBanner && (
+                    <div className="px-4 xl:px-8 pt-4 pb-4">
+                        <p className="font-aeonik text-[13px] xl:text-[22px] text-black-custom">
+                            {remaining > 0
+                                ? `You are ${remaining.toFixed(2).replace(".", ",")}€ away from FREE SHIPPING!`
+                                : "You've unlocked FREE SHIPPING!"}
+                        </p>
+                    </div>
+                )}
 
                 {/* Items */}
                 <div data-lenis-prevent className="flex-1 overflow-y-auto px-4 xl:px-8">

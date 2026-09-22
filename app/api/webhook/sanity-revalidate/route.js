@@ -6,7 +6,7 @@ import { parseBody } from "next-sanity/webhook";
 //   URL:      https://<your-domain>/api/webhook/sanity-revalidate
 //   Dataset:  production
 //   Trigger:  Create, Update, Delete
-//   Filter:   _type in ["product", "category", "categoryGroup", "bundle", "homePage", "aboutPage", "announcement", "firstOrderPromo"]
+//   Filter:   _type in ["product", "category", "categoryGroup", "bundle", "homePage", "aboutPage", "announcement", "firstOrderPromo", "shipping"]
 //   Projection:
 //     {
 //       "type": _type,
@@ -63,6 +63,11 @@ export async function POST(req) {
       break;
     case "firstOrderPromo":
       tags.push("firstOrderPromo");
+      break;
+    case "shipping":
+      // The cart drawer's free-shipping banner reads the lowest
+      // freeShippingMinimum across active methods off this cache.
+      tags.push("shipping");
       break;
     default:
       return new Response(`Ignored type: ${type}`, { status: 200 });
