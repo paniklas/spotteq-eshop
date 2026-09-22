@@ -157,7 +157,7 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                     <div className="px-4 xl:px-8 pt-4 pb-4">
                         <p className="font-aeonik text-[13px] xl:text-[22px] text-black-custom">
                             {remaining > 0
-                                ? `You are ${remaining.toFixed(2).replace(".", ",")}€ away from FREE SHIPPING!`
+                                ? `You are ${formatPrice(remaining)}€ away from FREE SHIPPING!`
                                 : "You've unlocked FREE SHIPPING!"}
                         </p>
                     </div>
@@ -282,7 +282,7 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                                                 </p>
                                                 {savings > 0 && (
                                                     <p className="font-tt text-[11px] xl:text-[13px]">
-                                                        Save {savings.toFixed(2).replace(".", ",")}€ vs buying individually
+                                                        Save {formatPrice(savings)}€ vs buying individually
                                                     </p>
                                                 )}
                                             </div>
@@ -358,17 +358,17 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                             <>
                                 <div className="flex items-center justify-between">
                                     <span className="font-aeonik text-[13px] xl:text-[14px] uppercase text-black-custom">SUBTOTAL</span>
-                                    <span className="font-aeonik text-[16px] text-black-custom">{subTotal.toFixed(2).replace(".", ",")}€</span>
+                                    <span className="font-aeonik text-[16px] text-black-custom">{formatPrice(subTotal)}€</span>
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <span className="font-aeonik text-[13px] xl:text-[14px] uppercase text-teal-accent">DISCOUNT ({appliedCoupon.discountAmount}%)</span>
-                                    <span className="font-aeonik text-[16px] text-teal-accent">-{discountAmount.toFixed(2).replace(".", ",")}€</span>
+                                    <span className="font-aeonik text-[16px] text-teal-accent">-{formatPrice(discountAmount)}€</span>
                                 </div>
                             </>
                         )}
                         <div className="flex items-center justify-between">
                             <span className="font-aeonik text-[13px] xl:text-[14px] uppercase text-black-custom">TOTAL</span>
-                            <span className="font-aeonik text-[20px] xl:text-[30px] font-bold text-black-custom">{total.toFixed(2).replace(".", ",")}€</span>
+                            <span className="font-aeonik text-[20px] xl:text-[30px] font-bold text-black-custom">{formatPrice(total)}€</span>
                         </div>
                     </div>
 

@@ -8,6 +8,7 @@ import { useCartStore } from "@/store/cart-store";
 import { useCartHydrated } from "@/hooks/use-cart-hydrated";
 import { validateCouponWithEmail } from "@/app/actions/coupon";
 import OrderSummarySkeleton from "./order-summary-skeleton";
+import { formatPrice } from "@/utils/formatPrice";
 import { effectiveShippingCost } from "@/utils/shippingCost";
 
 // Payment icons + footer links — shared between the desktop summary card and
@@ -120,7 +121,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
                             className={`shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
                         />
                     </span>
-                    <span className="font-aeonik text-[22px] font-bold text-black-custom">{total.toFixed(2).replace(".", ",")}€</span>
+                    <span className="font-aeonik text-[22px] font-bold text-black-custom">{formatPrice(total)}€</span>
                 </button>
             ) : (
                 <h2 className="font-aeonik text-[22px] xl:text-[35px] text-black-custom mb-4">Order Summary</h2>
@@ -141,7 +142,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
                     <div className="mb-10">
                         <p className="font-aeonik text-[13px] xl:text-[22px] text-black-custom">
                             {remaining > 0
-                                ? `You are ${remaining.toFixed(2).replace(".", ",")}€ away from FREE SHIPPING!`
+                                ? `You are ${formatPrice(remaining)}€ away from FREE SHIPPING!`
                                 : "You've unlocked FREE SHIPPING!"}
                         </p>
                     </div>
@@ -178,7 +179,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
 
                             {/* Price */}
                             <span className="font-tt text-[16px] xl:text-[22px] text-black-custom shrink-0">
-                                {(item.price * item.qty).toFixed(2).replace(".", ",")}€
+                                {formatPrice(item.price * item.qty)}€
                             </span>
                         </div>
                     </div>
@@ -249,7 +250,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
 
                 <div className="flex justify-between items-center">
                     <span className="font-aeonik text-[13px] xl:text-[14px] uppercase tracking-wide text-black-custom">Subtotal</span>
-                    <span className="font-tt text-[16px] text-black-custom">{subTotal.toFixed(2).replace(".", ",")}€</span>
+                    <span className="font-tt text-[16px] text-black-custom">{formatPrice(subTotal)}€</span>
                 </div>
 
                 {discountAmount > 0 && (
@@ -257,14 +258,14 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
                         <span className="font-aeonik text-[13px] xl:text-[14px] uppercase tracking-wide text-teal-accent">
                             {appliedCoupon ? "Discount" : "First order discount"} ({activeDiscountPercent}%)
                         </span>
-                        <span className="font-tt text-[16px] text-teal-accent">-{discountAmount.toFixed(2).replace(".", ",")}€</span>
+                        <span className="font-tt text-[16px] text-teal-accent">-{formatPrice(discountAmount)}€</span>
                     </div>
                 )}
 
                 <div className="flex justify-between items-center">
                     <span className="font-aeonik text-[13px] xl:text-[14px] uppercase tracking-wide text-black-custom">Shipping</span>
                     <span className="font-tt text-[16px] text-black-custom">
-                        {shipping === 0 ? "FREE" : `${shippingPrice.toFixed(2).replace(".", ",")}€`}
+                        {shipping === 0 ? "FREE" : `${formatPrice(shippingPrice)}€`}
                     </span>
                 </div>
 
@@ -272,7 +273,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
 
                 <div className="flex justify-between items-center">
                     <span className="font-aeonik text-[16px] uppercase tracking-wide text-black-custom">Total</span>
-                    <span className="font-aeonik text-[22px] xl:text-[30px] font-bold text-black-custom">{total.toFixed(2).replace(".", ",")}€</span>
+                    <span className="font-aeonik text-[22px] xl:text-[30px] font-bold text-black-custom">{formatPrice(total)}€</span>
                 </div>
             </div>
             </div>
