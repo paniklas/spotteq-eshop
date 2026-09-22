@@ -59,18 +59,26 @@ async function claimFirstOrderDiscount(userInfoId, browserClaimId) {
   const held = profile.firstOrderDiscountClaim;
   const heldAt = held?.at ? Date.parse(held.at) : NaN;
   const heldIsLive = Number.isFinite(heldAt) && Date.now() - heldAt < FIRST_ORDER_CLAIM_TTL_MS;
-  const heldByThisBrowser = Boolean(held?.id) && held.id === browserClaimId;
+
+  // Only a LIVE hold can be renewed by the browser that owns it. An expired one
+  // is an abandoned checkout even when the cookie still names it, and it has to
+  // go through the same retirement as anyone else's — otherwise a stale tab
+  // keeps a confirmable discounted intent while its owner starts a new one.
+  const renewable = heldIsLive && Boolean(held?.id) && held.id === browserClaimId;
 
   // Someone else's checkout is using it right now.
-  if (heldIsLive && !heldByThisBrowser) return null;
+  if (heldIsLive && !renewable) return null;
 
-  // Expired hold belonging to someone else — retire its intent before taking it.
-  if (held?.intentId && !heldByThisBrowser) {
+  // Abandoned hold — retire the intent it authorised before taking it over.
+  if (!renewable && held?.intentId) {
     const retired = await retireIntent(held.intentId);
     if (!retired) return null;
   }
 
-  const claimId = heldByThisBrowser ? held.id : randomBytes(12).toString("base64url");
+  const claimId = renewable ? held.id : randomBytes(12).toString("base64url");
+  // Stamped per attempt, so a release can tell ITS hold from a later renewal
+  // that happens to carry the same claim id.
+  const claimedAt = new Date().toISOString();
 
   try {
     await backendClient
@@ -78,9 +86,9 @@ async function claimFirstOrderDiscount(userInfoId, browserClaimId) {
       .ifRevisionId(profile._rev)
       // Replaces the whole object, so a renewed hold drops the previous intentId
       // and the caller rebinds it to the intent it is about to create.
-      .set({ firstOrderDiscountClaim: { id: claimId, at: new Date().toISOString() } })
+      .set({ firstOrderDiscountClaim: { id: claimId, at: claimedAt } })
       .commit({ visibility: "async" });
-    return claimId;
+    return { id: claimId, at: claimedAt };
   } catch {
     // Revision moved under us — another request claimed it first, or the profile
     // changed. Either way this checkout does not get the discount.
@@ -103,15 +111,21 @@ async function retireIntent(intentId) {
   }
 }
 
-// Hands a hold back, but only if it is still the one we took.
-async function releaseFirstOrderClaim(userInfoId, claimId) {
-  if (!userInfoId || !claimId) return;
+// Hands a hold back, but only if it is still the exact one we took.
+//
+// Matching on the claim id alone is not enough: a renewal from the same browser
+// deliberately reuses that id, so a slow request could otherwise release a newer
+// attempt's hold while that attempt's intent is live. The per-attempt timestamp
+// is what distinguishes them.
+async function releaseFirstOrderClaim(userInfoId, claim) {
+  if (!userInfoId || !claim?.id) return;
   try {
     const profile = await backendClient.fetch(
       `*[_id == $id][0]{ _id, _rev, firstOrderDiscountClaim }`,
       { id: userInfoId }
     );
-    if (profile?.firstOrderDiscountClaim?.id !== claimId) return;
+    const held = profile?.firstOrderDiscountClaim;
+    if (held?.id !== claim.id || held?.at !== claim.at) return;
     await backendClient
       .patch(profile._id)
       .ifRevisionId(profile._rev)
@@ -175,7 +189,13 @@ const bodySchema = z.object({
 export async function POST(req) {
   // Tracked outside the try so a failure anywhere below can hand the hold back.
   let claimedProfileId = null;
-  let claimedId = null;
+  let claimedClaim = null;
+  // Once an intent exists the hold must NOT be handed back on failure: that
+  // intent is confirmable and still carries the discount, so releasing would let
+  // a second checkout claim it while this one can still settle. An orphaned
+  // intent is resolved the same way an abandoned one is — by expiry and the
+  // takeover that cancels it.
+  let intentCreated = false;
 
   try {
     const rawBody = await req.json();
@@ -628,13 +648,23 @@ export async function POST(req) {
     // Everything that could still abort has already happened, so a hold taken
     // here is one that a Payment Intent is actually about to use.
     if (firstOrderDiscountApplied) {
-      firstOrderClaimId = await claimFirstOrderDiscount(userInfoRef, pendingClaimId);
+      const claim = await claimFirstOrderDiscount(userInfoRef, pendingClaimId);
+      firstOrderClaimId = claim?.id ?? null;
       claimedProfileId = userInfoRef;
-      claimedId = firstOrderClaimId;
-      if (!firstOrderClaimId) {
+      claimedClaim = claim;
+      if (!claim) {
         // The checkout page showed this customer their discount, so charging
         // them without it would bill a total they never agreed to. Fail loudly
         // instead, the same way a coupon we will not honour does.
+        // This request created the order a few lines up and is now abandoning it
+        // with no Payment Intent attached. Without this, contention would leave a
+        // trail of orphan pending orders in Sanity. A REUSED order is left alone:
+        // it belongs to the browser's earlier attempt, not to this one.
+        if (!reusableOrder) {
+          await backendClient
+            .delete(sanityOrder._id)
+            .catch((e) => console.warn("[create-payment-intent] could not discard order:", e?.message ?? e));
+        }
         return NextResponse.json(
           {
             error:
@@ -667,6 +697,8 @@ export async function POST(req) {
         firstOrderClaimId: firstOrderClaimId ?? "",
       },
     });
+
+    intentCreated = true;
 
     // Bind the hold to the intent it authorised. A hold that names its intent can
     // be taken over safely once it expires: the takeover cancels that intent
@@ -712,8 +744,9 @@ export async function POST(req) {
     console.error("[create-payment-intent]", err);
     // A hold taken moments ago must not outlive the request that took it — the
     // customer would be locked out of their own discount for the whole TTL by a
-    // failure on our side.
-    await releaseFirstOrderClaim(claimedProfileId, claimedId);
+    // failure on our side. Unless an intent already exists, in which case the
+    // hold belongs to that intent until it settles or expires.
+    if (!intentCreated) await releaseFirstOrderClaim(claimedProfileId, claimedClaim);
     return NextResponse.json({ error: "Failed to initialise payment." }, { status: 500 });
   }
 }

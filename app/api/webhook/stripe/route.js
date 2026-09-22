@@ -51,7 +51,8 @@ export async function POST(req) {
 }
 
 async function handlePaymentSucceeded(paymentIntent) {
-  const { orderId, orderNumber, couponId, couponEmail, firstOrderUserInfoId } = paymentIntent.metadata ?? {};
+  const { orderId, orderNumber, couponId, couponEmail, firstOrderUserInfoId, firstOrderClaimId } =
+    paymentIntent.metadata ?? {};
 
   if (!orderId) {
     console.error("[webhook] payment_intent.succeeded: missing orderId in metadata — PI:", paymentIntent.id);
@@ -70,15 +71,26 @@ async function handlePaymentSucceeded(paymentIntent) {
   // forever because the order is already marked paid.
   if (firstOrderUserInfoId) {
     try {
-      await backendClient
-        .patch(firstOrderUserInfoId)
-        .set({
-          firstOrderDiscountUsed: true,
-          firstOrderDiscountUsedAt: new Date().toISOString(),
-        })
-        // The hold has served its purpose — the discount is now spent outright.
-        .unset(["firstOrderDiscountClaim"])
-        .commit();
+      const profile = await backendClient.fetch(
+        `*[_id == $id][0]{ firstOrderDiscountClaim }`,
+        { id: firstOrderUserInfoId }
+      );
+
+      // Clear the hold only when it is the one THIS intent was authorised with.
+      // A redelivery of an old success event must not wipe a hold some later
+      // checkout is relying on — which is reachable in practice, because support
+      // is told they may switch the used flag back off to re-grant the discount.
+      const holdIsOurs =
+        Boolean(firstOrderClaimId) && profile?.firstOrderDiscountClaim?.id === firstOrderClaimId;
+
+      const patch = backendClient.patch(firstOrderUserInfoId).set({
+        // Always recorded: this intent really did spend the discount, whether or
+        // not a hold is still sitting on the profile.
+        firstOrderDiscountUsed: true,
+        firstOrderDiscountUsedAt: new Date().toISOString(),
+      });
+
+      await (holdIsOurs ? patch.unset(["firstOrderDiscountClaim"]) : patch).commit();
     } catch (err) {
       console.error("[webhook] First-order discount flag failed for order", orderId, err);
     }
