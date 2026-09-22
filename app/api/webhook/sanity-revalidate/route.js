@@ -6,7 +6,7 @@ import { parseBody } from "next-sanity/webhook";
 //   URL:      https://<your-domain>/api/webhook/sanity-revalidate
 //   Dataset:  production
 //   Trigger:  Create, Update, Delete
-//   Filter:   _type in ["product", "category", "categoryGroup", "bundle", "homePage"]
+//   Filter:   _type in ["product", "category", "categoryGroup", "bundle", "homePage", "aboutPage"]
 //   Projection:
 //     {
 //       "type": _type,
@@ -54,6 +54,9 @@ export async function POST(req) {
       break;
     case "homePage":
       tags.push("homePage", "products");
+      break;
+    case "aboutPage":
+      tags.push("aboutPage");
       break;
     default:
       return new Response(`Ignored type: ${type}`, { status: 200 });

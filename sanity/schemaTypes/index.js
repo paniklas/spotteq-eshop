@@ -1,3 +1,4 @@
+import { aboutPageType } from './aboutPageType'
 import { announcementType } from './announcementType'
 import { blockContentType } from './blockContentType'
 import { bundleType } from './bundleType'
@@ -21,5 +22,6 @@ export const schemaTypes = [
   shippingType,
   saleType,
   homePageType,
+  aboutPageType,
   announcementType,
 ]
