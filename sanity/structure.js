@@ -32,6 +32,13 @@ export const structure = (S) =>
                     .schemaType('homePage')
                     .documentId('homePage')
                 ),
+              S.listItem()
+                .title('About Page')
+                .child(
+                  S.document()
+                    .schemaType('aboutPage')
+                    .documentId('aboutPage')
+                ),
               S.divider(),
               S.documentTypeListItem('categoryGroup').title('Category Groups'),
               S.divider(),

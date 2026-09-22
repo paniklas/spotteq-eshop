@@ -1,22 +1,40 @@
 import Image from "next/image";
+import { Link } from "@/i18n/navigation";
 import FooterNewsletter from "./footer-newsletter";
 import ScrollToTopButton from "./scroll-to-top-button";
 
 
+// `href` is omitted while a destination page doesn't exist yet — those render
+// as inert links, as they did before.
 const footerColumns = [
     {
         heading: "INFORMATION",
-        links: ["FAQs and help centre", "Payment & Security", "Shipping & Returns"],
+        links: [
+            { label: "FAQs and help centre" },
+            { label: "Payment & Security" },
+            { label: "Shipping & Returns" },
+        ],
     },
     {
         heading: "TERMS",
-        links: ["Terms & Conditions", "Privacy Policy", "Cookies Policy"],
+        links: [
+            { label: "Terms & Conditions" },
+            { label: "Privacy Policy" },
+            { label: "Cookies Policy" },
+        ],
     },
     {
         heading: "COMPANY",
-        links: ["ABOUT SPOTTEQ", "CONTACT", "SUPPORT"],
+        links: [
+            { label: "ABOUT SPOTTEQ", href: "/about" },
+            { label: "CONTACT" },
+            { label: "SUPPORT" },
+        ],
     },
 ];
+
+const footerLinkClass =
+    "font-aeonik text-[16px] text-black uppercase hover:opacity-60 transition-opacity leading-[2.2]";
 
 const socialLinks = [
     { icon: "/icons/social-instagram.svg", label: "Instagram", href: "#" },
@@ -57,13 +75,16 @@ const Footer = () => {
                                         </h4>
                                         <ul className="flex flex-col xl:pt-6">
                                             {col.links.map((link) => (
-                                                <li key={link}>
-                                                    <a
-                                                        href="#"
-                                                        className="font-aeonik text-[16px] text-black uppercase hover:opacity-60 transition-opacity leading-[2.2]"
-                                                    >
-                                                        {link}
-                                                    </a>
+                                                <li key={link.label}>
+                                                    {link.href ? (
+                                                        <Link href={link.href} className={footerLinkClass}>
+                                                            {link.label}
+                                                        </Link>
+                                                    ) : (
+                                                        <a href="#" className={footerLinkClass}>
+                                                            {link.label}
+                                                        </a>
+                                                    )}
                                                 </li>
                                             ))}
                                         </ul>
@@ -77,7 +98,7 @@ const Footer = () => {
             </div>
     
             {/* Social + Payment row */}
-            <div className="max-w-[1920px] mx-auto px-10 xl:px-[160px] py-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="max-w-480 mx-auto px-10 xl:px-40 py-6 flex flex-col md:flex-row items-center justify-between gap-6">
                 {/* Social icons */}
                 <div className="flex items-center gap-5">
                     {socialLinks.map((s) => (
@@ -113,7 +134,7 @@ const Footer = () => {
             </div>
     
             {/* Copyright row */}
-            <div className="max-w-[1920px] mx-auto px-10 xl:px-[160px] pb-8 flex flex-col md:flex-row items-center justify-between gap-3">
+            <div className="max-w-480 mx-auto px-10 xl:px-40 pb-8 flex flex-col md:flex-row items-center justify-between gap-3">
                 <p className="font-aeonik text-[12px] text-black">
                     © 2026 SPOTTEQ. All Rights Reserved.
                 </p>
@@ -122,7 +143,7 @@ const Footer = () => {
                 </p>
             </div>
 
-            <div className="max-w-[1920px] mx-auto relative w-full aspect-[1920/305]">
+            <div className="max-w-480 mx-auto relative w-full aspect-1920/305">
                 <Image
                     src="/images/footer-spotteq-image.png"
                     alt="SPOTTEQ"
