@@ -175,8 +175,8 @@ export default function SignInForm() {
             {step === 'identifier' && (
                 <>
                     <div className="mb-2">
-                        <h1 className="font-aeonik text-[28px] xl:text-[32px] text-black-custom mb-1">{t('signInTitle')}</h1>
-                        <p className="font-aeonik text-[14px] text-gray-text">{t('signInSubtitle')}</p>
+                        <h1 className="font-aeonik text-center text-[28px] xl:text-[32px] text-black-custom mb-1">{t('signInTitle')}</h1>
+                        <p className="font-aeonik text-center text-[14px] text-gray-text">{t('signInSubtitle')}</p>
                     </div>
 
                     <button
@@ -221,8 +221,8 @@ export default function SignInForm() {
             {step === 'password' && (
                 <>
                     <div className="mb-2">
-                        <h1 className="font-aeonik text-[28px] xl:text-[32px] text-black-custom mb-1">{t('enterPassword')}</h1>
-                        <p className="font-aeonik text-[14px] text-gray-text">{t('signingInAs')} <span className="text-black-custom">{email}</span></p>
+                        <h1 className="font-aeonik text-center text-[28px] xl:text-[32px] text-black-custom mb-1">{t('enterPassword')}</h1>
+                        <p className="font-aeonik text-center text-[14px] text-gray-text">{t('signingInAs')} <span className="text-black-custom">{email}</span></p>
                     </div>
 
                     <form onSubmit={handlePassword} className="flex flex-col gap-4">
@@ -251,8 +251,8 @@ export default function SignInForm() {
             {step === 'forgot' && (
                 <>
                     <div className="mb-2">
-                        <h1 className="font-aeonik text-[28px] xl:text-[32px] text-black-custom mb-1">{t('forgotPasswordTitle')}</h1>
-                        <p className="font-aeonik text-[14px] text-gray-text">{t('forgotPasswordDesc')}</p>
+                        <h1 className="font-aeonik text-center text-[28px] xl:text-[32px] text-black-custom mb-1">{t('forgotPasswordTitle')}</h1>
+                        <p className="font-aeonik text-center text-[14px] text-gray-text">{t('forgotPasswordDesc')}</p>
                     </div>
 
                     <form onSubmit={handleForgotSend} className="flex flex-col gap-4">
@@ -276,8 +276,8 @@ export default function SignInForm() {
             {step === 'reset' && (
                 <>
                     <div className="mb-2">
-                        <h1 className="font-aeonik text-[28px] xl:text-[32px] text-black-custom mb-1">{t('resetPasswordTitle')}</h1>
-                        <p className="font-aeonik text-[14px] text-gray-text">{t('resetPasswordDesc')}</p>
+                        <h1 className="font-aeonik text-center text-[28px] xl:text-[32px] text-black-custom mb-1">{t('resetPasswordTitle')}</h1>
+                        <p className="font-aeonik text-center text-[14px] text-gray-text">{t('resetPasswordDesc')}</p>
                     </div>
 
                     <form onSubmit={handleResetPassword} className="flex flex-col gap-4">
