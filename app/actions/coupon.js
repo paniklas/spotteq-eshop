@@ -4,15 +4,20 @@ import { defineQuery } from 'next-sanity'
 import { sanityFetch } from '@/sanity/lib/live'
 import { backendClient } from '@/sanity/lib/backendClient'
 
+// isActive is deliberately NOT filtered here. Filtering it made a deactivated
+// coupon indistinguishable from a code that never existed, so an exhausted or
+// switched-off coupon told the customer "Invalid coupon code" — which reads as
+// "you typed it wrong" and sends them looking for a typo that isn't there.
+// It is checked in checkValidity instead, where it can say what actually happened.
 const COUPON_QUERY = defineQuery(`
     *[_type == "sale"
         && upper(couponCode) == upper($couponCode)
-        && isActive == true
     ][0] {
         _id,
         title,
         discountAmount,
         couponCode,
+        isActive,
         validFrom,
         validUntil,
         maxUses,
@@ -23,12 +28,12 @@ const COUPON_QUERY = defineQuery(`
 const COUPON_WITH_EMAIL_QUERY = defineQuery(`
     *[_type == "sale"
         && upper(couponCode) == upper($couponCode)
-        && isActive == true
     ][0] {
         _id,
         title,
         discountAmount,
         couponCode,
+        isActive,
         validFrom,
         validUntil,
         maxUses,
@@ -39,14 +44,19 @@ const COUPON_WITH_EMAIL_QUERY = defineQuery(`
 
 function checkValidity(coupon) {
     const now = new Date()
+    // Checked before isActive: a coupon that reached its limit deactivates
+    // itself, and "fully redeemed" explains that better than "no longer active".
+    if (coupon.maxUses != null && coupon.usedCount >= coupon.maxUses) {
+        return { valid: false, error: "This coupon has been fully redeemed." }
+    }
+    if (coupon.isActive !== true) {
+        return { valid: false, error: "This coupon is no longer available." }
+    }
     if (coupon.validFrom && new Date(coupon.validFrom) > now) {
         return { valid: false, error: "Coupon is not yet valid." }
     }
     if (coupon.validUntil && new Date(coupon.validUntil) < now) {
         return { valid: false, error: "This coupon has expired." }
-    }
-    if (coupon.maxUses != null && coupon.usedCount >= coupon.maxUses) {
-        return { valid: false, error: "This coupon has reached its usage limit." }
     }
     return { valid: true }
 }
@@ -96,7 +106,7 @@ export async function validateCouponWithEmail(couponCode, email) {
         if (!validity.valid) return validity
 
         if (coupon.emailUsed) {
-            return { valid: false, error: "This coupon has already been used with this email address." }
+            return { valid: false, error: "You have already used this coupon with this email address." }
         }
 
         return {
