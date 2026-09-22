@@ -14,6 +14,7 @@ import { DisableDraftMode } from "../../components/sanity/DisableDraftMode";
 import { draftMode } from "next/headers";
 import { getNavData } from '@/sanity/getData/getNavData'
 import { getAllBundlesForCart } from '@/sanity/getData/getAllBundlesForCart';
+import { getFreeShippingThreshold } from '@/sanity/getData/getFreeShippingThreshold';
 
 export function generateStaticParams() {
     return routing.locales.map((locale) => ({ locale }));
@@ -29,10 +30,11 @@ export default async function LocaleLayout({ children, params }) {
     const { locale } = await params;
     if (!routing.locales.includes(locale)) notFound();
 
-    const [messages, navData, allBundles] = await Promise.all([
+    const [messages, navData, allBundles, freeShippingThreshold] = await Promise.all([
         import(`../../messages/${locale}.json`).then(m => m.default),
         getNavData(locale),
         getAllBundlesForCart(locale),
+        getFreeShippingThreshold(),
     ]);
 
   return (
@@ -44,7 +46,7 @@ export default async function LocaleLayout({ children, params }) {
                 </>
             )}
             <NextIntlClientProvider messages={messages} locale={locale}>
-                <CartProvider allBundles={allBundles}>
+                <CartProvider allBundles={allBundles} freeShippingThreshold={freeShippingThreshold}>
                 <SmoothScrolling>
                     <LocaleLanguageSetter locale={locale} />
                     <FavouritesHydrator />

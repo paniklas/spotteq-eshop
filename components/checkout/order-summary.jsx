@@ -8,6 +8,8 @@ import { useCartStore } from "@/store/cart-store";
 import { useCartHydrated } from "@/hooks/use-cart-hydrated";
 import { validateCouponWithEmail } from "@/app/actions/coupon";
 import OrderSummarySkeleton from "./order-summary-skeleton";
+import { formatPrice } from "@/utils/formatPrice";
+import { effectiveShippingCost } from "@/utils/shippingCost";
 
 // Payment icons + footer links — shared between the desktop summary card and
 // the standalone mobile block (rendered at the bottom of the checkout page).
@@ -59,7 +61,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
     const freeThreshold = activeShippingMethod?.freeShippingMinimum ?? 0
     const shippingPrice  = activeShippingMethod?.price ?? 0
     const remaining = Math.max(0, freeThreshold - subTotal)
-    const shipping  = freeThreshold > 0 && subTotal >= freeThreshold ? 0 : shippingPrice
+    const shipping  = effectiveShippingCost(activeShippingMethod, subTotal)
     const total = discountedSubTotal + shipping
 
     // Silently re-validate a coupon applied from the cart drawer once the checkout email is known
@@ -119,7 +121,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
                             className={`shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
                         />
                     </span>
-                    <span className="font-aeonik text-[22px] font-bold text-black-custom">{total.toFixed(2).replace(".", ",")}€</span>
+                    <span className="font-aeonik text-[22px] font-bold text-black-custom">{formatPrice(total)}€</span>
                 </button>
             ) : (
                 <h2 className="font-aeonik text-[22px] xl:text-[35px] text-black-custom mb-4">Order Summary</h2>
@@ -135,14 +137,16 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
                 )}
                 <hr className="border-black-custom mb-5" />
 
-                {/* Free shipping banner */}
-                <div className="mb-10">
-                    <p className="font-aeonik text-[13px] xl:text-[22px] text-black-custom">
-                        {remaining > 0
-                            ? `You are ${remaining.toFixed(2).replace(".", ",")}€ away from FREE SHIPPING!`
-                            : "You've unlocked FREE SHIPPING!"}
-                    </p>
-                </div>
+                {/* Free shipping banner — only when this method actually offers it */}
+                {freeThreshold > 0 && (
+                    <div className="mb-10">
+                        <p className="font-aeonik text-[13px] xl:text-[22px] text-black-custom">
+                            {remaining > 0
+                                ? `You are ${formatPrice(remaining)}€ away from FREE SHIPPING!`
+                                : "You've unlocked FREE SHIPPING!"}
+                        </p>
+                    </div>
+                )}
 
                 {cartItems.map((item, i) => (
                     <div key={item.cartId}>
@@ -175,7 +179,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
 
                             {/* Price */}
                             <span className="font-tt text-[16px] xl:text-[22px] text-black-custom shrink-0">
-                                {(item.price * item.qty).toFixed(2).replace(".", ",")}€
+                                {formatPrice(item.price * item.qty)}€
                             </span>
                         </div>
                     </div>
@@ -246,7 +250,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
 
                 <div className="flex justify-between items-center">
                     <span className="font-aeonik text-[13px] xl:text-[14px] uppercase tracking-wide text-black-custom">Subtotal</span>
-                    <span className="font-tt text-[16px] text-black-custom">{subTotal.toFixed(2).replace(".", ",")}€</span>
+                    <span className="font-tt text-[16px] text-black-custom">{formatPrice(subTotal)}€</span>
                 </div>
 
                 {discountAmount > 0 && (
@@ -254,14 +258,14 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
                         <span className="font-aeonik text-[13px] xl:text-[14px] uppercase tracking-wide text-teal-accent">
                             {appliedCoupon ? "Discount" : "First order discount"} ({activeDiscountPercent}%)
                         </span>
-                        <span className="font-tt text-[16px] text-teal-accent">-{discountAmount.toFixed(2).replace(".", ",")}€</span>
+                        <span className="font-tt text-[16px] text-teal-accent">-{formatPrice(discountAmount)}€</span>
                     </div>
                 )}
 
                 <div className="flex justify-between items-center">
                     <span className="font-aeonik text-[13px] xl:text-[14px] uppercase tracking-wide text-black-custom">Shipping</span>
                     <span className="font-tt text-[16px] text-black-custom">
-                        {shipping === 0 ? "FREE" : `${shippingPrice.toFixed(2).replace(".", ",")}€`}
+                        {shipping === 0 ? "FREE" : `${formatPrice(shippingPrice)}€`}
                     </span>
                 </div>
 
@@ -269,7 +273,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
 
                 <div className="flex justify-between items-center">
                     <span className="font-aeonik text-[16px] uppercase tracking-wide text-black-custom">Total</span>
-                    <span className="font-aeonik text-[22px] xl:text-[30px] font-bold text-black-custom">{total.toFixed(2).replace(".", ",")}€</span>
+                    <span className="font-aeonik text-[22px] xl:text-[30px] font-bold text-black-custom">{formatPrice(total)}€</span>
                 </div>
             </div>
             </div>

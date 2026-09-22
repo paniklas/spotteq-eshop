@@ -72,7 +72,7 @@ export const shippingType = defineType({
       title: 'Free Shipping Minimum (€)',
       type: 'number',
       validation: Rule => Rule.min(0),
-      description: 'Order total above this amount gets free shipping (0 = always free)',
+      description: 'Order subtotal at or above this amount gets free shipping. Leave empty or 0 to never offer free shipping on this method.',
     }),
     defineField({
       name: 'availableRegions',

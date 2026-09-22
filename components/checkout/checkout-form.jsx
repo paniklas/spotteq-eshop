@@ -12,6 +12,7 @@ import { validateCartInventory } from "@/app/actions/cart";
 import { updateUserShippingInfo } from "@/app/actions/updateUserShippingInfo";
 import { checkoutSchema } from "@/lib/checkoutSchema";
 import { formatPrice } from "@/utils/formatPrice";
+import { effectiveShippingCost } from "@/utils/shippingCost";
 import {
   Form,
   FormControl,
@@ -135,9 +136,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
   const activeDiscountPercent = appliedCoupon ? couponDiscount : firstOrderDiscountPercent;
   const discountAmount = activeDiscountPercent > 0 ? (subTotal * activeDiscountPercent) / 100 : 0;
   const discountedSubTotal = subTotal - discountAmount;
-  const freeThreshold = activeShippingMethod?.freeShippingMinimum ?? 0;
-  const shippingPrice = activeShippingMethod?.price ?? 0;
-  const shippingCost = freeThreshold > 0 && subTotal >= freeThreshold ? 0 : shippingPrice;
+  const shippingCost = effectiveShippingCost(activeShippingMethod, subTotal);
   const total = discountedSubTotal + shippingCost;
 
   const form = useForm({
@@ -789,9 +788,9 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                               </div>
                             </div>
                             <span className="font-aeonik text-[14px] text-black-custom shrink-0 ml-4">
-                              {method.price === 0
+                              {effectiveShippingCost(method, subTotal) === 0
                                 ? "FREE"
-                                : `${method.price.toFixed(2).replace(".", ",")}€`}
+                                : `${formatPrice(method.price)}€`}
                             </span>
                           </button>
                         ))}
