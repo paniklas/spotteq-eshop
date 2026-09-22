@@ -147,6 +147,11 @@
             "delivered": "Delivered",
             "refunded": "Refunded",
             "cancelled": "Cancelled"
+        },
+        "firstOrderDiscount": {
+            "title": "{percent}% off your first order",
+            "desc": "Applied automatically at checkout — no code needed.",
+            "cta": "Shop now"
         }
     }
 }

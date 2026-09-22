@@ -47,7 +47,7 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
     // shows the order summary, and a cart drawer over it is redundant.
     const isCheckout = pathname.includes("/checkout");
 
-    // The mobile 15% banner only exists on the home hero, so the extra top
+    // The mobile 10% banner only exists on the home hero, so the extra top
     // padding that clears it should only apply there.
     const isHome = pathname === "/" || pathname === `/${locale}`;
 

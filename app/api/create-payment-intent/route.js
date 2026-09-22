@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import { auth } from "@clerk/nextjs/server";
 import { stripe } from "@/lib/stripe";
 import { backendClient } from "@/sanity/lib/backendClient";
+import { getFirstOrderPromoPercent } from "@/sanity/getData/getFirstOrderPromo";
 
 // Points at the pending order + PI this browser most recently started, so a
 // Back → Continue cycle updates that order instead of creating another one.
@@ -125,9 +126,10 @@ export async function POST(req) {
       couponId
         ? backendClient.fetch(
             `*[_type == "sale" && _id == $id && isActive == true][0]{
-              _id, discountAmount, validFrom, validUntil, maxUses, usedCount
+              _id, discountAmount, validFrom, validUntil, maxUses, usedCount,
+              "emailUsed": defined(usageLog[lower(email) == lower($email)][0])
             }`,
-            { id: couponId }
+            { id: couponId, email: customerInfo.email }
           )
         : Promise.resolve(null),
     ]);
@@ -259,20 +261,55 @@ export async function POST(req) {
       }
     }
 
+    // --- Link the order to a signed-in user's profile (guests stay guest) ---
+    // Resolved before the discount is computed: the automatic first-order discount
+    // is granted off this profile, never off anything the client sends.
+    const { userId } = await auth();
+    let userInfoRef = null;
+    let firstOrderDiscountAvailable = false;
+    if (userId) {
+      const userInfo = await backendClient.fetch(
+        `*[_type == "userInfo" && userId == $userId][0]{ _id, firstOrderDiscountUsed }`,
+        { userId }
+      );
+      if (userInfo?._id) {
+        userInfoRef = userInfo._id;
+        firstOrderDiscountAvailable = userInfo.firstOrderDiscountUsed !== true;
+      }
+    }
+
     // --- Validate coupon server-side ---
     let discountAmount    = 0;
     let validatedCouponId = null;
+    let firstOrderDiscountApplied = false;
 
     if (coupon) {
       const now       = new Date();
       const notStarted = coupon.validFrom  && new Date(coupon.validFrom)  > now;
       const expired    = coupon.validUntil && new Date(coupon.validUntil) < now;
       const maxedOut   = coupon.maxUses != null && (coupon.usedCount ?? 0) >= coupon.maxUses;
+      // The one-redemption-per-email rule is enforced here as well as in the
+      // checkout UI. validateCouponWithEmail runs in the browser's request, so it
+      // can be skipped by posting straight to this endpoint — without this check
+      // the same email could redeem an email-tied coupon on every order.
+      const usedByThisEmail = coupon.emailUsed === true;
 
-      if (!notStarted && !expired && !maxedOut) {
+      if (!notStarted && !expired && !maxedOut && !usedByThisEmail) {
         // discountAmount is stored as a percentage (e.g. 10 = 10%) — match the UI calculation
         discountAmount    = (subtotal * (coupon.discountAmount ?? 0)) / 100;
         validatedCouponId = coupon._id;
+      }
+    }
+
+    // --- Automatic first-order discount (registered customers only) ---
+    // Deliberately never stacks with a coupon: a valid coupon replaces it, which
+    // is what the order summary shows. Granted once per profile — the Stripe
+    // webhook marks the profile as having spent it, only after payment succeeds.
+    if (!validatedCouponId && firstOrderDiscountAvailable) {
+      const firstOrderPercent = await getFirstOrderPromoPercent();
+      if (firstOrderPercent > 0) {
+        discountAmount = (subtotal * firstOrderPercent) / 100;
+        firstOrderDiscountApplied = true;
       }
     }
 
@@ -301,17 +338,6 @@ export async function POST(req) {
         name: `${customerInfo.firstName} ${customerInfo.lastName}`.trim(),
       });
       stripeCustomerId = customer.id;
-    }
-
-    // --- Link the order to a signed-in user's profile (guests stay guest) ---
-    const { userId } = await auth();
-    let userInfoRef = null;
-    if (userId) {
-      const userInfo = await backendClient.fetch(
-        `*[_type == "userInfo" && userId == $userId][0]{ _id }`,
-        { userId }
-      );
-      if (userInfo?._id) userInfoRef = userInfo._id;
     }
 
     const cookieStore = await cookies();
@@ -420,6 +446,7 @@ export async function POST(req) {
       orderDate: new Date().toISOString(),
       ...(userInfoRef ? { userInfo: { _type: "reference", _ref: userInfoRef } } : {}),
       ...(appliedCoupon ? { appliedCoupon } : {}),
+      ...(firstOrderDiscountApplied ? { firstOrderDiscountApplied: true } : {}),
       ...(boxNowLockerId ? {
         boxNowLockerId,
         boxNowLockerName:    boxNowLockerName    ?? "",
@@ -434,6 +461,7 @@ export async function POST(req) {
       const staleFields = [
         ...(userInfoRef     ? [] : ["userInfo"]),
         ...(appliedCoupon   ? [] : ["appliedCoupon"]),
+        ...(firstOrderDiscountApplied ? [] : ["firstOrderDiscountApplied"]),
         ...(boxNowLockerId  ? [] : ["boxNowLockerId", "boxNowLockerName", "boxNowLockerAddress"]),
       ];
       sanityOrder = await backendClient
@@ -464,6 +492,9 @@ export async function POST(req) {
         orderId:     sanityOrder._id,
         couponId:    validatedCouponId ?? "",
         couponEmail: customerInfo.email,
+        // Set only when the automatic first-order discount was actually applied,
+        // so the webhook marks the profile for exactly the orders that used it.
+        firstOrderUserInfoId: firstOrderDiscountApplied && userInfoRef ? userInfoRef : "",
       },
     });
 

@@ -1,9 +1,14 @@
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
+import { getFirstOrderPromoPercentForDisplay } from "@/sanity/getData/getFirstOrderPromo";
 import HeroPromoBar from "./hero-promo-bar";
 
 
-const HeroSection = () => {
+const HeroSection = async () => {
+
+    // Advertised percentage comes from the same Studio setting that grants the
+    // discount at checkout, so the two can never drift apart.
+    const firstOrderPromoPercent = await getFirstOrderPromoPercentForDisplay();
 
     return (
         <section
@@ -27,7 +32,7 @@ const HeroSection = () => {
             <div className="md:hidden relative z-10 flex flex-col">
 
                 {/* Promo bar — opens the first-order modal */}
-                <HeroPromoBar />
+                <HeroPromoBar percent={firstOrderPromoPercent} />
 
                 {/* Video region — headline + subtitle over a darkened video */}
                 <div className="relative h-160 w-full">
@@ -83,7 +88,7 @@ const HeroSection = () => {
                 </div>
 
                 {/* SHOP ALL — in the white space beneath the product */}
-                <div className="flex justify-center pt-2 pb-14">
+                <div className="flex justify-center pt-2">
                     <Link
                         href="/shop/shop-all"
                         className="inline-flex items-center justify-center h-9.5 px-10 bg-black-custom text-white-custom rounded-[21px] font-aeonik text-[13px] tracking-wide hover:bg-white-custom hover:text-black-custom border border-black-custom transition-colors duration-700"

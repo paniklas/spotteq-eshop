@@ -4,6 +4,7 @@ import { blockContentType } from './blockContentType'
 import { bundleType } from './bundleType'
 import { categoryGroupType } from './categoryGroupType'
 import { categoryType } from './categoryType'
+import { firstOrderPromoType } from './firstOrderPromoType'
 import { homePageType } from './homePageType'
 import { orderType } from './orderType'
 import { productType } from './productType'
@@ -24,4 +25,5 @@ export const schemaTypes = [
   homePageType,
   aboutPageType,
   announcementType,
+  firstOrderPromoType,
 ]

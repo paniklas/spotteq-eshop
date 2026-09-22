@@ -8,7 +8,7 @@ import OrderSummary, { PaymentAndLinks } from "./order-summary";
 
 // Owns the empty-cart decision because it covers both the form and the summary —
 // a guard inside CheckoutForm cannot hide its sibling OrderSummary.
-const CheckoutContent = ({ shippingMethods = [], accountDefaults = null }) => {
+const CheckoutContent = ({ shippingMethods = [], accountDefaults = null, firstOrderDiscountPercent = 0 }) => {
   const cartHydrated = useCartHydrated();
   const cartItems = useCartStore((state) => state.cartItems);
 
@@ -38,7 +38,7 @@ const CheckoutContent = ({ shippingMethods = [], accountDefaults = null }) => {
     <div className="flex flex-col gap-4 xl:gap-8 lg:grid lg:grid-cols-[1fr_700px] lg:items-start">
       {/* Order Summary — mobile only, collapsible, above the form */}
       <div className="order-1 lg:hidden mt-8">
-        <OrderSummary shippingMethods={shippingMethods} collapsible showFooterLinks={false} />
+        <OrderSummary shippingMethods={shippingMethods} collapsible showFooterLinks={false} firstOrderDiscountPercent={firstOrderDiscountPercent} />
       </div>
 
       {/* Checkout Form — left on desktop */}
@@ -47,13 +47,14 @@ const CheckoutContent = ({ shippingMethods = [], accountDefaults = null }) => {
         <CheckoutForm
           shippingMethods={shippingMethods}
           accountDefaults={accountDefaults}
+          firstOrderDiscountPercent={firstOrderDiscountPercent}
         />
       </div>
 
       {/* Order Summary — desktop only, right, sticky */}
       <div className="hidden lg:block lg:order-2">
         <div className="sticky top-28">
-          <OrderSummary shippingMethods={shippingMethods} />
+          <OrderSummary shippingMethods={shippingMethods} firstOrderDiscountPercent={firstOrderDiscountPercent} />
         </div>
       </div>
 

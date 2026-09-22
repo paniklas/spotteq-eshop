@@ -77,6 +77,19 @@ export const userInfoType = defineType({
       ],
     }),
     defineField({
+      name: 'firstOrderDiscountUsed',
+      title: 'First Order Discount Already Used',
+      type: 'boolean',
+      description: 'OFF = the customer still has their first-order discount, and it is applied automatically at their next checkout. This is the correct state for every new customer — nothing needs switching on. It turns ON by itself once a paid order has used the discount. Switch it back OFF only to deliberately give a customer that discount a second time.',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'firstOrderDiscountUsedAt',
+      title: 'First Order Discount Used At',
+      type: 'datetime',
+      readOnly: true,
+    }),
+    defineField({
       name: 'favourites',
       title: 'Favourites',
       type: 'array',

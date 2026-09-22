@@ -51,7 +51,7 @@ export async function POST(req) {
 }
 
 async function handlePaymentSucceeded(paymentIntent) {
-  const { orderId, orderNumber, couponId, couponEmail } = paymentIntent.metadata ?? {};
+  const { orderId, orderNumber, couponId, couponEmail, firstOrderUserInfoId } = paymentIntent.metadata ?? {};
 
   if (!orderId) {
     console.error("[webhook] payment_intent.succeeded: missing orderId in metadata — PI:", paymentIntent.id);
@@ -95,6 +95,23 @@ async function handlePaymentSucceeded(paymentIntent) {
       await recordCouponUsage(couponId, couponEmail, orderNumber);
     } catch (err) {
       console.error("[webhook] Coupon usage recording failed for order", orderId, err);
+    }
+  }
+
+  // Spend the customer's one-time first-order discount. Only set here, never at
+  // intent creation: an abandoned checkout must not burn the discount. Setting a
+  // flag to the same value is idempotent, so a Stripe redelivery is harmless.
+  if (firstOrderUserInfoId) {
+    try {
+      await backendClient
+        .patch(firstOrderUserInfoId)
+        .set({
+          firstOrderDiscountUsed: true,
+          firstOrderDiscountUsedAt: new Date().toISOString(),
+        })
+        .commit();
+    } catch (err) {
+      console.error("[webhook] First-order discount flag failed for order", orderId, err);
     }
   }
 
