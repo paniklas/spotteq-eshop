@@ -2,7 +2,9 @@ import { defineQuery } from 'next-sanity'
 import { catalogFetch } from '../lib/catalogFetch'
 
 /**
- * The order total at which shipping becomes free, for display in the cart drawer.
+ * The cart subtotal at which shipping becomes free, for display in the cart
+ * drawer. Compared against the PRE-discount subtotal, like every other
+ * consumer of the threshold.
  *
  * The threshold lives per shipping method (`shipping.freeShippingMinimum`), and
  * that per-method value is what actually zeroes the shipping cost at checkout
