@@ -97,7 +97,7 @@ const BILLING_FIELDS = [
 // Main component
 // ---------------------------------------------------------------------------
 
-const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
+const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrderDiscountPercent = 0 }) => {
   const locale = useLocale();
 
   const {
@@ -131,7 +131,9 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null }) => {
   // Mirrors the total calculation in order-summary.jsx so the button reflects the actual charge
   const activeShippingMethod = shippingMethods.find((m) => m._id === selectedMethodId) ?? shippingMethods[0] ?? null;
   const subTotal = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const discountAmount = couponDiscount > 0 ? (subTotal * couponDiscount) / 100 : 0;
+  // Coupon replaces the automatic first-order discount — they never stack.
+  const activeDiscountPercent = appliedCoupon ? couponDiscount : firstOrderDiscountPercent;
+  const discountAmount = activeDiscountPercent > 0 ? (subTotal * activeDiscountPercent) / 100 : 0;
   const discountedSubTotal = subTotal - discountAmount;
   const freeThreshold = activeShippingMethod?.freeShippingMinimum ?? 0;
   const shippingPrice = activeShippingMethod?.price ?? 0;

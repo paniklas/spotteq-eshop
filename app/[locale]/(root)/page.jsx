@@ -21,7 +21,7 @@ const Home = async ({ params }) => {
   return (
     <>
       <HeroSection locale={locale} />
-      <AnnouncementBar />
+      <AnnouncementBar locale={locale} />
       <AboutSection />
       <Suspense fallback={<ShopBySeriesSkeleton />}>
         <ShopBySeries locale={locale} />

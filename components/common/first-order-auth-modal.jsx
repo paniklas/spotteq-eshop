@@ -8,14 +8,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 
 const COPY = {
     el: {
-        title: "10% Off Your First Order",
+        title: (percent) => `${percent}% Έκπτωση στην Πρώτη σας Παραγγελία`,
         subtitle: "Δημιουργήστε λογαριασμό και κερδίστε έκπτωση στην πρώτη παραγγελία",
         google: "Συνέχεια με Google",
         or: "ή",
         create: "Δημιουργία λογαριασμού",
     },
     en: {
-        title: "10% Off Your First Order",
+        title: (percent) => `${percent}% Off Your First Order`,
         subtitle: "Create an account and get a discount on your first order",
         google: "Continue with Google",
         or: "or",
@@ -34,7 +34,7 @@ function GoogleIcon() {
     );
 }
 
-const FirstOrderAuthModal = ({ isOpen, onClose }) => {
+const FirstOrderAuthModal = ({ isOpen, onClose, percent = 0 }) => {
     const locale = useLocale();
     const copy = COPY[locale] ?? COPY.en;
     const { isLoaded, signUp } = useSignUp();
@@ -75,7 +75,7 @@ const FirstOrderAuthModal = ({ isOpen, onClose }) => {
 
                 <DialogHeader className="mt-2">
                     <DialogTitle className="text-[26px] xl:text-[30px] font-normal text-center">
-                        {copy.title}
+                        {copy.title(percent)}
                     </DialogTitle>
                     <DialogDescription className="text-center text-[15px] xl:text-[16px] text-black-custom mt-2 px-2">
                         {copy.subtitle}

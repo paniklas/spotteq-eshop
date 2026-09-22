@@ -166,6 +166,13 @@ export const orderType = defineType({
       ],
     }),
     defineField({
+      name: 'firstOrderDiscountApplied',
+      title: 'First Order Discount Applied',
+      description: 'True when the discount on this order came from the automatic registered-customer first-order promo rather than a coupon code. Recorded so a discount with no coupon attached is explainable.',
+      type: 'boolean',
+      readOnly: true,
+    }),
+    defineField({
       name: 'shippingMethod',
       title: 'Shipping Method',
       type: 'reference',

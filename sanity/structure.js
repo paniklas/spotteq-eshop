@@ -26,6 +26,13 @@ export const structure = (S) =>
                     .documentId('announcement')
                 ),
               S.listItem()
+                .title('First Order Discount')
+                .child(
+                  S.document()
+                    .schemaType('firstOrderPromo')
+                    .documentId('firstOrderPromo')
+                ),
+              S.listItem()
                 .title('Home Page SEO')
                 .child(
                   S.document()

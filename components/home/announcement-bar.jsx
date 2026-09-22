@@ -1,39 +1,60 @@
-"use client";
+import { getAnnouncement } from "@/sanity/getData/getAnnouncement";
 
-import { useState } from "react";
-import FirstOrderModal from "../common/first-order-modal";
+// Plain marquee for whatever the editor writes in Studio (Site Settings →
+// Announcement Bar) — a sale, a shipping notice, a holiday message. It carries
+// no promo logic of its own: the first-order discount is applied at checkout
+// from the customer's account, not from anything clicked here.
+const AnnouncementBar = async ({ locale }) => {
+    const announcement = await getAnnouncement(locale);
+    const text = announcement?.text?.trim();
 
-const PROMO_TEXT = "15% Off Your First Order";
-const items = Array(10).fill(PROMO_TEXT);
+    // Nothing to say (inactive, or no text for this locale) — render no bar at all.
+    if (!text) return null;
 
-const AnnouncementBar = () => {
+    const linkText = announcement.linkText?.trim();
+    const link = announcement.link?.trim();
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    // Doubled so the -50% translate in the marquee keyframes loops seamlessly.
+    const items = Array(10).fill(null);
+
+    const marquee = (
+        <div className="flex items-center h-full overflow-hidden">
+            <div className="flex animate-marquee whitespace-nowrap">
+                {items.concat(items).map((_, i) => (
+                    <span
+                        key={i}
+                        className="font-tt font-light text-[18px] text-black uppercase mx-15"
+                    >
+                        {text}
+                        {linkText && <span className="underline ml-2">{linkText}</span>}
+                    </span>
+                ))}
+            </div>
+        </div>
+    );
+
+    // Desktop only: on mobile the same promo already sits at the top of the hero
+    // (HeroPromoBar), so showing both would say it twice.
+    const barClass = "hidden md:block w-full bg-gray-mint h-13 overflow-hidden";
+
+    if (link) {
+        return (
+            <a
+                id="announcement-bar-section"
+                href={link}
+                className={`${barClass} cursor-pointer`}
+                aria-label={linkText ? `${text} — ${linkText}` : text}
+            >
+                {marquee}
+            </a>
+        );
+    }
 
     return (
-        <>
-            <button
-                id="announcement-bar-section"
-                className="hidden md:block w-full bg-gray-mint h-13 overflow-hidden cursor-pointer"
-                aria-label={PROMO_TEXT}
-                onClick={() => setIsModalOpen(true)}
-            >
-                <div className="flex items-center h-full overflow-hidden">
-                    <div className="flex animate-marquee whitespace-nowrap">
-                        {items.concat(items).map((text, i) => (
-                            <span
-                                key={i}
-                                className="font-tt font-light text-[18px] text-black uppercase mx-15"
-                            >
-                                {text}
-                            </span>
-                        ))}
-                    </div>
-                </div>
-            </button>
-            <FirstOrderModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-        </>
+        <div id="announcement-bar-section" className={barClass} role="status">
+            {marquee}
+        </div>
     );
-}
+};
 
 export default AnnouncementBar;

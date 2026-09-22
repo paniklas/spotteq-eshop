@@ -76,7 +76,7 @@ const FirstOrderModal = ({ isOpen, onClose }) => {
             <DialogContent showCloseButton={false} className="sm:max-w-[500px] xl:max-w-[700px] bg-white-custom text-black-custom border-none p-12 font-aeonik rounded-[20px]">
                 <DialogHeader className="pt-2">
                     <div>
-                        <DialogTitle className="text-[20px] xl:text-[40px] font-normal text-center">15% Off Your First Order</DialogTitle>
+                        <DialogTitle className="text-[20px] xl:text-[40px] font-normal text-center">10% Off Your First Order</DialogTitle>
                         <DialogDescription className="text-center mt-1 text-[16px] xl:text-[24px] text-black-custom">
                             Be the first to know about discounts and news
                         </DialogDescription>

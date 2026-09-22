@@ -40,7 +40,7 @@ export const PaymentAndLinks = () => (
     </>
 )
 
-const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLinks = true }) => {
+const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLinks = true, firstOrderDiscountPercent = 0 }) => {
     const [open, setOpen] = useState(false)
     const cartHydrated = useCartHydrated()
     const { cartItems, appliedCoupon, couponDiscount, couponEmailVerified, applyCoupon, removeCoupon, checkoutEmail, selectedShippingMethod, paymentLocked } = useCartStore()
@@ -50,7 +50,10 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
     const [couponError, setCouponError] = useState("")
 
     const subTotal = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0)
-    const discountAmount = couponDiscount > 0 ? (subTotal * couponDiscount) / 100 : 0
+    // A coupon replaces the automatic first-order discount rather than stacking with
+    // it — create-payment-intent applies the same rule to the amount charged.
+    const activeDiscountPercent = appliedCoupon ? couponDiscount : firstOrderDiscountPercent
+    const discountAmount = activeDiscountPercent > 0 ? (subTotal * activeDiscountPercent) / 100 : 0
     const discountedSubTotal = subTotal - discountAmount
 
     const freeThreshold = activeShippingMethod?.freeShippingMinimum ?? 0
@@ -225,6 +228,11 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
                         )}
                     </div>
                 )}
+                {appliedCoupon && firstOrderDiscountPercent > 0 && (
+                    <p className="mt-2 font-aeonik text-[12px] text-gray-text">
+                        This coupon replaces your {firstOrderDiscountPercent}% first order discount — remove it to use that instead.
+                    </p>
+                )}
                 {paymentLocked && (
                     <p className="mt-2 font-aeonik text-[12px] text-gray-text">
                         Return to delivery details to change your coupon.
@@ -244,7 +252,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
                 {discountAmount > 0 && (
                     <div className="flex justify-between items-center">
                         <span className="font-aeonik text-[13px] xl:text-[14px] uppercase tracking-wide text-teal-accent">
-                            Discount ({appliedCoupon.discountAmount}%)
+                            {appliedCoupon ? "Discount" : "First order discount"} ({activeDiscountPercent}%)
                         </span>
                         <span className="font-tt text-[16px] text-teal-accent">-{discountAmount.toFixed(2).replace(".", ",")}€</span>
                     </div>

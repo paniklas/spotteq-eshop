@@ -1,8 +1,9 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { ShoppingBag, Package, Heart, ArrowRight } from "lucide-react";
+import { ShoppingBag, Package, Heart, ArrowRight, Tag } from "lucide-react";
 import { getOrCreateUserInfo } from "@/sanity/getData/getOrCreateUserInfo";
+import { getFirstOrderPromoPercent } from "@/sanity/getData/getFirstOrderPromo";
 import { getUserOrders } from "@/sanity/getData/getUserOrders";
 import { formatPrice } from "@/utils/formatPrice";
 
@@ -52,6 +53,15 @@ export default async function OverviewPage({ params }) {
     const recentOrders = (orders ?? []).slice(0, 3);
     const wishlistCount = userInfo?.favourites?.length ?? 0;
 
+    // Read through the same authoritative (uncached) helper the payment route uses,
+    // so the dashboard can never promise a discount checkout would refuse. The page
+    // is force-dynamic, so there is no cache to keep in step.
+    // Hidden once spent, and hidden everywhere at once if the promo is switched off
+    // in Studio or an admin re-grants it by unticking the flag on the customer.
+    const firstOrderDiscountPercent = userInfo?.firstOrderDiscountUsed
+        ? 0
+        : await getFirstOrderPromoPercent();
+
     return (
         <div className="flex flex-col gap-6">
             {/* Welcome card */}
@@ -71,6 +81,30 @@ export default async function OverviewPage({ params }) {
                     {initials}
                 </div>
             </div>
+
+            {/* First order discount — shown only while the customer still has it.
+                Disappears for good once a paid order spends it. */}
+            {firstOrderDiscountPercent > 0 && (
+                <div className="bg-teal-accent/15 rounded-2xl p-6 xl:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-start gap-3 min-w-0">
+                        <Tag size={20} strokeWidth={1.5} className="text-black-custom shrink-0 mt-0.5" />
+                        <div className="min-w-0">
+                            <p className="font-aeonik text-[16px] xl:text-[20px] text-black-custom leading-tight">
+                                {t("firstOrderDiscount.title", { percent: firstOrderDiscountPercent })}
+                            </p>
+                            <p className="font-aeonik text-[12px] xl:text-[13px] text-gray-text mt-1">
+                                {t("firstOrderDiscount.desc")}
+                            </p>
+                        </div>
+                    </div>
+                    <Link
+                        href="/shop/shop-all"
+                        className="shrink-0 h-11 px-8 bg-black-custom font-aeonik text-[14px] uppercase text-white-custom rounded-xl hover:bg-gray-text transition-colors duration-300 flex items-center justify-center"
+                    >
+                        {t("firstOrderDiscount.cta")}
+                    </Link>
+                </div>
+            )}
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3 xl:gap-4">
