@@ -143,8 +143,8 @@ export default function SignUpForm() {
             {step === 'start' && (
                 <>
                     <div className="mb-2">
-                        <h1 className="font-aeonik text-[28px] xl:text-[32px] text-black-custom mb-1">{t('signUpTitle')}</h1>
-                        <p className="font-aeonik text-[14px] text-gray-text">{t('signUpSubtitle')}</p>
+                        <h1 className="font-aeonik text-center text-[28px] xl:text-[32px] text-black-custom mb-1">{t('signUpTitle')}</h1>
+                        <p className="font-aeonik text-center text-[14px] text-gray-text">{t('signUpSubtitle')}</p>
                     </div>
 
                     <button
@@ -193,6 +193,11 @@ export default function SignUpForm() {
                         <button type="submit" disabled={isLoading} className={`${BTN} bg-black-custom text-white-custom hover:bg-black-custom/90`}>
                             {isLoading ? <Spinner /> : t('createAccount')}
                         </button>
+
+                        {/* Clerk mounts its bot-protection (Smart CAPTCHA) widget here. Without
+                            this element signUp.create() logs a warning and silently downgrades
+                            to the invisible widget, which is weaker protection. */}
+                        <div id="clerk-captcha" />
                     </form>
 
                     <p className="font-aeonik text-[13px] text-gray-text text-center">
@@ -206,8 +211,8 @@ export default function SignUpForm() {
             {step === 'verify' && (
                 <>
                     <div className="mb-2">
-                        <h1 className="font-aeonik text-[28px] xl:text-[32px] text-black-custom mb-1">{t('verifyEmail')}</h1>
-                        <p className="font-aeonik text-[14px] text-gray-text">{t('verifyEmailDesc')} <span className="text-black-custom">{email}</span></p>
+                        <h1 className="font-aeonik text-center text-[28px] xl:text-[32px] text-black-custom mb-1">{t('verifyEmail')}</h1>
+                        <p className="font-aeonik text-center text-[14px] text-gray-text">{t('verifyEmailDesc')} <span className="text-black-custom">{email}</span></p>
                     </div>
 
                     <form onSubmit={handleVerify} className="flex flex-col gap-4">
