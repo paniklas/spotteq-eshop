@@ -1,5 +1,5 @@
 import "server-only";
-import { randomBytes } from "crypto";
+import { createHash, randomBytes } from "crypto";
 import { z } from "zod";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
@@ -93,6 +93,99 @@ async function claimFirstOrderDiscount(userInfoId, browserClaimId) {
     // Revision moved under us — another request claimed it first, or the profile
     // changed. Either way this checkout does not get the discount.
     return null;
+  }
+}
+
+// One hold per coupon + email, addressed by a deterministic id so that CREATING
+// it is the lock: two checkouts for the same coupon and email resolve to the
+// same document, and only one can bring it into existence.
+//
+// The email is hashed rather than embedded: it keeps the id within Sanity's
+// character rules whatever the address looks like, and keeps customer addresses
+// out of document ids. The dot in the prefix also puts these documents outside
+// the dataset's anonymous read grant.
+function couponClaimDocId(saleId, email) {
+  const emailKey = createHash("sha256").update(email.trim().toLowerCase()).digest("hex").slice(0, 32);
+  return `couponClaim.${saleId}.${emailKey}`;
+}
+
+// Takes the hold for this coupon and email, or refuses.
+//
+// Mirrors claimFirstOrderDiscount: a live hold belonging to this same browser is
+// renewed, an expired one is taken over after retiring the intent it authorised,
+// and anything else is refused. The difference is only where the hold lives —
+// its own document rather than a field on the customer profile — which is what
+// keeps unrelated customers from contending with each other.
+//
+// Returns { id, at } on success, or null when the coupon is not available.
+async function claimCouponForEmail(saleId, email, browserClaimId) {
+  const docId = couponClaimDocId(saleId, email);
+  const claimId = randomBytes(12).toString("base64url");
+  const at = new Date().toISOString();
+
+  try {
+    const created = await backendClient.createIfNotExists({
+      _id: docId,
+      _type: "couponClaim",
+      sale: { _type: "reference", _ref: saleId },
+      email: email.trim().toLowerCase(),
+      claimId,
+      at,
+    });
+    // Ours only if this call is what brought it into existence.
+    if (created.claimId === claimId && created.at === at) return { id: claimId, at };
+  } catch (err) {
+    console.warn("[create-payment-intent] coupon claim create failed:", err?.message ?? err);
+    return null;
+  }
+
+  // A hold already exists — read it and decide whether it can be renewed or taken.
+  const held = await backendClient.fetch(
+    `*[_id == $id][0]{ _id, _rev, claimId, at, intentId }`,
+    { id: docId }
+  );
+  if (!held) return null;
+
+  const heldAt = held.at ? Date.parse(held.at) : NaN;
+  const heldIsLive = Number.isFinite(heldAt) && Date.now() - heldAt < FIRST_ORDER_CLAIM_TTL_MS;
+  const renewable = heldIsLive && Boolean(held.claimId) && held.claimId === browserClaimId;
+
+  if (heldIsLive && !renewable) return null;
+
+  if (!renewable && held.intentId) {
+    const retired = await retireIntent(held.intentId);
+    if (!retired) return null;
+  }
+
+  const nextId = renewable ? held.claimId : claimId;
+  try {
+    await backendClient
+      .patch(docId)
+      .ifRevisionId(held._rev)
+      // intentId is cleared: the caller rebinds it to the intent it is about to
+      // create, and a stale one would make a later takeover cancel the wrong thing.
+      .set({ claimId: nextId, at })
+      .unset(["intentId"])
+      .commit({ visibility: "async" });
+    return { id: nextId, at };
+  } catch {
+    return null;
+  }
+}
+
+// Hands a coupon hold back, but only if it is still the exact one we took.
+async function releaseCouponClaim(saleId, email, claim) {
+  if (!saleId || !email || !claim?.id) return;
+  const docId = couponClaimDocId(saleId, email);
+  try {
+    const held = await backendClient.fetch(
+      `*[_id == $id][0]{ _id, _rev, claimId, at }`,
+      { id: docId }
+    );
+    if (held?.claimId !== claim.id || held?.at !== claim.at) return;
+    await backendClient.delete(docId);
+  } catch (err) {
+    console.warn("[create-payment-intent] could not release coupon claim:", err?.message ?? err);
   }
 }
 
@@ -190,6 +283,9 @@ export async function POST(req) {
   // Tracked outside the try so a failure anywhere below can hand the hold back.
   let claimedProfileId = null;
   let claimedClaim = null;
+  let claimedCouponSaleId = null;
+  let claimedCouponEmail = null;
+  let claimedCouponClaim = null;
   // Once an intent exists the hold must NOT be handed back on failure: that
   // intent is confirmable and still carries the discount, so releasing would let
   // a second checkout claim it while this one can still settle. An orphaned
@@ -396,7 +492,7 @@ export async function POST(req) {
     // the first-order discount claim this browser already holds. Read here rather
     // than further down because the claim id decides whether a re-entry into
     // checkout may reuse its own hold on the discount.
-    const [pendingOrderId, pendingIntentId, pendingViewToken, pendingClaimId] =
+    const [pendingOrderId, pendingIntentId, pendingViewToken, pendingClaimId, pendingCouponClaimId] =
       (cookieStore.get(PENDING_CHECKOUT_COOKIE)?.value ?? "").split("|");
 
     // --- Link the order to a signed-in user's profile (guests stay guest) ---
@@ -644,6 +740,39 @@ export async function POST(req) {
       });
     }
 
+    // --- Take the coupon hold, last thing before the intent ---
+    // The one-redemption-per-email rule needs a hold for the same reason the
+    // first-order discount does. Checking the usage log is not enough on its own:
+    // the log is only written by the webhook after payment, so between creating
+    // an intent and paying it — however long the customer takes over their card
+    // details — the check keeps reading a log nothing has written to yet.
+    let couponClaimId = null;
+    if (validatedCouponId) {
+      const couponClaim = await claimCouponForEmail(
+        validatedCouponId,
+        customerInfo.email,
+        pendingCouponClaimId
+      );
+      if (!couponClaim) {
+        if (!reusableOrder) {
+          await backendClient
+            .delete(sanityOrder._id)
+            .catch((e) => console.warn("[create-payment-intent] could not discard order:", e?.message ?? e));
+        }
+        return NextResponse.json(
+          {
+            error:
+              "This coupon is already being used by another checkout with this email address. Complete that one, or wait for the hold to expire and try again.",
+          },
+          { status: 409 }
+        );
+      }
+      couponClaimId = couponClaim.id;
+      claimedCouponSaleId = validatedCouponId;
+      claimedCouponEmail = customerInfo.email;
+      claimedCouponClaim = couponClaim;
+    }
+
     // --- Take the first-order discount hold, last thing before the intent ---
     // Everything that could still abort has already happened, so a hold taken
     // here is one that a Payment Intent is actually about to use.
@@ -704,6 +833,17 @@ export async function POST(req) {
     // be taken over safely once it expires: the takeover cancels that intent
     // first, so an abandoned tab cannot confirm an old discounted intent
     // alongside the new one.
+    if (couponClaimId && claimedCouponSaleId) {
+      try {
+        await backendClient
+          .patch(couponClaimDocId(claimedCouponSaleId, claimedCouponEmail))
+          .set({ intentId: paymentIntent.id })
+          .commit({ visibility: "async" });
+      } catch (err) {
+        console.warn("[create-payment-intent] could not bind coupon claim to intent:", err?.message ?? err);
+      }
+    }
+
     if (firstOrderClaimId && userInfoRef) {
       try {
         await backendClient
@@ -728,7 +868,7 @@ export async function POST(req) {
       maxAge:   60 * 60 * 24 * 7, // 7 days
     });
 
-    cookieStore.set(PENDING_CHECKOUT_COOKIE, `${sanityOrder._id}|${paymentIntent.id}|${viewToken}|${firstOrderClaimId ?? ""}`, {
+    cookieStore.set(PENDING_CHECKOUT_COOKIE, `${sanityOrder._id}|${paymentIntent.id}|${viewToken}|${firstOrderClaimId ?? ""}|${couponClaimId ?? ""}`, {
       httpOnly: true,
       secure:   process.env.NODE_ENV === "production",
       sameSite: "lax",
@@ -746,7 +886,10 @@ export async function POST(req) {
     // customer would be locked out of their own discount for the whole TTL by a
     // failure on our side. Unless an intent already exists, in which case the
     // hold belongs to that intent until it settles or expires.
-    if (!intentCreated) await releaseFirstOrderClaim(claimedProfileId, claimedClaim);
+    if (!intentCreated) {
+      await releaseFirstOrderClaim(claimedProfileId, claimedClaim);
+      await releaseCouponClaim(claimedCouponSaleId, claimedCouponEmail, claimedCouponClaim);
+    }
     return NextResponse.json({ error: "Failed to initialise payment." }, { status: 500 });
   }
 }

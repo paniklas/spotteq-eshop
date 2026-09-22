@@ -1,4 +1,5 @@
 import "server-only";
+import { createHash } from "crypto";
 import { headers } from "next/headers";
 import { stripe } from "@/lib/stripe";
 import { backendClient } from "@/sanity/lib/backendClient";
@@ -131,6 +132,10 @@ async function handlePaymentSucceeded(paymentIntent) {
   if (couponId && couponEmail && orderNumber) {
     try {
       await recordCouponUsage(couponId, couponEmail, orderNumber);
+      // The hold has done its job: from here the usage log is the permanent
+      // record that this email redeemed this coupon, and it is what the next
+      // checkout checks. Deleting is safe to repeat on a redelivery.
+      await releaseCouponHold(couponId, couponEmail);
     } catch (err) {
       console.error("[webhook] Coupon usage recording failed for order", orderId, err);
     }
@@ -199,6 +204,13 @@ async function handlePaymentSucceeded(paymentIntent) {
       console.error("[webhook] Could not record invoice outcome for order", orderId, err);
     }
   }
+}
+
+// Mirrors couponClaimDocId in create-payment-intent — same address, so the hold
+// taken there is the one dropped here.
+async function releaseCouponHold(saleId, email) {
+  const emailKey = createHash("sha256").update(email.trim().toLowerCase()).digest("hex").slice(0, 32);
+  await backendClient.delete(`couponClaim.${saleId}.${emailKey}`);
 }
 
 async function handlePaymentFailed(paymentIntent) {
