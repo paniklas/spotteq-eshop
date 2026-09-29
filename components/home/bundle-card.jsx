@@ -257,7 +257,7 @@ const BundleCard = ({
                     </p>
                 </div>
 
-                <div className="flex items-end justify-between gap-4 xl:gap-6 mt-6">
+                <div className="flex items-end justify-start gap-4 xl:gap-10 mt-6">
                     <div className="flex flex-col gap-2">
                         {priceBlock}
                         <div className="flex items-center gap-2">
