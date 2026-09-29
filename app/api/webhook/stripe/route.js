@@ -97,12 +97,29 @@ async function handlePaymentSucceeded(paymentIntent) {
     }
   }
 
-  // Idempotency guard — Stripe can fire the same event more than once on retries
+  // Idempotency guard — Stripe can fire the same event more than once on retries,
+  // and a delivery can be replayed from the dashboard at any time.
+  //
+  // Process only an order that has not been paid yet: "pending", or "cancelled"
+  // by an earlier payment_intent.payment_failed (the customer can retry the same
+  // intent with another card, and that success must still go through). Checking
+  // for exactly "paid" was not enough — the BoxNow webhook moves orders on to
+  // shipped / delivered / cancelled, and a replay after that would decrement
+  // stock, record the coupon, request a delivery and file an invoice again.
+  //
+  // A BoxNow cancellation (returned / expired parcel) is told apart from a
+  // failed-payment one by boxNowParcelStatus: it is only ever written after
+  // payment (delivery creation below, and the BoxNow webhook), so a cancelled
+  // order that has one was paid. Not covered: an admin manually setting a paid
+  // courier order to "cancelled" — a replay of that would still be reprocessed.
   const order = await backendClient.fetch(
-    `*[_type == "order" && _id == $orderId][0]{ status }`,
+    `*[_type == "order" && _id == $orderId][0]{ status, boxNowParcelStatus }`,
     { orderId }
   );
-  if (order?.status === "paid") return;
+  const status = order?.status ?? "pending";
+  const unpaid =
+    status === "pending" || (status === "cancelled" && !order?.boxNowParcelStatus);
+  if (order && !unpaid) return;
 
   // Mark order paid and record the Payment Intent ID
   await backendClient
