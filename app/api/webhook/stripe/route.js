@@ -8,6 +8,7 @@ import { createDeliveryRequest } from "@/lib/boxnow";
 import { submitInvoiceAndRecord, isGatewayConfigured } from "@/lib/compliance-gateway";
 import { isEmailConfigured } from "@/lib/email/resend";
 import { sendOrderPaidEmails } from "@/lib/email/order-emails";
+import { subscribeToNewsletter } from "@/lib/newsletter";
 
 // Must be Node.js runtime — Edge runtime cannot read the raw request body
 // required for Stripe signature verification.
@@ -54,7 +55,7 @@ export async function POST(req) {
 }
 
 async function handlePaymentSucceeded(paymentIntent) {
-  const { orderId, orderNumber, couponId, couponEmail, firstOrderUserInfoId, firstOrderClaimId, locale } =
+  const { orderId, orderNumber, couponId, couponEmail, firstOrderUserInfoId, firstOrderClaimId, locale, newsletterOptIn } =
     paymentIntent.metadata ?? {};
 
   if (!orderId) {
@@ -213,6 +214,25 @@ async function handlePaymentSucceeded(paymentIntent) {
     }
   }
 
+  // Newsletter opt-in ticked at checkout. Only now, once paid, so an abandoned
+  // checkout subscribes no one. Silent: no welcome email, the confirmation below
+  // mentions it instead. Idempotent — an existing subscriber is left as is.
+  let newsletterSubscribed = false;
+  if (newsletterOptIn === "true") {
+    try {
+      const { email } = await backendClient.fetch(
+        `*[_type == "order" && _id == $orderId][0]{ email }`,
+        { orderId }
+      ) ?? {};
+      if (email) {
+        await subscribeToNewsletter({ email, locale: locale === "en" ? "en" : "el", source: "checkout" });
+        newsletterSubscribed = true;
+      }
+    } catch (err) {
+      console.error("[webhook] Newsletter opt-in failed for order", orderId, err);
+    }
+  }
+
   // Order confirmation to the customer + new-order notification to the shop.
   //
   // Deliberately LAST. A slow Resend call or a function timeout here must not
@@ -222,7 +242,7 @@ async function handlePaymentSucceeded(paymentIntent) {
   // cheap — the order, stock, delivery and invoice are already recorded.
   if (isEmailConfigured()) {
     try {
-      await sendOrderPaidEmails(orderId, locale);
+      await sendOrderPaidEmails(orderId, locale, { newsletterSubscribed });
     } catch (err) {
       console.error("[webhook] Order emails failed for order", orderId, err);
     }

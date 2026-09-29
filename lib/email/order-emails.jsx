@@ -72,7 +72,10 @@ function getOrderForEmail(orderId, locale) {
 // The two are independent: one failing must not stop the other, so each owns
 // its failure and is only logged. Idempotency keys make a repeated call within
 // 24h a no-op at Resend, so a retry can never email the customer twice.
-export async function sendOrderPaidEmails(orderId, customerLocale) {
+//
+// newsletterSubscribed: the customer opted in at checkout and is now on the
+// list — the confirmation says so, in place of a separate welcome email.
+export async function sendOrderPaidEmails(orderId, customerLocale, { newsletterSubscribed = false } = {}) {
   const locale = normalizeLocale(customerLocale);
   const shopEmails = getShopEmails();
 
@@ -83,7 +86,7 @@ export async function sendOrderPaidEmails(orderId, customerLocale) {
     await sendEmail({
       to: order.email,
       subject: getCopy(locale).orderConfirmation.subject(order.orderNumber),
-      react: <OrderConfirmationEmail order={order} locale={locale} />,
+      react: <OrderConfirmationEmail order={order} locale={locale} newsletterSubscribed={newsletterSubscribed} />,
       replyTo: shopEmails,
       idempotencyKey: `order-confirmation/${orderId}`,
     });

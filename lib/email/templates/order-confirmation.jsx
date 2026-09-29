@@ -4,7 +4,7 @@ import OrderDetails from "./order-details";
 import { formatDate, getCopy } from "../copy";
 
 // Sent to the customer once Stripe confirms payment.
-export default function OrderConfirmationEmail({ order, locale }) {
+export default function OrderConfirmationEmail({ order, locale, newsletterSubscribed = false }) {
   const { common, orderConfirmation: t } = getCopy(locale);
   const firstName = order.shippingAddress?.firstName || order.customerName || "";
 
@@ -23,7 +23,10 @@ export default function OrderConfirmationEmail({ order, locale }) {
 
       <OrderDetails order={order} locale={locale} />
 
-      <Text style={{ ...styles.text, marginTop: "24px" }}>{t.questions}</Text>
+      {newsletterSubscribed ? (
+        <Text style={{ ...styles.text, marginTop: "24px" }}>{t.newsletterSubscribed}</Text>
+      ) : null}
+      <Text style={{ ...styles.text, marginTop: newsletterSubscribed ? 0 : "24px" }}>{t.questions}</Text>
     </EmailLayout>
   );
 }
