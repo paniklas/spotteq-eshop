@@ -33,19 +33,29 @@ const ORDER_EMAIL_QUERY = `
     products[]{
       quantity,
       price,
-      selectedFlavour,
       "name": coalesce(product->title[language == $locale][0].value, product->title[language == "el"][0].value),
-      "flavourName": product->flavourName[language == $locale][0].value
+      "flavourName": coalesce(product->flavourName[language == $locale][0].value, product->flavourName[language == "el"][0].value)
     },
     bundles[]{
       quantity,
       price,
-      selectedFlavours[]{
-        flavourName,
-        quantity,
-        "variantName": coalesce(variant->title[language == $locale][0].value, variant->title[language == "el"][0].value)
-      },
-      "name": coalesce(bundle->title[language == $locale][0].value, bundle->title[language == "el"][0].value)
+      "name": coalesce(bundle->title[language == $locale][0].value, bundle->title[language == "el"][0].value),
+      // What is actually in the box: the validated flavour choice, or the
+      // bundle's defaults when none was stored (quick-add / legacy lines) — the
+      // same rule the webhook uses to decrement stock. Labels come from the
+      // referenced products, never from the flavourName the client submitted.
+      "contents": coalesce(
+        selectedFlavours[]{
+          quantity,
+          "name": coalesce(variant->title[language == $locale][0].value, variant->title[language == "el"][0].value),
+          "flavourName": coalesce(variant->flavourName[language == $locale][0].value, variant->flavourName[language == "el"][0].value)
+        },
+        bundle->products[]{
+          quantity,
+          "name": coalesce(product->title[language == $locale][0].value, product->title[language == "el"][0].value),
+          "flavourName": coalesce(product->flavourName[language == $locale][0].value, product->flavourName[language == "el"][0].value)
+        }
+      )
     }
   }
 `;

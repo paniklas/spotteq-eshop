@@ -149,19 +149,6 @@ async function handlePaymentSucceeded(paymentIntent) {
     }
   }
 
-  // Order confirmation to the customer + new-order notification to the shop.
-  // Non-fatal like every step below the paid guard: sendOrderPaidEmails logs its
-  // own failures, and a redelivery would not re-run it anyway.
-  if (isEmailConfigured()) {
-    try {
-      await sendOrderPaidEmails(orderId, locale);
-    } catch (err) {
-      console.error("[webhook] Order emails failed for order", orderId, err);
-    }
-  } else {
-    console.error("[webhook] Email not configured — no order emails sent for order", orderId);
-  }
-
   // Auto-create BoxNow delivery request if this is a BoxNow order
   try {
     const fullOrder = await backendClient.fetch(
@@ -224,6 +211,23 @@ async function handlePaymentSucceeded(paymentIntent) {
       // invoiceStatus at all. Log loudly — this one is invisible in Studio.
       console.error("[webhook] Could not record invoice outcome for order", orderId, err);
     }
+  }
+
+  // Order confirmation to the customer + new-order notification to the shop.
+  //
+  // Deliberately LAST. A slow Resend call or a function timeout here must not
+  // cost the steps above: a killed invocation escapes every try/catch, and the
+  // paid guard turns Stripe's redelivery into an early return, so anything not
+  // yet run would be skipped for good. Emails are the one step whose loss is
+  // cheap — the order, stock, delivery and invoice are already recorded.
+  if (isEmailConfigured()) {
+    try {
+      await sendOrderPaidEmails(orderId, locale);
+    } catch (err) {
+      console.error("[webhook] Order emails failed for order", orderId, err);
+    }
+  } else {
+    console.error("[webhook] Email not configured — no order emails sent for order", orderId);
   }
 }
 

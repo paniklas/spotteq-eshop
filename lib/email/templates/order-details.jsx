@@ -68,7 +68,7 @@ export default function OrderDetails({ order, locale }) {
           <ItemRow
             key={`p${i}`}
             name={p.name ?? "—"}
-            details={[p.flavourName || p.selectedFlavour].filter(Boolean)}
+            details={[p.flavourName].filter(Boolean)}
             quantity={p.quantity}
             lineTotal={money(p.price * p.quantity)}
           />
@@ -77,8 +77,8 @@ export default function OrderDetails({ order, locale }) {
           <ItemRow
             key={`b${i}`}
             name={`${t.bundle}: ${b.name ?? "—"}`}
-            details={(b.selectedFlavours ?? []).map(
-              (f) => `${f.quantity ?? 1} × ${[f.variantName, f.flavourName].filter(Boolean).join(" – ")}`
+            details={(b.contents ?? []).map(
+              (c) => `${c.quantity ?? 1} × ${[c.name, c.flavourName].filter(Boolean).join(" – ")}`
             )}
             quantity={b.quantity}
             lineTotal={money(b.price * b.quantity)}
