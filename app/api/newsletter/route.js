@@ -17,7 +17,10 @@ const subscribeSchema = z.object({
   locale: z.enum(["el", "en"]).optional(),
 });
 
-// Responds { ok: true, alreadySubscribed } or { ok: false, error: "invalid" | "failed" }.
+// Responds { ok: true } or { ok: false, error: "invalid" | "failed" }.
+//
+// A new and an already-subscribed address get the same response, so the form
+// cannot be used to find out whether someone is on the list.
 export async function POST(req) {
   // Before anything else: an unchecked client could otherwise create unlimited
   // subscriber documents and send a welcome email to any address it lists.
@@ -44,7 +47,7 @@ export async function POST(req) {
   let docId;
   try {
     const result = await subscribeToNewsletter({ email, locale, source: "footer" });
-    if (!result.created) return NextResponse.json({ ok: true, alreadySubscribed: true });
+    if (!result.created) return NextResponse.json({ ok: true });
     docId = result.docId;
   } catch (err) {
     console.error("[newsletter] Subscribe failed:", err);
@@ -67,5 +70,5 @@ export async function POST(req) {
     }
   }
 
-  return NextResponse.json({ ok: true, alreadySubscribed: false });
+  return NextResponse.json({ ok: true });
 }

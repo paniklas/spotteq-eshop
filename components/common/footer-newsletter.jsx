@@ -28,9 +28,7 @@ const FooterNewsletter = () => {
           );
           return;
         }
-        toast.success(
-          res.alreadySubscribed ? "You're already subscribed." : "Thanks for subscribing!"
-        );
+        toast.success("Thanks for subscribing!");
         setEmail("");
       } catch {
         toast.error("Could not subscribe right now. Please try again.");
