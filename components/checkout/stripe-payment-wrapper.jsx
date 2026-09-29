@@ -51,6 +51,7 @@ const StripePaymentWrapper = ({
             couponId:   coupon?._id   ?? null,
             couponCode: coupon?.couponCode ?? null,
             customerInfo,
+            locale,
           }),
         });
 

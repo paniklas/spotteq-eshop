@@ -1,4 +1,5 @@
 import createNextIntlPlugin from 'next-intl/plugin';
+import { withBotId } from 'botid/next/config';
 
 const withNextIntl = createNextIntlPlugin();
 
@@ -29,4 +30,6 @@ const nextConfig = {
     },
 };
 
-export default withNextIntl(nextConfig);
+// withBotId adds the rewrites that serve Vercel BotID's challenge script
+// first-party (see instrumentation-client.js).
+export default withBotId(withNextIntl(nextConfig));

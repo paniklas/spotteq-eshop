@@ -271,6 +271,9 @@ const bodySchema = z.object({
     postalCode: z.string().optional(),
     country: z.string().optional(),
     phone: z.string().optional(),
+    // The checkout's marketing opt-in. Acted on only once the payment succeeds
+    // (Stripe webhook), so an abandoned checkout subscribes no one.
+    emailMarketing: z.boolean().optional(),
     billingInfo: z
       .object({
         firstName: z.string().optional(),
@@ -288,6 +291,9 @@ const bodySchema = z.object({
   boxNowLockerId: z.string().optional().nullable(),
   boxNowLockerName: z.string().optional().nullable(),
   boxNowLockerAddress: z.string().optional().nullable(),
+  // Language the order emails are sent in. Not stored on the order — it only
+  // travels to the webhook through the Payment Intent metadata.
+  locale: z.enum(["el", "en"]).optional(),
 });
 
 export async function POST(req) {
@@ -857,6 +863,8 @@ export async function POST(req) {
         // Not read by the webhook — kept so an intent can be traced back to the
         // hold that authorised it when reconciling a disputed discount.
         firstOrderClaimId: firstOrderClaimId ?? "",
+        locale: parsed.data.locale ?? "el",
+        newsletterOptIn: customerInfo.emailMarketing ? "true" : "",
       },
     });
 
