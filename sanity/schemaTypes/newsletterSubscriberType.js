@@ -1,7 +1,7 @@
 import { defineField, defineType } from 'sanity'
 
 // One document per newsletter subscriber, written by the footer signup
-// (app/actions/newsletter.js).
+// (app/api/newsletter/route.js).
 //
 // The _id is `newsletterSubscriber.<sha256 of the email>`. The dot matters: the
 // dataset is public, and Sanity only serves documents at the root path to

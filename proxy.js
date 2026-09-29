@@ -20,6 +20,9 @@ export default clerkMiddleware(async (auth, request) => {
     // Sanity Studio lives at the root and must bypass both auth and locale handling.
     if (pathname.startsWith('/studio-spotteq')) return NextResponse.next();
     if (pathname.startsWith('/sso-callback')) return NextResponse.next();
+    // Vercel BotID's first-party proxy (rewrites added by withBotId in next.config).
+    // Must not be locale-redirected, or the bot check can never complete.
+    if (pathname.startsWith('/149e9513-01fa-4fb0-aad4-566afd725d1b/')) return NextResponse.next();
     // API routes need clerkMiddleware() to run so auth() works inside them,
     // but must bypass next-intl's locale routing/redirects.
     if (pathname === '/api' || pathname.startsWith('/api/')) return NextResponse.next();

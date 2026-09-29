@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
-import { subscribeToNewsletter } from "@/app/actions/newsletter";
 
 const FooterNewsletter = () => {
   const [email, setEmail] = useState("");
@@ -14,7 +13,13 @@ const FooterNewsletter = () => {
     e.preventDefault();
     startTransition(async () => {
       try {
-        const res = await subscribeToNewsletter({ email, locale });
+        // Plain fetch (not a server action) so Vercel BotID can attach its
+        // headers — see instrumentation-client.js and app/api/newsletter.
+        const res = await fetch("/api/newsletter", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, locale }),
+        }).then((r) => r.json());
         if (!res.ok) {
           toast.error(
             res.error === "invalid"
