@@ -33,7 +33,9 @@ export const orderType = defineType({
     defineField({
       name: 'stripePaymentIntentId',
       title: 'Stripe Payment Intent ID',
+      description: 'Set by the Stripe webhook when the payment succeeds. It is what marks the order as paid for the webhook — clearing it would let a replayed payment event process the order again.',
       type: 'string',
+      readOnly: true,
       validation: Rule => Rule.required(),
     }),
     defineField({
