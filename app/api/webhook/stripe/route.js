@@ -100,21 +100,10 @@ async function handlePaymentSucceeded(paymentIntent) {
     }
   }
 
-  // Idempotency guard — Stripe can fire the same event more than once on retries
-  const order = await backendClient.fetch(
-    `*[_type == "order" && _id == $orderId][0]{ status }`,
-    { orderId }
-  );
-  if (order?.status === "paid") return;
-
-  // Mark order paid and record the Payment Intent ID
-  await backendClient
-    .patch(orderId)
-    .set({
-      status: "paid",
-      stripePaymentIntentId: paymentIntent.id,
-    })
-    .commit();
+  // Idempotency guard — Stripe can fire the same event more than once on retries,
+  // deliver two copies concurrently, and a delivery can be replayed from the
+  // dashboard at any time. Only the handler that claims the order goes on.
+  if (!(await claimOrderForPayment(orderId, paymentIntent.id))) return;
 
   // ⚠ Everything past this point must be individually non-fatal.
   //
@@ -251,6 +240,58 @@ async function handlePaymentSucceeded(paymentIntent) {
   }
 }
 
+// True for an order that has never been paid. Both conditions are required:
+//
+// - stripePaymentIntentId is the durable marker. It is written only by
+//   claimOrderForPayment(), in the same write that sets "paid", and nothing
+//   clears it — so it survives every later status (shipped, delivered, refunded,
+//   a BoxNow or admin cancellation). create-payment-intent relies on the same
+//   rule when it reuses a pending order.
+// - status must be "pending", or "cancelled" by a failed payment (the customer
+//   can retry the same intent with another card, and that success must still go
+//   through). Checking status alone was not enough: a replay after the order had
+//   moved on from "paid" would re-run every post-payment step.
+function isUnpaid(order) {
+  const status = order.status ?? "pending";
+  return !order.stripePaymentIntentId && (status === "pending" || status === "cancelled");
+}
+
+// Marks the order paid, but only if it is still unpaid — returns true when this
+// handler made that transition and must run the post-payment steps, false when
+// the order was already paid.
+//
+// The write is conditional on the revision that was read (ifRevisionId), so two
+// concurrent deliveries cannot both see "pending" and both proceed: the second
+// commit fails. After a failed commit the order is simply re-read rather than the
+// error inspected — if it is now paid, the other delivery claimed it; if it is
+// still unpaid, something unrelated changed it (e.g. an edit in Studio) or the
+// write failed transiently, and the claim is retried once. Throwing returns 500
+// and Stripe retries later, which is safe: nothing has run yet.
+async function claimOrderForPayment(orderId, intentId) {
+  let lastError;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const order = await backendClient.fetch(
+      `*[_type == "order" && _id == $orderId][0]{ _rev, status, stripePaymentIntentId }`,
+      { orderId }
+    );
+    if (!order) throw new Error(`order ${orderId} not found`);
+    if (!isUnpaid(order)) return false;
+
+    try {
+      await backendClient
+        .patch(orderId)
+        .ifRevisionId(order._rev)
+        .set({ status: "paid", stripePaymentIntentId: intentId })
+        .commit();
+      return true;
+    } catch (err) {
+      // Re-read and decide again on the next pass.
+      lastError = err;
+    }
+  }
+  throw lastError;
+}
+
 // Mirrors couponClaimDocId in create-payment-intent — same address, so the hold
 // taken there is the one dropped here.
 //
@@ -283,11 +324,31 @@ async function handlePaymentFailed(paymentIntent) {
   const { orderId } = paymentIntent.metadata ?? {};
   if (!orderId) return;
 
-  await backendClient
-    .patch(orderId)
-    .set({ status: "cancelled" })
-    .commit()
-    .catch((err) => console.error("[webhook] Failed to cancel order:", err));
+  // Cancel only an order that has never been paid. Stripe does not guarantee
+  // event order: a failed first card followed by a successful second one can
+  // deliver payment_failed after payment_intent.succeeded, and an unconditional
+  // write here would mark a paid order "cancelled". Conditional on the revision
+  // read, like claimOrderForPayment(), so a payment landing in between wins; on
+  // a failed write the order is re-read and the decision made again, once.
+  // Failures are only logged, as before.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const order = await backendClient.fetch(
+        `*[_type == "order" && _id == $orderId][0]{ _rev, status, stripePaymentIntentId }`,
+        { orderId }
+      );
+      if (!order || !isUnpaid(order) || order.status === "cancelled") return;
+
+      await backendClient
+        .patch(orderId)
+        .ifRevisionId(order._rev)
+        .set({ status: "cancelled" })
+        .commit();
+      return;
+    } catch (err) {
+      if (attempt === 1) console.error("[webhook] Failed to cancel order:", orderId, err);
+    }
+  }
 
   // The first-order discount hold is deliberately NOT released here. A failed
   // payment leaves the intent confirmable — the customer can put in another card
