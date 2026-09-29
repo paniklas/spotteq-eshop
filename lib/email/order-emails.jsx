@@ -69,9 +69,12 @@ function getOrderForEmail(orderId, locale) {
 
 // Sends the customer confirmation and the shop notification for a paid order.
 //
-// The two are independent: one failing must not stop the other, so each owns
-// its failure and is only logged. Idempotency keys make a repeated call within
-// 24h a no-op at Resend, so a retry can never email the customer twice.
+// The two run concurrently and each owns its failure (logged only), so neither
+// can hold up the other: sent one after the other, a slow first send running
+// into the function timeout would stop the second from ever starting, and the
+// webhook's paid guard means a redelivery would not retry it. Idempotency keys
+// make a repeated call within 24h a no-op at Resend, so a retry can never email
+// anyone twice.
 //
 // newsletterSubscribed: the customer opted in at checkout and is now on the
 // list — the confirmation says so, in place of a separate welcome email.
@@ -79,6 +82,13 @@ export async function sendOrderPaidEmails(orderId, customerLocale, { newsletterS
   const locale = normalizeLocale(customerLocale);
   const shopEmails = getShopEmails();
 
+  await Promise.all([
+    sendCustomerConfirmation(orderId, locale, shopEmails, newsletterSubscribed),
+    sendShopNotification(orderId, shopEmails),
+  ]);
+}
+
+async function sendCustomerConfirmation(orderId, locale, shopEmails, newsletterSubscribed) {
   try {
     const order = await getOrderForEmail(orderId, locale);
     if (!order?.email) throw new Error("order not found or has no email");
@@ -93,7 +103,9 @@ export async function sendOrderPaidEmails(orderId, customerLocale, { newsletterS
   } catch (err) {
     console.error("[email] Order confirmation failed for order", orderId, err);
   }
+}
 
+async function sendShopNotification(orderId, shopEmails) {
   if (!shopEmails.length) {
     console.error("[email] ORDER_NOTIFICATION_EMAIL is not set — shop not notified of order", orderId);
     return;
