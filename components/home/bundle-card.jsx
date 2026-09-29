@@ -100,7 +100,7 @@ const BundleCard = ({
 
     const priceBlock = (
         <div className="flex items-end gap-2">
-            <span className="font-tt font-light text-[42px] xl:text-[48px] text-black-custom leading-none">
+            <span className="font-tt font-light text-[35px] xl:text-[38px] text-black-custom leading-none">
                 {saleBundlePrice ? `€${formatPrice(saleBundlePrice)}` : `€${formatPrice(bundlePrice)}`}
             </span>
             {saleBundlePrice && (
@@ -114,7 +114,7 @@ const BundleCard = ({
     const productNames = (
         <div className="mb-3">
             {products.map((item, i) => (
-                <p key={item.product?._id ?? i} className="font-aeonik text-[15px] xl:text-[22px] text-black-custom leading-snug opacity-90">
+                <p key={item.product?._id ?? i} className="font-aeonik text-[15px] xl:text-[19px] text-black-custom leading-snug opacity-90">
                     {item.product?.title}
                 </p>
             ))}
@@ -190,8 +190,8 @@ const BundleCard = ({
 
     if (variant === "vertical") {
         return (
-            <div className="group relative rounded-[190px] p-8 xl:p-10 overflow-hidden flex flex-col min-h-130">
-                <div className="absolute inset-0 bg-gray-mint transition-[filter,opacity] duration-300 group-hover:bg-gray-mint/80 group-hover:blur-[7.5px]" />
+            <div className="group relative rounded-[190px] p-8 xl:p-10 flex flex-col min-h-130">
+                <div className="absolute inset-0 rounded-[190px] bg-gray-mint transition-[filter,background-color,scale] duration-700 ease-out group-hover:duration-300 group-hover:bg-gray-mint/80 group-hover:blur-[12px] group-hover:scale-[1.01]" />
 
                 <div className="relative z-[1] flex items-end justify-center pt-10 px-8">
                     {imageStack}
@@ -203,7 +203,7 @@ const BundleCard = ({
                             {title}
                         </h3>
                         {productNames}
-                        <p className="font-aeonik text-[13px] xl:text-[18px] text-black-custom leading-[1.4] max-w-72.5 opacity-90">
+                        <p className="font-aeonik text-[13px] xl:text-[18px] text-black-custom leading-[1.4] opacity-50">
                             {description}
                         </p>
                     </div>
@@ -237,25 +237,27 @@ const BundleCard = ({
     }
 
     return (
-        <div className="group relative rounded-[190px] p-8 xl:p-18 flex flex-row overflow-hidden min-h-105 gap-6 xl:gap-10">
-            <div className="absolute inset-0 bg-gray-mint transition-[filter,opacity] duration-300 group-hover:bg-gray-mint/80 group-hover:blur-[7.5px]" />
+        <div className="group relative rounded-[190px] p-8 xl:p-12 flex flex-row min-h-105 gap-6 xl:gap-10">
+            <div className="absolute inset-0 rounded-[190px] bg-gray-mint transition-[filter,background-color,scale] duration-700 ease-out group-hover:duration-300 group-hover:bg-gray-mint/80 group-hover:blur-[12px] group-hover:scale-[1.01]" />
 
-            <div className="relative z-1 flex items-center justify-center">
+            {/* From xl the page gutters and text grow, and the text column would squeeze
+                the images down to a sliver — reserve them a fixed share of the card. */}
+            <div className="relative z-1 flex items-center justify-center xl:w-[42%] xl:shrink-0">
                 {imageStack}
             </div>
 
             <div className="relative z-1 flex-1 flex flex-col">
                 <div className="flex-1 flex flex-col">
-                    <h3 className="font-aeonik text-[22px] xl:text-[28px] text-black-custom leading-[1.2] mb-3">
+                    <h3 className="font-aeonik text-[22px] xl:text-[24px] text-black-custom leading-[1.2] mb-3">
                         {title}
                     </h3>
                     {productNames}
-                    <p className="font-aeonik text-[13px] xl:text-[18px] text-black-custom leading-[1.4] opacity-70">
+                    <p className="font-aeonik text-[13px] xl:text-[15px] text-black-custom leading-[1.4] opacity-70">
                         {description}
                     </p>
                 </div>
 
-                <div className="flex items-end justify-between gap-4 xl:gap-10 mt-6">
+                <div className="flex items-end justify-between gap-4 xl:gap-6 mt-6">
                     <div className="flex flex-col gap-2">
                         {priceBlock}
                         <div className="flex items-center gap-2">
