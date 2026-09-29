@@ -33,10 +33,12 @@ export const orderType = defineType({
     defineField({
       name: 'stripePaymentIntentId',
       title: 'Stripe Payment Intent ID',
-      description: 'Set by the Stripe webhook when the payment succeeds. It is what marks the order as paid for the webhook — clearing it would let a replayed payment event process the order again.',
+      description: 'Set by the Stripe webhook when the payment succeeds, so it is empty on pending and failed orders. It is what marks the order as paid for the webhook — clearing it would let a replayed payment event process the order again.',
       type: 'string',
       readOnly: true,
-      validation: Rule => Rule.required(),
+      // Not required(): it is legitimately empty until payment, and orders are
+      // written by the API (which Studio validation never gates) — required()
+      // only put a warning on every pending and failed order.
     }),
     defineField({
       name: 'isGuestCheckout',
