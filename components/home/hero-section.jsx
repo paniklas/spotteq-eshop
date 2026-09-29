@@ -21,8 +21,10 @@ const HeroSection = async ({ locale }) => {
         getHeroImages(locale),
     ]);
 
+    // A Studio image without alt text for this locale is treated as decorative:
+    // borrowing the fallback's description would misname any other product.
     const heroImages = sanityHeroImages.length
-        ? sanityHeroImages.map((image) => ({ ...image, alt: image.alt || FALLBACK_HERO_IMAGE.alt }))
+        ? sanityHeroImages.map((image) => ({ ...image, alt: image.alt || "" }))
         : [FALLBACK_HERO_IMAGE];
 
     return (
