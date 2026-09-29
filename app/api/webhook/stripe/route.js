@@ -98,37 +98,9 @@ async function handlePaymentSucceeded(paymentIntent) {
   }
 
   // Idempotency guard — Stripe can fire the same event more than once on retries,
-  // and a delivery can be replayed from the dashboard at any time.
-  //
-  // Process only an order that has not been paid yet: "pending", or "cancelled"
-  // by an earlier payment_intent.payment_failed (the customer can retry the same
-  // intent with another card, and that success must still go through). Checking
-  // for exactly "paid" was not enough — the BoxNow webhook moves orders on to
-  // shipped / delivered / cancelled, and a replay after that would decrement
-  // stock, record the coupon, request a delivery and file an invoice again.
-  //
-  // A BoxNow cancellation (returned / expired parcel) is told apart from a
-  // failed-payment one by boxNowParcelStatus: it is only ever written after
-  // payment (delivery creation below, and the BoxNow webhook), so a cancelled
-  // order that has one was paid. Not covered: an admin manually setting a paid
-  // courier order to "cancelled" — a replay of that would still be reprocessed.
-  const order = await backendClient.fetch(
-    `*[_type == "order" && _id == $orderId][0]{ status, boxNowParcelStatus }`,
-    { orderId }
-  );
-  const status = order?.status ?? "pending";
-  const unpaid =
-    status === "pending" || (status === "cancelled" && !order?.boxNowParcelStatus);
-  if (order && !unpaid) return;
-
-  // Mark order paid and record the Payment Intent ID
-  await backendClient
-    .patch(orderId)
-    .set({
-      status: "paid",
-      stripePaymentIntentId: paymentIntent.id,
-    })
-    .commit();
+  // deliver two copies concurrently, and a delivery can be replayed from the
+  // dashboard at any time. Only the handler that claims the order goes on.
+  if (!(await claimOrderForPayment(orderId, paymentIntent.id))) return;
 
   // ⚠ Everything past this point must be individually non-fatal.
   //
@@ -227,6 +199,56 @@ async function handlePaymentSucceeded(paymentIntent) {
       console.error("[webhook] Could not record invoice outcome for order", orderId, err);
     }
   }
+}
+
+// Marks the order paid, but only if it is still unpaid — returns true when this
+// handler made that transition and must run the post-payment steps, false when
+// the order was already paid.
+//
+// "Unpaid" is "pending", or "cancelled" by an earlier payment_intent.payment_failed
+// (the customer can retry the same intent with another card, and that success
+// must still go through). Checking for exactly "paid" was not enough — the BoxNow
+// webhook moves orders on to shipped / delivered / cancelled, and a replay after
+// that would decrement stock, record the coupon, request a delivery and file an
+// invoice again. A BoxNow cancellation (returned / expired parcel) is told apart
+// from a failed-payment one by boxNowParcelStatus: it is only ever written after
+// payment (delivery creation, and the BoxNow webhook), so a cancelled order that
+// has one was paid. Not covered: an admin manually setting a paid courier order
+// to "cancelled" — a replay of that would still be reprocessed.
+//
+// The write is conditional on the revision that was read (ifRevisionId), so two
+// concurrent deliveries cannot both see "pending" and both proceed: the second
+// commit fails. After a failed commit the order is simply re-read rather than the
+// error inspected — if it is now paid, the other delivery claimed it; if it is
+// still unpaid, something unrelated changed it (e.g. an edit in Studio) or the
+// write failed transiently, and the claim is retried once. Throwing returns 500
+// and Stripe retries later, which is safe: nothing has run yet.
+async function claimOrderForPayment(orderId, intentId) {
+  let lastError;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const order = await backendClient.fetch(
+      `*[_type == "order" && _id == $orderId][0]{ _rev, status, boxNowParcelStatus }`,
+      { orderId }
+    );
+    if (!order) throw new Error(`order ${orderId} not found`);
+
+    const status = order.status ?? "pending";
+    const unpaid = status === "pending" || (status === "cancelled" && !order.boxNowParcelStatus);
+    if (!unpaid) return false;
+
+    try {
+      await backendClient
+        .patch(orderId)
+        .ifRevisionId(order._rev)
+        .set({ status: "paid", stripePaymentIntentId: intentId })
+        .commit();
+      return true;
+    } catch (err) {
+      // Re-read and decide again on the next pass.
+      lastError = err;
+    }
+  }
+  throw lastError;
 }
 
 // Mirrors couponClaimDocId in create-payment-intent — same address, so the hold
