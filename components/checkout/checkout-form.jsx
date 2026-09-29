@@ -299,6 +299,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
       const customerInfo = {
         firstName: data.firstName,
         lastName: data.lastName,
+        company: data.company ?? "",
         email: data.email,
         phone: data.phone,
         address: data.address,
