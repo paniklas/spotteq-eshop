@@ -41,11 +41,14 @@ const ORDER_EMAIL_QUERY = `
       price,
       "name": coalesce(bundle->title[language == $locale][0].value, bundle->title[language == "el"][0].value),
       // What is actually in the box: the validated flavour choice, or the
-      // bundle's defaults when none was stored (quick-add / legacy lines) — the
-      // same rule the webhook uses to decrement stock. Labels come from the
-      // referenced products, never from the flavourName the client submitted.
-      "contents": coalesce(
-        selectedFlavours[]{
+      // bundle's defaults when that choice is missing, empty or incomplete (a
+      // variant since deleted) — the same rule decrementInventory() in the
+      // Stripe webhook uses. select() rather than coalesce(): coalesce only
+      // falls back on null, and an empty array must mean defaults too. Labels
+      // come from the referenced products, never from the flavourName the
+      // client submitted.
+      "contents": select(
+        count(selectedFlavours) > 0 && count(selectedFlavours[!defined(variant->_id)]) == 0 => selectedFlavours[]{
           quantity,
           "name": coalesce(variant->title[language == $locale][0].value, variant->title[language == "el"][0].value),
           "flavourName": coalesce(variant->flavourName[language == $locale][0].value, variant->flavourName[language == "el"][0].value)
