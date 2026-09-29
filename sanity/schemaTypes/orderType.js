@@ -190,6 +190,7 @@ export const orderType = defineType({
       fields: [
         defineField({ name: 'firstName', type: 'string' }),
         defineField({ name: 'lastName', type: 'string' }),
+        defineField({ name: 'company', type: 'string' }),
         defineField({ name: 'address', type: 'string' }),
         defineField({ name: 'apartment', type: 'string' }),
         defineField({ name: 'city', type: 'string' }),

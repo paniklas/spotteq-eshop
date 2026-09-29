@@ -265,6 +265,7 @@ const bodySchema = z.object({
     email: z.string().email(),
     firstName: z.string().min(1),
     lastName: z.string().min(1),
+    company: z.string().optional(),
     address: z.string().optional(),
     apartment: z.string().optional(),
     city: z.string().optional(),
@@ -701,6 +702,7 @@ export async function POST(req) {
       shippingAddress: {
         firstName:  customerInfo.firstName,
         lastName:   customerInfo.lastName,
+        company:    customerInfo.company    ?? "",
         address:    customerInfo.address    ?? "",
         apartment:  customerInfo.apartment  ?? "",
         city:       customerInfo.city       ?? "",
