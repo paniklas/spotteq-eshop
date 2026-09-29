@@ -33,7 +33,7 @@ export const structure = (S) =>
                     .documentId('firstOrderPromo')
                 ),
               S.listItem()
-                .title('Home Page SEO')
+                .title('Home Page')
                 .child(
                   S.document()
                     .schemaType('homePage')

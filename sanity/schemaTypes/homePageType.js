@@ -13,6 +13,22 @@ export const homePageType = defineType({
       validation: Rule => Rule.required(),
     }),
     defineField({
+      name: 'heroImages',
+      title: 'Hero Product Images',
+      description: 'Product images the hero arrows cycle through (max 3), on mobile and desktop. Use transparent cutouts. Drag to reorder.',
+      type: 'array',
+      of: [
+        defineArrayMember({
+          type: 'image',
+          options: { hotspot: true },
+          fields: [
+            defineField({ name: 'alt', title: 'Alt Text', type: 'internationalizedArrayString' }),
+          ],
+        }),
+      ],
+      validation: Rule => Rule.max(3),
+    }),
+    defineField({
       name: 'featuredProducts',
       title: 'Featured Products',
       description: 'Products shown in the Featured Products section (max 6). Drag to reorder.',

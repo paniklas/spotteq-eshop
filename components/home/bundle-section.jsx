@@ -49,11 +49,11 @@ const BundleSection = async ({ locale }) => {
                                 {bundles[1] && <BundleCard {...bundles[1]} />}
                             </div>
 
-                            {/* Row 2: vertical card narrower, horizontal card wider */}
+                            {/* Row 2: two vertical cards (image on top), the second one wider */}
                             {(bundles[2] || bundles[3]) && (
                                 <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-6 mt-6">
                                     {bundles[2] && <BundleCard {...bundles[2]} variant="vertical" />}
-                                    {bundles[3] && <BundleCard {...bundles[3]} />}
+                                    {bundles[3] && <BundleCard {...bundles[3]} variant="vertical" />}
                                 </div>
                             )}
                         </div>
