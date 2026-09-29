@@ -12,6 +12,8 @@ export const structure = (S) =>
       S.divider(),
       S.documentTypeListItem('userInfo').title('Customers'),
       S.divider(),
+      S.documentTypeListItem('newsletterSubscriber').title('Newsletter Subscribers'),
+      S.divider(),
       S.listItem()
         .title('Site Settings')
         .child(

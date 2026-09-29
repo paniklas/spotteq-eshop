@@ -7,6 +7,7 @@ import { categoryType } from './categoryType'
 import { couponClaimType } from './couponClaimType'
 import { firstOrderPromoType } from './firstOrderPromoType'
 import { homePageType } from './homePageType'
+import { newsletterSubscriberType } from './newsletterSubscriberType'
 import { orderType } from './orderType'
 import { productType } from './productType'
 import { saleType } from './saleType'
@@ -28,4 +29,5 @@ export const schemaTypes = [
   announcementType,
   firstOrderPromoType,
   couponClaimType,
+  newsletterSubscriberType,
 ]

@@ -288,6 +288,9 @@ const bodySchema = z.object({
   boxNowLockerId: z.string().optional().nullable(),
   boxNowLockerName: z.string().optional().nullable(),
   boxNowLockerAddress: z.string().optional().nullable(),
+  // Language the order emails are sent in. Not stored on the order — it only
+  // travels to the webhook through the Payment Intent metadata.
+  locale: z.enum(["el", "en"]).optional(),
 });
 
 export async function POST(req) {
@@ -857,6 +860,7 @@ export async function POST(req) {
         // Not read by the webhook — kept so an intent can be traced back to the
         // hold that authorised it when reconciling a disputed discount.
         firstOrderClaimId: firstOrderClaimId ?? "",
+        locale: parsed.data.locale ?? "el",
       },
     });
 

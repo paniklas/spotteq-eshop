@@ -6,6 +6,8 @@ import { backendClient } from "@/sanity/lib/backendClient";
 import { recordCouponUsage } from "@/app/actions/coupon";
 import { createDeliveryRequest } from "@/lib/boxnow";
 import { submitInvoiceAndRecord, isGatewayConfigured } from "@/lib/compliance-gateway";
+import { isEmailConfigured } from "@/lib/email/resend";
+import { sendOrderPaidEmails } from "@/lib/email/order-emails";
 
 // Must be Node.js runtime — Edge runtime cannot read the raw request body
 // required for Stripe signature verification.
@@ -52,7 +54,7 @@ export async function POST(req) {
 }
 
 async function handlePaymentSucceeded(paymentIntent) {
-  const { orderId, orderNumber, couponId, couponEmail, firstOrderUserInfoId, firstOrderClaimId } =
+  const { orderId, orderNumber, couponId, couponEmail, firstOrderUserInfoId, firstOrderClaimId, locale } =
     paymentIntent.metadata ?? {};
 
   if (!orderId) {
@@ -145,6 +147,19 @@ async function handlePaymentSucceeded(paymentIntent) {
     } catch (err) {
       console.error("[webhook] Coupon usage recording failed for order", orderId, err);
     }
+  }
+
+  // Order confirmation to the customer + new-order notification to the shop.
+  // Non-fatal like every step below the paid guard: sendOrderPaidEmails logs its
+  // own failures, and a redelivery would not re-run it anyway.
+  if (isEmailConfigured()) {
+    try {
+      await sendOrderPaidEmails(orderId, locale);
+    } catch (err) {
+      console.error("[webhook] Order emails failed for order", orderId, err);
+    }
+  } else {
+    console.error("[webhook] Email not configured — no order emails sent for order", orderId);
   }
 
   // Auto-create BoxNow delivery request if this is a BoxNow order

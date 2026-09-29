@@ -1,16 +1,36 @@
 "use client";
 
-import { useState } from "react";
-
+import { useState, useTransition } from "react";
+import { useLocale } from "next-intl";
+import { toast } from "sonner";
+import { subscribeToNewsletter } from "@/app/actions/newsletter";
 
 const FooterNewsletter = () => {
   const [email, setEmail] = useState("");
+  const [isPending, startTransition] = useTransition();
+  const locale = useLocale();
 
   function handleSubmit(e) {
     e.preventDefault();
-    // For demo purposes, we'll just alert the email. In a real app, you'd send this to your backend.
-    alert(`Subscribed with email: ${email}`);
-    setEmail("");
+    startTransition(async () => {
+      try {
+        const res = await subscribeToNewsletter({ email, locale });
+        if (!res.ok) {
+          toast.error(
+            res.error === "invalid"
+              ? "Please enter a valid email address."
+              : "Could not subscribe right now. Please try again."
+          );
+          return;
+        }
+        toast.success(
+          res.alreadySubscribed ? "You're already subscribed." : "Thanks for subscribing!"
+        );
+        setEmail("");
+      } catch {
+        toast.error("Could not subscribe right now. Please try again.");
+      }
+    });
   }
 
   return (
@@ -43,15 +63,17 @@ const FooterNewsletter = () => {
           {/* Desktop — SUBSCRIBE pill */}
           <button
             type="submit"
-            className="hidden md:block absolute right-0 top-0 h-[37px] w-[140px] bg-black rounded-[20px] font-aeonik text-white text-[12px] hover:bg-white-custom cursor-pointer hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out"
+            disabled={isPending}
+            className="hidden md:block disabled:opacity-60 disabled:cursor-wait absolute right-0 top-0 h-[37px] w-[140px] bg-black rounded-[20px] font-aeonik text-white text-[12px] hover:bg-white-custom cursor-pointer hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out"
           >
-            SUBSCRIBE
+            {isPending ? "SUBSCRIBING…" : "SUBSCRIBE"}
           </button>
           {/* Mobile — circular arrow */}
           <button
             type="submit"
             aria-label="Subscribe"
-            className="md:hidden absolute right-0 top-0 h-[37px] w-[37px] rounded-full bg-black flex items-center justify-center cursor-pointer"
+            disabled={isPending}
+            className="md:hidden disabled:opacity-60 disabled:cursor-wait absolute right-0 top-0 h-[37px] w-[37px] rounded-full bg-black flex items-center justify-center cursor-pointer"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 12h14M13 6l6 6-6 6" />
