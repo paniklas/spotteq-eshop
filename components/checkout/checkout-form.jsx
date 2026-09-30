@@ -377,7 +377,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
     setBoxNowLockerInfo(info.lockerId ? info : null);
     setBoxNowLockerError(false);
     setValue("boxNowLockerId", info.lockerId ?? "");
-  }, [setValue]);
+  }, [setValue, setBoxNowLockerInfo, setBoxNowLockerError]);
 
   // The store outlives this component, so a lock set here would survive navigating
   // away mid-payment and leave the coupon field disabled on the next visit.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect, useRef } from "react";
+import { useState, useTransition } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -24,24 +24,16 @@ const Field = ({ id, label, value, onChange, disabled = false, note }) => (
     </div>
 );
 
-const ProfileForm = ({ defaultPhone = "" }) => {
+// The names come from the server (Clerk's currentUser) so the fields are filled on
+// first paint, rather than empty until Clerk finishes loading in the browser.
+const ProfileForm = ({ defaultFirstName = "", defaultLastName = "", defaultPhone = "" }) => {
     const t = useTranslations("account");
     const { user, isLoaded } = useUser();
     const [isPending, startTransition] = useTransition();
 
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
+    const [firstName, setFirstName] = useState(defaultFirstName);
+    const [lastName, setLastName] = useState(defaultLastName);
     const [phone, setPhone] = useState(defaultPhone);
-    const seededRef = useRef(false);
-
-    // Seed name fields once, after the Clerk user finishes loading.
-    useEffect(() => {
-        if (isLoaded && user && !seededRef.current) {
-            setFirstName(user.firstName ?? "");
-            setLastName(user.lastName ?? "");
-            seededRef.current = true;
-        }
-    }, [isLoaded, user]);
 
     const email = user?.primaryEmailAddress?.emailAddress ?? "";
 
