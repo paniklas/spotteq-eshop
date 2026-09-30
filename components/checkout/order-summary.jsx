@@ -215,7 +215,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
                                     onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
                                     disabled={paymentLocked}
                                     placeholder="Enter code"
-                                    className="flex-1 px-4 py-3 font-tt text-[13px] text-black-custom outline-none bg-transparent placeholder:text-gray-text/50 disabled:cursor-not-allowed"
+                                    className="flex-1 px-4 py-3 font-tt text-[16px] md:text-[13px] text-black-custom outline-none bg-transparent placeholder:text-gray-text/50 disabled:cursor-not-allowed"
                                 />
                                 <button
                                     onClick={handleApplyCoupon}

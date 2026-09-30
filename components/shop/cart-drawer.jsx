@@ -334,7 +334,7 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                                         onChange={(e) => { setCouponInput(e.target.value); setCouponError("") }}
                                         onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
                                         placeholder="Enter code"
-                                        className="flex-1 px-3 py-2.5 font-tt text-[13px] text-black-custom outline-none bg-transparent placeholder:text-gray-text/50"
+                                        className="flex-1 px-3 py-2.5 font-tt text-[16px] md:text-[13px] text-black-custom outline-none bg-transparent placeholder:text-gray-text/50"
                                     />
                                     <button
                                         onClick={handleApplyCoupon}
