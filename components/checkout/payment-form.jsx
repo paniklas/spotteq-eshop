@@ -71,7 +71,8 @@ const PaymentForm = ({ orderNumber, locale, customerInfo, onBack }) => {
         Payment Details
       </h2>
 
-      <PaymentElement />
+      {/* Hides Stripe Link, including its "save my info" opt-in. */}
+      <PaymentElement options={{ wallets: { link: "never" } }} />
 
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4">
