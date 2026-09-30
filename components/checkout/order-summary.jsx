@@ -23,6 +23,9 @@ export const PaymentAndLinks = () => (
                 width={240}
                 height={32}
                 unoptimized
+                // In the desktop summary it is above the fold and Next.js reports it as
+                // the checkout's Largest Contentful Paint, so don't lazy-load it.
+                loading="eager"
                 className="h-5 w-auto object-contain"
             />
         </div>
