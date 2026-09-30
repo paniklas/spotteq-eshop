@@ -51,8 +51,10 @@ const CheckoutContent = ({ shippingMethods = [], accountDefaults = null, firstOr
         />
       </div>
 
-      {/* Order Summary — desktop only, right, sticky */}
-      <div className="hidden lg:block lg:order-2">
+      {/* Order Summary — desktop only, right, sticky. self-stretch makes this cell as
+          tall as the form column: with the grid's items-start it would only be as tall
+          as the summary, leaving the sticky child no room to move. */}
+      <div className="hidden lg:block lg:order-2 lg:self-stretch">
         <div className="sticky top-28">
           <OrderSummary shippingMethods={shippingMethods} firstOrderDiscountPercent={firstOrderDiscountPercent} />
         </div>
