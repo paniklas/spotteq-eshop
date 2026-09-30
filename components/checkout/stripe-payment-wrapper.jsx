@@ -69,6 +69,9 @@ const StripePaymentWrapper = ({
     };
 
     create();
+  // Runs once on purpose: each run creates a Sanity order and a Stripe Payment
+  // Intent, so re-running on a prop change would create duplicates.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const appearance = {
