@@ -11,6 +11,7 @@ import { useCustomerStore } from "@/store/customer-store";
 import { validateCartInventory } from "@/app/actions/cart";
 import { updateUserShippingInfo } from "@/app/actions/updateUserShippingInfo";
 import { checkoutSchema } from "@/lib/checkoutSchema";
+import { isGreekMobile } from "@/utils/isGreekMobile";
 import { formatPrice } from "@/utils/formatPrice";
 import { effectiveShippingCost } from "@/utils/shippingCost";
 import {
@@ -249,6 +250,13 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
   const onSubmit = (data) => {
     setInventoryIssues([]);
     setInventoryError(false);
+
+    // Checked before the locker so the customer sees the phone field first: the
+    // shipping details sit above the locker picker.
+    if (isBoxNow && !isGreekMobile(data.phone)) {
+      form.setError("phone", { message: "BoxNow needs a Greek mobile number (69XXXXXXXX) to send your locker code." }, { shouldFocus: true });
+      return;
+    }
 
     if (isBoxNow && !boxNowLockerInfo?.lockerId) {
       setBoxNowLockerError(true);

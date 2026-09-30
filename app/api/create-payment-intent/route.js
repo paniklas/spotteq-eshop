@@ -7,6 +7,7 @@ import { auth } from "@clerk/nextjs/server";
 import { stripe } from "@/lib/stripe";
 import { backendClient } from "@/sanity/lib/backendClient";
 import { getFirstOrderPromoPercent } from "@/sanity/getData/getFirstOrderPromo";
+import { isGreekMobile } from "@/utils/isGreekMobile";
 
 // Points at the pending order + PI this browser most recently started, so a
 // Back → Continue cycle updates that order instead of creating another one.
@@ -382,6 +383,11 @@ export async function POST(req) {
     }
     if (shippingMethod.provider === "boxnow" && !boxNowLockerId) {
       return NextResponse.json({ error: "Please select a BoxNow locker." }, { status: 400 });
+    }
+    // Enforced here too: a number BoxNow rejects only surfaces after payment, when
+    // the Stripe webhook tries to create the delivery request.
+    if (shippingMethod.provider === "boxnow" && !isGreekMobile(customerInfo.phone)) {
+      return NextResponse.json({ error: "BoxNow needs a Greek mobile number (69XXXXXXXX) to send your locker code." }, { status: 400 });
     }
 
     // --- Build order line items and compute subtotal ---
