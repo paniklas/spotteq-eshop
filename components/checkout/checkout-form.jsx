@@ -37,7 +37,7 @@ const FloatingInput = ({ id, label, type = "text", optional = false, className =
       type={type}
       placeholder=" "
       {...props}
-      className="peer w-full border border-gray-mint rounded-xl px-4 py-4 font-aeonik text-[14px] text-black-custom outline-none bg-transparent focus:border-black-custom transition-colors duration-200"
+      className="peer w-full border border-gray-mint rounded-xl px-4 py-4 font-aeonik text-[16px] md:text-[14px] text-black-custom outline-none bg-transparent focus:border-black-custom transition-colors duration-200"
     />
     <label
       htmlFor={id}
@@ -59,7 +59,7 @@ const FloatingSelect = ({ id, label, className = "", children, ref, ...props }) 
       ref={ref}
       id={id}
       {...props}
-      className="peer w-full border border-gray-mint rounded-xl px-4 py-4 font-aeonik text-[14px] text-black-custom outline-none bg-transparent focus:border-black-custom transition-colors duration-200 appearance-none"
+      className="peer w-full border border-gray-mint rounded-xl px-4 py-4 font-aeonik text-[16px] md:text-[14px] text-black-custom outline-none bg-transparent focus:border-black-custom transition-colors duration-200 appearance-none"
     >
       {children}
     </select>

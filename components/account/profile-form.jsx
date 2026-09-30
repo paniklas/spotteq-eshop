@@ -15,7 +15,7 @@ const Field = ({ id, label, value, onChange, disabled = false, note }) => (
             onChange={onChange}
             disabled={disabled}
             placeholder=" "
-            className={`peer w-full border border-gray-mint rounded-xl px-4 py-4 font-aeonik text-[14px] text-black-custom outline-none bg-transparent focus:border-black-custom transition-colors duration-200 ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
+            className={`peer w-full border border-gray-mint rounded-xl px-4 py-4 font-aeonik text-[16px] md:text-[14px] text-black-custom outline-none bg-transparent focus:border-black-custom transition-colors duration-200 ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
         />
         <label htmlFor={id} className="absolute left-3 top-0 -translate-y-1/2 bg-white-custom px-1 font-aeonik text-[11px] text-black-custom/50 pointer-events-none peer-focus:text-black-custom">
             {label}

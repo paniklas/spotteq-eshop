@@ -39,7 +39,7 @@ function LoadingSkeleton() {
     );
 }
 
-const INPUT = "w-full border border-gray-mint rounded-xl px-4 py-3 font-aeonik text-[14px] text-black-custom placeholder:text-gray-text/60 focus:border-black-custom focus:outline-none transition-colors";
+const INPUT = "w-full border border-gray-mint rounded-xl px-4 py-3 font-aeonik text-[16px] md:text-[14px] text-black-custom placeholder:text-gray-text/60 focus:border-black-custom focus:outline-none transition-colors";
 const BTN = "w-full rounded-xl py-3 font-aeonik text-[14px] transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center";
 const LINK_BTN = "font-aeonik text-[13px] text-gray-text text-center hover:text-black-custom underline cursor-pointer bg-transparent border-none p-0 w-full";
 

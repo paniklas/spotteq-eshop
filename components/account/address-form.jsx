@@ -14,7 +14,7 @@ const FloatingInput = ({ id, label, optional = false, error, className = "", reg
             type="text"
             placeholder=" "
             {...register(id)}
-            className="peer w-full border border-gray-mint rounded-xl px-4 py-4 font-aeonik text-[14px] text-black-custom outline-none bg-transparent focus:border-black-custom transition-colors duration-200"
+            className="peer w-full border border-gray-mint rounded-xl px-4 py-4 font-aeonik text-[16px] md:text-[14px] text-black-custom outline-none bg-transparent focus:border-black-custom transition-colors duration-200"
         />
         <label
             htmlFor={id}

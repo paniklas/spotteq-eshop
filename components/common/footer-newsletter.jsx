@@ -61,7 +61,7 @@ const FooterNewsletter = () => {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Your email"
             required
-            className="w-full h-[37px] border border-black/20 rounded-[20px] px-4 pr-12 md:pr-4 font-aeonik text-[14px] text-black bg-white focus:outline-none focus:border-black/40"
+            className="w-full h-[37px] border border-black/20 rounded-[20px] px-4 pr-12 md:pr-4 font-aeonik text-[16px] md:text-[14px] text-black bg-white focus:outline-none focus:border-black/40"
           />
           {/* Desktop — SUBSCRIBE pill */}
           <button

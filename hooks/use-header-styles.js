@@ -104,30 +104,46 @@ export const useHeaderStyles = () => {
             if (bestConfig) setCurrentStyles({ color: bestConfig.color, scrollBg: bestConfig.scrollBg });
         };
 
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        map.set(entry.target.id, entry.intersectionRatio);
-                    } else {
-                        map.delete(entry.target.id);
-                    }
-                });
-                pickStyles();
-            },
-            {
-                rootMargin: '-80px 0px -90% 0px',
-                threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5],
-            }
-        );
+        let observer = null;
 
-        SECTION_CONFIGS.forEach(({ id }) => {
-            const el = document.getElementById(id);
-            if (el) observer.observe(el);
-        });
+        // Detection zone: a fixed band from 80px to 100px below the top of the
+        // viewport, just under the header. Set in px from the viewport height because
+        // a percentage bottom margin (the previous -90%) left no zone at all on
+        // screens shorter than 800px — most phones — so the header never changed.
+        const observe = () => {
+            observer?.disconnect();
+            map.clear();
+            observer = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            map.set(entry.target.id, entry.intersectionRatio);
+                        } else {
+                            map.delete(entry.target.id);
+                        }
+                    });
+                    pickStyles();
+                },
+                {
+                    rootMargin: `-80px 0px -${Math.max(0, window.innerHeight - 100)}px 0px`,
+                    threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5],
+                }
+            );
+
+            SECTION_CONFIGS.forEach(({ id }) => {
+                const el = document.getElementById(id);
+                if (el) observer.observe(el);
+            });
+        };
+
+        observe();
+        // The viewport height changes on rotation and when mobile browser toolbars
+        // show or hide, which would move the band; rebuild the observer with it.
+        window.addEventListener('resize', observe);
 
         return () => {
-            observer.disconnect();
+            window.removeEventListener('resize', observe);
+            observer?.disconnect();
             map.clear();
         };
     }, [pathname]);
