@@ -81,8 +81,16 @@ const ProductCard = ({ product, priority = false }) => {
 
     return (
         <div data-testid="product-card" className="group/card flex flex-col gap-2 xl:gap-4 relative pb-5 xl:pb-10">
-            {/* Image area */}
-            <div className="relative bg-white rounded-sm overflow-hidden" style={{ aspectRatio: "1/1.2" }}>
+            {/* Image area — a link to the product on mobile only; md:pointer-events-none
+                keeps desktop unchanged. Hidden from keyboard and screen readers because
+                VIEW DETAILS below is the same link. */}
+            <Link
+                href={`/shop/product/${productSlug}`}
+                tabIndex={-1}
+                aria-hidden="true"
+                className="relative block bg-white rounded-sm overflow-hidden md:pointer-events-none"
+                style={{ aspectRatio: "1/1.2" }}
+            >
 
                 {/* Hover oval background */}
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[75%] aspect-375/572 bg-gray-soft rounded-full opacity-100 md:opacity-0 md:group-hover/card:opacity-100 transition-opacity duration-500 ease-in-out z-0" />
@@ -97,7 +105,7 @@ const ProductCard = ({ product, priority = false }) => {
                     quality={100}
                     className="relative z-1 w-full h-full object-contain p-16 md:p-24"
                 />
-            </div>
+            </Link>
 
             <div className="flex justify-between items-center relative">
                 {product.badge && (
