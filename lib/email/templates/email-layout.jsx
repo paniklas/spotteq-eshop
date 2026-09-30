@@ -26,8 +26,10 @@ export function Label({ children }) {
 }
 
 // Email clients fetch the logo from the live site, so it must be an absolute URL.
-// www, not the bare domain: that one redirects, and some clients don't follow it.
-const logoUrl = `${(process.env.NEXT_PUBLIC_BASE_URL || "https://www.spotteq.com").replace(/\/$/, "")}/logo/logo-email.png`;
+// Fixed to production rather than NEXT_PUBLIC_BASE_URL, so a local or preview
+// value can't break it; www, because the bare domain redirects and some clients
+// don't follow it.
+const logoUrl = "https://www.spotteq.com/logo/logo-email.png";
 
 export default function EmailLayout({ lang = "el", preview, footer, children }) {
   return (
