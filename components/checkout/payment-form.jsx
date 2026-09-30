@@ -71,17 +71,8 @@ const PaymentForm = ({ orderNumber, locale, customerInfo, onBack }) => {
         Payment Details
       </h2>
 
-      {/* Hides Stripe Link, including its "save my info" opt-in.
-          Accordion, not tabs: with tabs, switching Card <-> Google Pay could leave the
-          form unresponsive (seen in Arc). Spaced items with radios give Apple Pay /
-          Google Pay their own bordered row (styled in stripe-payment-wrapper.jsx)
-          instead of a faint line under the card form. */}
-      <PaymentElement
-        options={{
-          layout: { type: "accordion", spacedAccordionItems: true, radios: "always" },
-          wallets: { link: "never" },
-        }}
-      />
+      {/* Hides Stripe Link, including its "save my info" opt-in. */}
+      <PaymentElement options={{ wallets: { link: "never" } }} />
 
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4">
