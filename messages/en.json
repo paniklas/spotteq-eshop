@@ -153,5 +153,12 @@
             "desc": "Applied automatically at checkout — no code needed.",
             "cta": "Shop now"
         }
+    },
+    "notFound": {
+        "label": "Error · Page not found",
+        "heading": "This page doesn't exist",
+        "description": "The page you're looking for may have been moved, deleted, or never existed.",
+        "cta": "Back to Home",
+        "homeAriaLabel": "Back to SPOTTEQ home"
     }
 }

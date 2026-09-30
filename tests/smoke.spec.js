@@ -67,8 +67,22 @@ test.describe("404 handling", () => {
     // notFound() is called inside a <Suspense> boundary — with Next.js streaming
     // the HTTP 200 header is sent before the inner component resolves, so we check
     // for the not-found UI rather than the HTTP status code.
-    await expect(page.locator("h1, h2").filter({ hasText: /not found|404|δε βρέθηκε/i })).toBeVisible({
+    await expect(page.locator("h1").filter({ hasText: /Αυτή η σελίδα δεν υπάρχει/ })).toBeVisible({
       timeout: 10000,
     });
   });
+
+  // An unknown path under a locale renders app/not-found.jsx, which reads the
+  // locale from the request: text and home link must follow the URL's language.
+  for (const { locale, heading, cta } of [
+    { locale: "en", heading: "This page doesn't exist", cta: "Back to Home" },
+    { locale: "el", heading: "Αυτή η σελίδα δεν υπάρχει", cta: "Επιστροφή στην αρχική" },
+  ]) {
+    test(`shows the ${locale} not-found page for an unknown ${locale} path`, async ({ page }) => {
+      const response = await page.goto(`/${locale}/this-page-does-not-exist-xyz`);
+      expect(response?.status()).toBe(404);
+      await expect(page.locator("h1")).toHaveText(heading);
+      await expect(page.getByRole("link", { name: cta, exact: true })).toHaveAttribute("href", `/${locale}`);
+    });
+  }
 });

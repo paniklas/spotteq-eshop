@@ -1,9 +1,13 @@
 import "@/app/globals.css";
 import Link from 'next/link';
+import { getLocale, getTranslations } from 'next-intl/server';
 
-export const dynamic = 'force-static'
+// Not force-static: the locale comes from the request (set by the next-intl
+// middleware, as in the root layout), so the page renders per language.
+export default async function NotFound() {
+  const locale = await getLocale();
+  const t = await getTranslations('notFound');
 
-export default function NotFound() {
   return (
     <main className="relative min-h-screen bg-white-custom overflow-hidden flex flex-col">
 
@@ -40,7 +44,7 @@ export default function NotFound() {
 
       {/* Top bar — full wordmark links back home */}
       <header className="relative z-10 px-10 xl:px-[160px] py-8">
-        <Link href="/" aria-label="Back to SPOTTEQ home">
+        <Link href={`/${locale}`} aria-label={t("homeAriaLabel")}>
           <svg width="185" height="40" viewBox="0 0 200 44" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M13.2801 8.92771C15.7578 8.92771 17.7663 6.92917 17.7663 4.46385C17.7663 1.99854 15.7578 0 13.2801 0C10.8025 0 8.79395 1.99854 8.79395 4.46385C8.79395 6.92917 10.8025 8.92771 13.2801 8.92771Z" fill="black"/>
             <path d="M13.2801 26.4579C15.7578 26.4579 17.7663 24.4594 17.7663 21.9941C17.7663 19.5288 15.7578 17.5302 13.2801 17.5302C10.8025 17.5302 8.79395 19.5288 8.79395 21.9941C8.79395 24.4594 10.8025 26.4579 13.2801 26.4579Z" fill="black"/>
@@ -66,7 +70,7 @@ export default function NotFound() {
 
         {/* Error label */}
         <p className="font-tt text-[11px] xl:text-[13px] uppercase tracking-[0.35em] text-gray-text mb-8">
-          Error · Page not found
+          {t("label")}
         </p>
 
         {/* Large 404 */}
@@ -85,20 +89,20 @@ export default function NotFound() {
           className="font-aeonik text-black-custom leading-tight mb-4"
           style={{ fontSize: 'clamp(24px, 4vw, 52px)' }}
         >
-          This page doesn't exist
+          {t("heading")}
         </h1>
 
         {/* Description */}
         <p className="font-tt text-[15px] xl:text-[18px] text-gray-text mb-12 max-w-sm leading-relaxed">
-          The page you're looking for may have been moved, deleted, or never existed.
+          {t("description")}
         </p>
 
         {/* CTA */}
         <Link
-          href="/"
+          href={`/${locale}`}
           className="inline-flex items-center gap-3 bg-black-custom text-white-custom font-tt text-[11px] xl:text-[13px] uppercase tracking-[0.2em] px-10 py-4 rounded-full hover:opacity-70 transition-opacity duration-300"
         >
-          Back to Home
+          {t("cta")}
           <svg width="14" height="14" viewBox="0 0 40 40" fill="none">
             <path
               d="M30.5303 20.5303C30.8232 20.2374 30.8232 19.7626 30.5303 19.4697L25.7574 14.6967C25.4645 14.4038 24.9896 14.4038 24.6967 14.6967C24.4038 14.9896 24.4038 15.4645 24.6967 15.7574L28.9393 20L24.6967 24.2426C24.4038 24.5355 24.4038 25.0104 24.6967 25.3033C24.9896 25.5962 25.4645 25.5962 25.7574 25.3033L30.5303 20.5303ZM10 20L10 20.75L30 20.75L30 20L30 19.25L10 19.25L10 20Z"

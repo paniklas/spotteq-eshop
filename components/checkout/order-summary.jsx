@@ -13,7 +13,10 @@ import { effectiveShippingCost } from "@/utils/shippingCost";
 
 // Payment icons + footer links — shared between the desktop summary card and
 // the standalone mobile block (rendered at the bottom of the checkout page).
-export const PaymentAndLinks = () => (
+// eagerIcons: only the desktop summary passes it, where the icons are above the
+// fold and Next.js reports them as the Largest Contentful Paint; at the bottom of
+// the mobile page they stay lazy.
+export const PaymentAndLinks = ({ eagerIcons = false }) => (
     <>
         {/* Payment icons */}
         <div className="flex justify-end xl:mt-28">
@@ -23,6 +26,7 @@ export const PaymentAndLinks = () => (
                 width={240}
                 height={32}
                 unoptimized
+                loading={eagerIcons ? "eager" : "lazy"}
                 className="h-5 w-auto object-contain"
             />
         </div>
@@ -280,7 +284,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
             </div>
             </div>
 
-            {showFooterLinks && <PaymentAndLinks />}
+            {showFooterLinks && <PaymentAndLinks eagerIcons />}
         </div>
     )
 }
