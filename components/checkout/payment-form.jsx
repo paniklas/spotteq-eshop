@@ -71,8 +71,10 @@ const PaymentForm = ({ orderNumber, locale, customerInfo, onBack }) => {
         Payment Details
       </h2>
 
-      {/* Hides Stripe Link, including its "save my info" opt-in. */}
-      <PaymentElement options={{ wallets: { link: "never" } }} />
+      {/* Hides Stripe Link, including its "save my info" opt-in. Tabs rather than
+          Stripe's default accordion, so Apple Pay / Google Pay sit next to Card
+          instead of as a row below the card form. */}
+      <PaymentElement options={{ layout: "tabs", wallets: { link: "never" } }} />
 
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4">

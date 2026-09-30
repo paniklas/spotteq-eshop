@@ -120,7 +120,7 @@ const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }
                             ))}
                         </div>
                     </div>
-                    <div>
+                    {/* <div>
                         <h4 className="font-aeonik text-[13px] uppercase text-black-custom mb-4">Terms</h4>
                         <div className="flex flex-col gap-2">
                             {["Terms & Conditions", "Privacy Policy", "Cookies Policy"].map((t) => (
@@ -129,7 +129,7 @@ const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }
                                 </Link>
                             ))}
                         </div>
-                    </div>
+                    </div> */}
                 </div>
 
                 {/* Language */}
@@ -207,7 +207,7 @@ const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }
                     </div>
         
                     {/* Terms */}
-                    <div className="mt-10" style={fade(260)}>
+                    {/* <div className="mt-10" style={fade(260)}>
                         <p className="font-aeonik text-[11px] xl:text-[16px] uppercase text-black-custom mb-10 mt-10">
                             Terms
                         </p>
@@ -224,7 +224,7 @@ const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }
                                 </Link>
                             ))}
                         </div>
-                    </div>
+                    </div> */}
                 </div>
     
                 {/* ── Right: featured product ── */}
@@ -232,9 +232,11 @@ const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }
                     className="hidden lg:flex flex-col items-center justify-start gap-6 flex-shrink-0 w-[660px] xl:w-[440px]"
                     style={fade(160)}
                 >
-                    <div className="group relative w-full aspect-[2/3] rounded-[273px] overflow-hidden flex items-end justify-center pb-10">
-                        {/* Background — blurs on hover per Figma spec */}
-                        <div className="absolute inset-0 bg-gray-mint transition-[filter,background-color] duration-300 group-hover:bg-gray-mint/80 group-hover:blur-[7.5px]" />
+                    <div className="group relative w-full aspect-[2/3] rounded-[273px] flex items-end justify-center pb-10">
+                        {/* Background — same hover blur as the home page bundle cards (bundle-card.jsx).
+                            Rounded itself, with no overflow-hidden on the parent, so the blur softens
+                            the edge instead of being clipped by it. */}
+                        <div className="absolute inset-0 rounded-[273px] bg-gray-mint transition-[filter,background-color,scale] duration-700 ease-out group-hover:duration-300 group-hover:bg-gray-mint/80 group-hover:blur-[12px] group-hover:scale-[1.01]" />
                         {/* Product image — sharp, above the blurred background */}
                         <div className="absolute inset-x-10 top-16 bottom-28 z-[1] flex items-center justify-center">
                             <Image
@@ -250,7 +252,7 @@ const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }
                             href="/shop/shop-all"
                             onClick={isOnClose}
                             tabIndex={isOpen ? 0 : -1}
-                            className="relative z-10 bg-white text-foreground font-tt text-xs font-medium uppercase tracking-[0.15em] px-10 py-3 rounded-full hover:bg-foreground hover:text-white transition-colors duration-200"
+                            className="relative z-10 bg-white text-foreground font-aeonik text-[14px] uppercase tracking-wide px-10 py-3 rounded-full hover:bg-foreground hover:text-white transition-colors duration-700"
                         >
                             Shop Now
                         </Link>
@@ -259,7 +261,7 @@ const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }
             </div>
 
             {/* Language switcher — desktop */}
-            <div
+            {/* <div
                 className="hidden lg:flex max-w-480 mx-auto page-x pb-10 justify-end"
                 style={fade(300)}
                 >
@@ -270,7 +272,7 @@ const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }
                     </svg>
 
                 </div>
-            </div>
+            </div> */}
         </div>
     )
 }
