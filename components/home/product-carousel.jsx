@@ -1,12 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { motion } from "framer-motion"
 import ProductCard from "./product-card"
 
 const ProductCarousel = ({ products = [] }) => {
     const [index, setIndex] = useState(0)
     const count = products.length
+    // Set once a drag actually starts, so releasing a swipe over a card link/button doesn't click it.
+    const draggedRef = useRef(false)
 
     if (count === 0) return null
 
@@ -22,6 +24,14 @@ const ProductCarousel = ({ products = [] }) => {
                     drag="x"
                     dragConstraints={{ left: 0, right: 0 }}
                     dragElastic={0.15}
+                    onPointerDownCapture={() => { draggedRef.current = false }}
+                    onDragStart={() => { draggedRef.current = true }}
+                    onClickCapture={(e) => {
+                        // detail 0 = keyboard-activated click; never swallow those.
+                        if (!draggedRef.current || e.detail === 0) return
+                        e.preventDefault()
+                        e.stopPropagation()
+                    }}
                     onDragEnd={(_, info) => {
                         const threshold = 50
                         if (info.offset.x < -threshold) goTo(index + 1)
