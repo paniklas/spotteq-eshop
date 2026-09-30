@@ -83,6 +83,8 @@ const StripePaymentWrapper = ({
       colorDanger:      "#ef4444",
       fontFamily:       "system-ui, sans-serif",
       borderRadius:     "12px",
+      // Apple Pay / Google Pay buttons (Express Checkout Element): pill-shaped.
+      buttonBorderRadius: "24px",
       spacingUnit:      "4px",
     },
     rules: {
