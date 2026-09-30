@@ -1,12 +1,12 @@
-import { Body, Container, Head, Hr, Html, Preview, Section, Text } from "react-email";
+import { Body, Container, Head, Hr, Html, Img, Preview, Section, Text } from "react-email";
 
-// Shared frame for every SPOTTEQ email: wordmark header, white card, footer.
+// Shared frame for every SPOTTEQ email: logo header, white card, footer.
 // Kept to inline styles — email clients ignore stylesheets and web fonts.
 
 export const styles = {
   body:      { backgroundColor: "#f4f4f4", fontFamily: "Helvetica, Arial, sans-serif", margin: 0, padding: "24px 0" },
   container: { backgroundColor: "#ffffff", maxWidth: "600px", margin: "0 auto", padding: "32px", borderRadius: "8px" },
-  wordmark:  { fontSize: "22px", fontWeight: 700, letterSpacing: "4px", color: "#000000", margin: "0 0 24px" },
+  logo:      { display: "block", border: 0, margin: "0 0 24px" },
   heading:   { fontSize: "22px", fontWeight: 600, color: "#000000", margin: "0 0 12px" },
   text:      { fontSize: "14px", lineHeight: "22px", color: "#222222", margin: "0 0 12px" },
   muted:     { fontSize: "12px", lineHeight: "18px", color: "#777777", margin: 0 },
@@ -25,6 +25,10 @@ export function Label({ children }) {
   return <Text style={styles.label}>{toUpperCaseNoAccents(children)}</Text>;
 }
 
+// Email clients fetch the logo from the live site, so it must be an absolute URL.
+// www, not the bare domain: that one redirects, and some clients don't follow it.
+const logoUrl = `${(process.env.NEXT_PUBLIC_BASE_URL || "https://www.spotteq.com").replace(/\/$/, "")}/logo/logo-email.png`;
+
 export default function EmailLayout({ lang = "el", preview, footer, children }) {
   return (
     <Html lang={lang}>
@@ -32,7 +36,7 @@ export default function EmailLayout({ lang = "el", preview, footer, children }) 
       {preview ? <Preview>{preview}</Preview> : null}
       <Body style={styles.body}>
         <Container style={styles.container}>
-          <Text style={styles.wordmark}>SPOTTEQ</Text>
+          <Img src={logoUrl} width="120" height="34" alt="SPOTTEQ" style={styles.logo} />
           {children}
           <Hr style={styles.hr} />
           <Section>
