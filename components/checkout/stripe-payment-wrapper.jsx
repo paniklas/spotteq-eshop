@@ -104,6 +104,15 @@ const StripePaymentWrapper = ({
         fontWeight: "400",
         color:      "#1a1a1a",
       },
+      // Payment method rows (Card, Apple Pay, Google Pay): bordered like the
+      // inputs, black border on the selected one.
+      ".AccordionItem": {
+        border:    "1px solid #d9d9d9",
+        boxShadow: "none",
+      },
+      ".AccordionItem--selected": {
+        border: "1px solid #000000",
+      },
     },
   };
 
