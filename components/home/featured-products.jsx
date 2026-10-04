@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation"
 import FeaturedProductsSlider from "./featured-products-slider";
 import ProductCarousel from "./product-carousel";
@@ -5,7 +6,12 @@ import { getFeaturedProducts } from "@/sanity/getData/getFeaturedProducts";
 
 
 const FeaturedProducts = async ({ compact = false, locale }) => {
-    const products = await getFeaturedProducts(locale)
+    // Explicit locale: the home page is force-static, so next-intl has no
+    // request to read it from (see stories-that-move).
+    const [products, t] = await Promise.all([
+        getFeaturedProducts(locale),
+        getTranslations({ locale, namespace: "home.featuredProducts" }),
+    ])
 
     if (!products.length) return null
 
@@ -24,9 +30,7 @@ const FeaturedProducts = async ({ compact = false, locale }) => {
                         </h2>
 
                         <p className="font-aeonik text-black-custom text-[16px] xl:text-[18px] leading-[1.45] md:max-w-163 md:mb-12">
-                            A focused line of science-driven formulas for strength, performance,
-                            recovery and everyday health. Explore all our series, flavours and
-                            formats to build the system that works for your body and training.
+                            {t("description")}
                         </p>
 
                         <Link
