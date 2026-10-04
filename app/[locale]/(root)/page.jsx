@@ -30,7 +30,7 @@ const Home = async ({ params }) => {
         <BundleSection locale={locale} />
       </Suspense>
       <FeaturedProducts locale={locale} />
-      <StoriesThatMove />
+      <StoriesThatMove locale={locale} />
       <TrainingBanner />
       <QualitySection />
       <SpotteqImage />

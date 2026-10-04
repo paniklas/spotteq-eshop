@@ -153,3 +153,22 @@ test.describe("UserWay widget", () => {
       .toEqual(["en"]);
   });
 });
+
+// The home page is force-static, so a section that forgets to pass `locale` to
+// getTranslations silently falls back to the default (el) on /en. textContent
+// covers both the mobile and desktop layouts (one of them is always hidden).
+test.describe("Home page translations", () => {
+  for (const { locale, expected, absent } of [
+    { locale: "en", expected: ["Nassos Ghavelas", "Paralympic Champion, SPOTTEQ Ambassador", "Feb 6, 2026", "In elite sport"], absent: "Νάσος Γκαβέλας" },
+    { locale: "el", expected: ["Νάσος Γκαβέλας", "Παραολυμπιονίκης, Brand Ambassador της SPOTTEQ", "6 Φεβ 2026", "Στον πρωταθλητισμό"], absent: "Nassos Ghavelas" },
+  ]) {
+    test(`Stories that move is in ${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}`);
+      const section = page.locator("#stories-that-move-section");
+      for (const text of expected) await expect(section).toContainText(text);
+      await expect(section).not.toContainText(absent);
+      // The heading stays in English on both locales.
+      await expect(section).toContainText("Stories that move");
+    });
+  }
+});

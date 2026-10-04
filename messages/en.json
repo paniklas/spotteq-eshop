@@ -167,5 +167,15 @@
         "accept": "Accept All",
         "decline": "Decline",
         "close": "Close"
+    },
+    "home": {
+        "storiesThatMove": {
+            "name": "Nassos Ghavelas",
+            "role": "Paralympic Champion, SPOTTEQ Ambassador",
+            "quote": "In elite sport, it’s the small details that make the difference. What I appreciate about SPOTTEQ is that it doesn’t promise miracles; it delivers clean, targeted formulas and I know exactly what they do to my body. For me, performance is not just about times and records, but about feeling safe and confident in every training session and every race.",
+            "imageAlt": "Nassos Ghavelas – Paralympic Champion",
+            "previous": "Previous",
+            "next": "Next"
+        }
     }
 }
