@@ -86,3 +86,49 @@ test.describe("404 handling", () => {
     });
   }
 });
+
+test.describe("Cookie banner", () => {
+  const CONSENT_KEY = "spotteq_cookie_consent";
+
+  test("shows translated copy on a first visit", async ({ page }) => {
+    await page.goto("/en");
+    const banner = page.getByTestId("cookie-banner");
+    await expect(banner).toBeVisible();
+    await expect(banner).toContainText("We use cookies");
+  });
+
+  for (const { button, stored } of [
+    { button: "Accept All", stored: "accepted" },
+    { button: "Decline", stored: "declined" },
+  ]) {
+    test(`"${button}" is remembered across reloads`, async ({ page }) => {
+      await page.goto("/en");
+      await page.getByTestId("cookie-banner").getByRole("button", { name: button }).click();
+      await expect(page.getByTestId("cookie-banner")).toBeHidden();
+      expect(await page.evaluate((key) => localStorage.getItem(key), CONSENT_KEY)).toBe(stored);
+
+      await page.reload();
+      await page.waitForLoadState("load");
+      await expect(page.getByTestId("cookie-banner")).toBeHidden();
+    });
+  }
+
+  test("closing hides it for the session only", async ({ page }) => {
+    await page.goto("/en");
+    await page.getByTestId("cookie-banner").getByRole("button", { name: "Close" }).click();
+    await expect(page.getByTestId("cookie-banner")).toBeHidden();
+    expect(await page.evaluate((key) => localStorage.getItem(key), CONSENT_KEY)).toBeNull();
+    expect(await page.evaluate((key) => sessionStorage.getItem(key), CONSENT_KEY)).toBe("dismissed");
+  });
+});
+
+test.describe("UserWay widget", () => {
+  test("loads the widget script with the account id", async ({ page }) => {
+    await page.goto("/el");
+    await expect(page.locator('script[src="https://cdn.userway.org/widget.js"]')).toHaveAttribute(
+      "data-account",
+      "f8N3POMRAT",
+      { timeout: 15000 },
+    );
+  });
+});
