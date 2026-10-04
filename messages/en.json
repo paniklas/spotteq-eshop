@@ -182,6 +182,9 @@
         },
         "bundles": {
             "description": "Curated combinations of products that work together – for strength, performance, recovery and everyday health. Choose a Performance or Clinical bundle to simplify your routine and get a complete SPOTTEQ system in just one step."
+        },
+        "about": {
+            "description": "SPOTTEQ is a performance nutrition brand created for athletes who care about what goes into their body. Each formula is science-driven, clean and clearly labelled, and part of a small, carefully curated line of products designed to support strength, recovery and everyday health in one focused system – like a trusted spotter that’s always there, even when no one else is."
         }
     }
 }

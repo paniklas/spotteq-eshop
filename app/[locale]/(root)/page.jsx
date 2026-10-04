@@ -22,7 +22,7 @@ const Home = async ({ params }) => {
     <>
       <HeroSection locale={locale} />
       <AnnouncementBar locale={locale} />
-      <AboutSection />
+      <AboutSection locale={locale} />
       <Suspense fallback={<ShopBySeriesSkeleton />}>
         <ShopBySeries locale={locale} />
       </Suspense>

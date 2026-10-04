@@ -195,4 +195,16 @@ test.describe("Home page translations", () => {
       await expect(section).not.toContainText(absent);
     });
   }
+
+  for (const { locale, expected, absent } of [
+    { locale: "en", expected: "SPOTTEQ is a performance nutrition brand", absent: "Η SPOTTEQ είναι ένα brand αθλητικής διατροφής" },
+    { locale: "el", expected: "Η SPOTTEQ είναι ένα brand αθλητικής διατροφής", absent: "SPOTTEQ is a performance nutrition brand" },
+  ]) {
+    test(`About description is in ${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}`);
+      const section = page.locator("#about-section");
+      await expect(section).toContainText(expected);
+      await expect(section).not.toContainText(absent);
+    });
+  }
 });
