@@ -131,4 +131,25 @@ test.describe("UserWay widget", () => {
       { timeout: 15000 },
     );
   });
+
+  // UserWay picks its language once at startup, so an in-app locale switch has
+  // to tell it. The real widget is blocked and stubbed so the test can see the call.
+  test("follows an in-app locale switch", async ({ page, isMobile }) => {
+    test.skip(isMobile, "The navbar language toggle is desktop-only");
+    await page.route("https://cdn.userway.org/**", (route) => route.abort());
+    await page.goto("/el");
+    await page.waitForLoadState("load");
+    await page.evaluate(() => {
+      window.__userwayLangCalls = [];
+      window.UserWay = { changeWidgetLanguage: (lang) => window.__userwayLangCalls.push(lang) };
+    });
+
+    await page.getByRole("button", { name: "Switch to English" }).click();
+    await expect(page).toHaveURL(/\/en$/);
+    // Deduped: the locale switch remounts the [locale] layout, and dev Strict
+    // Mode runs that mount effect twice.
+    await expect
+      .poll(() => page.evaluate(() => [...new Set(window.__userwayLangCalls)]))
+      .toEqual(["en"]);
+  });
 });
