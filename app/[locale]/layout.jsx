@@ -1,9 +1,11 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { notFound } from 'next/navigation';
+import Script from 'next/script';
 import { Toaster } from "@/components/ui/sonner";
 // components
 import LocaleLanguageSetter from "@/components/common/locale-lng-setter";
 import FavouritesHydrator from "@/components/common/favourites-hydrator";
+import CookieBanner from "@/components/common/cookie-banner";
 import SmoothScrolling from "@/utils/SmoothScrolling";
 import Navbar from '@/components/common/navbar';
 import { CartProvider } from '@/context/cart-context';
@@ -56,12 +58,21 @@ export default async function LocaleLayout({ children, params }) {
                     </main>
                 </SmoothScrolling>
                 </CartProvider>
+                <CookieBanner />
                 <Toaster richColors toastOptions={{
                     duration: 5000,
                     closeButton: true
                 }} />
             </NextIntlClientProvider>
             <SanityLive />
+            {/* UserWay accessibility widget. Lives here rather than in the root
+                layout so it stays out of Sanity Studio and /sso-callback;
+                lazyOnload keeps it off the critical path (hero, Stripe). */}
+            <Script
+                src="https://cdn.userway.org/widget.js"
+                data-account="f8N3POMRAT"
+                strategy="lazyOnload"
+            />
         </>
     );
 }

@@ -160,5 +160,12 @@
         "description": "The page you're looking for may have been moved, deleted, or never existed.",
         "cta": "Back to Home",
         "homeAriaLabel": "Back to SPOTTEQ home"
+    },
+    "cookieBanner": {
+        "title": "We use cookies",
+        "description": "We use cookies to improve your experience.",
+        "accept": "Accept All",
+        "decline": "Decline",
+        "close": "Close"
     }
 }
