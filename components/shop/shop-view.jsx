@@ -1,6 +1,12 @@
+import { getTranslations } from "next-intl/server";
 import ShopFilters from "@/components/shop/shop-filters";
 
-const ShopView = ({ children, categories = [], bundles = [], total, activeSlug, activeBundleSlug, activeBundlesPage = false, heading = "Shop All", description }) => {
+const ShopView = async ({ children, categories = [], bundles = [], total, activeSlug, activeBundleSlug, activeBundlesPage = false, heading = "Shop All", description, locale }) => {
+    // Without a page/category description, fall back to the home page's Featured
+    // Products text. The locale is passed explicitly, as on the force-static home
+    // page, so this works whether or not the page is statically rendered.
+    const shownDescription = description ?? (await getTranslations({ locale, namespace: "home.featuredProducts" }))("description")
+
     const grouped = categories.reduce((acc, cat) => {
         const key = cat.group || "other"
         if (!acc[key]) acc[key] = { title: cat.groupTitle || key, sortOrder: cat.groupSortOrder ?? 999, items: [] }
@@ -31,7 +37,7 @@ const ShopView = ({ children, categories = [], bundles = [], total, activeSlug, 
                         </h1>
 
                         <p className="font-aeonik text-[14px] xl:text-[18px] text-black-custom leading-relaxed mb-10">
-                            {description ?? "A focused line of science-driven formulas for strength, performance, recovery and everyday health. Explore all our series, flavours and formats to build the system that works for your body and training."}
+                            {shownDescription}
                         </p>
 
                         <ShopFilters

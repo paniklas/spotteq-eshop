@@ -222,4 +222,17 @@ test.describe("Home page translations", () => {
       await expect(section).not.toContainText(absent);
     });
   }
+
+  // Shop All has no description of its own and falls back to the Featured Products text.
+  for (const { locale, expected, absent } of [
+    { locale: "en", expected: "A focused line of science-driven formulas", absent: "Μια στοχευμένη σειρά προϊόντων" },
+    { locale: "el", expected: "Μια στοχευμένη σειρά προϊόντων", absent: "A focused line of science-driven formulas" },
+  ]) {
+    test(`Shop All description is in ${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}/shop/shop-all`);
+      const main = page.locator("main");
+      await expect(main).toContainText(expected);
+      await expect(main).not.toContainText(absent);
+    });
+  }
 });
