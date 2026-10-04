@@ -20,7 +20,8 @@ const StoriesThatMove = () => {
                             src={AMBASSADOR_IMG}
                             alt="Nassos Ghavelas – Paralympic Champion"
                             fill
-                            sizes="100vw"
+                            // Full width minus the page-x gutters (px-6) on mobile
+                            sizes="calc(100vw - 48px)"
                             className="object-cover"
                         />
                     </div>
