@@ -183,4 +183,16 @@ test.describe("Home page translations", () => {
       await expect(section).not.toContainText(absent);
     });
   }
+
+  for (const { locale, expected, absent } of [
+    { locale: "en", expected: "Curated combinations of products that work together", absent: "Προσεκτικά επιλεγμένοι συνδυασμοί" },
+    { locale: "el", expected: "Προσεκτικά επιλεγμένοι συνδυασμοί", absent: "Curated combinations of products that work together" },
+  ]) {
+    test(`Bundles description is in ${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}`);
+      const section = page.locator("#bundle-section");
+      await expect(section).toContainText(expected);
+      await expect(section).not.toContainText(absent);
+    });
+  }
 });

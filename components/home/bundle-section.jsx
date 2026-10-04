@@ -1,10 +1,16 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import BundleCard from "./bundle-card";
 import BundleCarousel from "./bundle-carousel";
 import { getAllBundles } from "@/sanity/getData/getAllBundles";
 
 const BundleSection = async ({ locale }) => {
-    const bundles = await getAllBundles(locale)
+    // Explicit locale: the home page is force-static, so next-intl has no
+    // request to read it from (see stories-that-move).
+    const [bundles, t] = await Promise.all([
+        getAllBundles(locale),
+        getTranslations({ locale, namespace: "home.bundles" }),
+    ])
 
     return (
         <section
@@ -18,10 +24,7 @@ const BundleSection = async ({ locale }) => {
                         Our Bundles
                     </h2>
                     <p className="font-aeonik text-black-custom text-[16px] xl:text-[18px] leading-[1.2] md:max-w-175">
-                        Curated combinations of products that work together – for strength,
-                        performance, recovery and everyday health. Choose a Performance or
-                        Clinical bundle to simplify your routine and get a complete SPOTTEQ
-                        system in just one step.
+                        {t("description")}
                     </p>
                     <Link
                         href="/shop/bundles"

@@ -179,6 +179,9 @@
         },
         "featuredProducts": {
             "description": "A focused line of science-driven formulas for strength, performance, recovery and everyday health. Explore all our series, flavours and formats to build the system that works for your body and training."
+        },
+        "bundles": {
+            "description": "Curated combinations of products that work together – for strength, performance, recovery and everyday health. Choose a Performance or Clinical bundle to simplify your routine and get a complete SPOTTEQ system in just one step."
         }
     }
 }
