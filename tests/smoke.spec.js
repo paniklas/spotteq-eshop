@@ -134,23 +134,23 @@ test.describe("UserWay widget", () => {
 
   // UserWay picks its language once at startup, so an in-app locale switch has
   // to tell it. The real widget is blocked and stubbed so the test can see the call.
+  // The stub is installed before any page script: in dev, hydration can finish
+  // after "load", so a stub added later raced LocaleLanguageSetter's mount call.
   test("follows an in-app locale switch", async ({ page, isMobile }) => {
     test.skip(isMobile, "The navbar language toggle is desktop-only");
     await page.route("https://cdn.userway.org/**", (route) => route.abort());
-    await page.goto("/el");
-    await page.waitForLoadState("load");
-    await page.evaluate(() => {
+    await page.addInitScript(() => {
       window.__userwayLangCalls = [];
       window.UserWay = { changeWidgetLanguage: (lang) => window.__userwayLangCalls.push(lang) };
     });
+    await page.goto("/el");
+    // LocaleLanguageSetter reports "el" on mount: the page has hydrated, so the
+    // toggle's click handler is attached.
+    await expect.poll(() => page.evaluate(() => window.__userwayLangCalls)).toContain("el");
 
     await page.getByRole("button", { name: "Switch to English" }).click();
     await expect(page).toHaveURL(/\/en$/);
-    // Deduped: the locale switch remounts the [locale] layout, and dev Strict
-    // Mode runs that mount effect twice.
-    await expect
-      .poll(() => page.evaluate(() => [...new Set(window.__userwayLangCalls)]))
-      .toEqual(["en"]);
+    await expect.poll(() => page.evaluate(() => window.__userwayLangCalls.at(-1))).toBe("en");
   });
 });
 
