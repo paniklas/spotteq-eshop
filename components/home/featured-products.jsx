@@ -35,6 +35,7 @@ const FeaturedProducts = async ({ compact = false, locale }) => {
 
                         <Link
                             href="/shop/shop-all"
+                            locale={locale}
                             className="hidden xl:inline-flex items-center justify-center h-10.25 w-35 bg-black rounded-[20.5px] font-aeonik text-white text-[14px] hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out shrink-0 self-center"
                         >
                             SHOP ALL
@@ -46,6 +47,7 @@ const FeaturedProducts = async ({ compact = false, locale }) => {
                 {!compact && (
                     <Link
                         href="/shop/shop-all"
+                        locale={locale}
                         className="md:hidden inline-flex items-center justify-center h-7 xl:h-11 w-35 bg-black rounded-[21px] font-aeonik text-white text-[14px] mt-6 mb-8"
                     >
                         SHOP ALL
@@ -67,6 +69,7 @@ const FeaturedProducts = async ({ compact = false, locale }) => {
                     <div className="mt-10 hidden md:flex justify-center xl:hidden">
                         <Link
                             href="/shop/shop-all"
+                            locale={locale}
                             className="inline-flex items-center justify-center h-10.25 w-35 bg-black rounded-[21px] font-aeonik text-white text-[14px] hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out"
                         >
                             SHOP ALL

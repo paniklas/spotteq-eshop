@@ -154,6 +154,21 @@ test.describe("UserWay widget", () => {
   });
 });
 
+// Same force-static pitfall for links: a Server Component's i18n <Link> without
+// an explicit `locale` falls back to el, sending /en visitors to Greek pages.
+test.describe("Home page links keep the locale", () => {
+  for (const { locale, other } of [
+    { locale: "en", other: "el" },
+    { locale: "el", other: "en" },
+  ]) {
+    test(`no /${other}/ links on /${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}`);
+      const hrefs = await page.locator("main a[href]").evaluateAll((as) => as.map((a) => a.getAttribute("href")));
+      expect(hrefs.filter((h) => h.startsWith(`/${other}/`) || h === `/${other}`)).toEqual([]);
+    });
+  }
+});
+
 // The home page is force-static, so a section that forgets to pass `locale` to
 // getTranslations silently falls back to the default (el) on /en. textContent
 // covers both the mobile and desktop layouts (one of them is always hidden).

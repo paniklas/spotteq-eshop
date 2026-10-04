@@ -51,7 +51,9 @@ const paymentMethods = [
     { icon: "/images/pay-mc.png", label: "Mastercard", width: 50, height: 44 },
 ];
 
-const Footer = () => {
+// `locale` is passed explicitly: on the force-static home page the server
+// i18n Link has no request to read it from and would fall back to el.
+const Footer = ({ locale }) => {
     return (
         <footer id="footer-section" className="w-full bg-white-custom pt-5 xl:pt-42">
             {/* Top section: Newsletter (left) + Links (right) + Back-to-top */}
@@ -77,7 +79,7 @@ const Footer = () => {
                                             {col.links.map((link) => (
                                                 <li key={link.label}>
                                                     {link.href ? (
-                                                        <Link href={link.href} className={footerLinkClass}>
+                                                        <Link href={link.href} locale={locale} className={footerLinkClass}>
                                                             {link.label}
                                                         </Link>
                                                     ) : (
