@@ -13,10 +13,12 @@ import { effectiveShippingCost } from "@/utils/shippingCost";
 
 // Payment icons + footer links — shared between the desktop summary card and
 // the standalone mobile block (rendered at the bottom of the checkout page).
-// eagerIcons: only the desktop summary passes it, where the icons are above the
-// fold and Next.js reports them as the Largest Contentful Paint; at the bottom of
-// the mobile page they stay lazy.
-export const PaymentAndLinks = ({ eagerIcons = false }) => (
+// Both copies are always in the DOM (CSS hides one), so the icons are eager in
+// both: in the desktop summary they are the Largest Contentful Paint, and Next.js
+// tracks images by src, so a lazy mobile copy rendered after it made the LCP
+// check report the desktop icons as lazy. The hidden eager copy already fetches
+// the file on mobile, so lazy loading there saved nothing.
+export const PaymentAndLinks = () => (
     <>
         {/* Payment icons */}
         <div className="flex justify-end xl:mt-28">
@@ -26,7 +28,7 @@ export const PaymentAndLinks = ({ eagerIcons = false }) => (
                 width={240}
                 height={32}
                 unoptimized
-                loading={eagerIcons ? "eager" : "lazy"}
+                loading="eager"
                 className="h-5 w-auto object-contain"
             />
         </div>
@@ -159,14 +161,17 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
                             {/* Image */}
                             <div className="relative w-20 h-24 shrink-0 flex items-center justify-center">
                                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full aspect-375/572 bg-gray-soft rounded-full z-0" />
-                                <Image
-                                    src={item.image}
-                                    alt={item.name}
-                                    width={64}
-                                    height={64}
-                                    unoptimized
-                                    className="w-[75%] h-[75%] object-contain relative z-1"
-                                />
+                                {/* image is "" for products/bundles without one in Sanity */}
+                                {item.image && (
+                                    <Image
+                                        src={item.image}
+                                        alt={item.name}
+                                        width={64}
+                                        height={64}
+                                        unoptimized
+                                        className="w-[75%] h-[75%] object-contain relative z-1"
+                                    />
+                                )}
                             </div>
 
                             {/* Details */}
@@ -284,7 +289,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
             </div>
             </div>
 
-            {showFooterLinks && <PaymentAndLinks eagerIcons />}
+            {showFooterLinks && <PaymentAndLinks />}
         </div>
     )
 }

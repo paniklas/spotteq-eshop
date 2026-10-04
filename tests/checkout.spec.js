@@ -21,7 +21,7 @@ test.describe("Checkout form validation", () => {
               qty: 1,
               price: 29.99,
               inventory: 10,
-              title: "Test Product",
+              name: "Test Product",
             },
           ],
         },

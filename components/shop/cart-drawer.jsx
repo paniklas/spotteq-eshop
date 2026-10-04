@@ -179,14 +179,17 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                                     className="relative w-24 h-28 shrink-0 flex items-center justify-center"
                                 >
                                     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full aspect-375/572 bg-gray-soft rounded-full z-0" />
-                                    <Image
-                                        src={item.image}
-                                        alt={item.name}
-                                        width={80}
-                                        height={80}
-                                        unoptimized
-                                        className="w-[75%] h-[75%] object-contain relative z-1"
-                                    />
+                                    {/* image is "" for products/bundles without one in Sanity */}
+                                    {item.image && (
+                                        <Image
+                                            src={item.image}
+                                            alt={item.name}
+                                            width={80}
+                                            height={80}
+                                            unoptimized
+                                            className="w-[75%] h-[75%] object-contain relative z-1"
+                                        />
+                                    )}
                                 </Link>
 
                                 {/* Name left — price + qty + remove stacked on the right */}
