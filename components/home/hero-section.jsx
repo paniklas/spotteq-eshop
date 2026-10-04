@@ -1,8 +1,10 @@
+import { preload } from "react-dom";
 import { Link } from "@/i18n/navigation";
 import { getFirstOrderPromoPercentForDisplay } from "@/sanity/getData/getFirstOrderPromo";
 import { getHeroImages } from "@/sanity/getData/getHeroImages";
 import HeroPromoBar from "./hero-promo-bar";
 import HeroProductSlider from "./hero-product-slider";
+import HeroVideo from "./hero-video";
 
 // Shown until product images are added in Studio (Site Settings → Home Page).
 const FALLBACK_HERO_IMAGE = {
@@ -13,6 +15,9 @@ const FALLBACK_HERO_IMAGE = {
 };
 
 const HeroSection = async ({ locale }) => {
+
+    // The video poster is the mobile LCP element: fetch it at high priority from <head>.
+    preload("/videos/hero-poster.webp", { as: "image", fetchPriority: "high" });
 
     // Advertised percentage comes from the same Studio setting that grants the
     // discount at checkout, so the two can never drift apart.
@@ -32,18 +37,7 @@ const HeroSection = async ({ locale }) => {
             id="hero-section"
             className="relative w-full overflow-hidden flex flex-col bg-white-custom md:min-h-255">
             {/* Background video — covers the top region on mobile, the full section on desktop */}
-            <video
-                className="absolute inset-x-0 top-0 h-168 md:h-full w-full object-cover z-0"
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="auto"
-                poster="/videos/hero-poster.webp"
-            >
-                <source src="/videos/hero-video.webm" type="video/webm" />
-                <source src="/videos/hero-video.mp4" type="video/mp4" />
-            </video>
+            <HeroVideo className="absolute inset-x-0 top-0 h-168 md:h-full w-full object-cover z-0" />
 
             {/* ---------------- Mobile / tablet layout (below md) ---------------- */}
             <div className="md:hidden relative z-10 flex flex-col">
