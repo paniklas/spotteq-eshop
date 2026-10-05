@@ -253,5 +253,14 @@
         "completeYourRoutine": "Complete Your Routine",
         "ingredients": "Ingredients",
         "directionsForUse": "Direction for Use"
+    },
+    "cart": {
+        "title": "Your bag",
+        "items": "{count, plural, one {# ITEM} other {# ITEMS}}",
+        "freeShippingRemaining": "You are {amount}€ away from FREE SHIPPING!",
+        "couponCode": "COUPON CODE /",
+        "giftCard": "GIFT CARD",
+        "total": "TOTAL",
+        "checkout": "PROCEED TO CHECKOUT"
     }
 }

@@ -253,5 +253,14 @@
         "completeYourRoutine": "Ολοκλήρωσε τη ρουτίνα σου",
         "ingredients": "Συστατικά",
         "directionsForUse": "Οδηγίες χρήσης"
+    },
+    "cart": {
+        "title": "Το καλάθι σου",
+        "items": "{count, plural, one {# ΠΡΟΪΟΝ} other {# ΠΡΟΪΟΝΤΑ}}",
+        "freeShippingRemaining": "Σου λείπουν {amount}€ για ΔΩΡΕΑΝ ΑΠΟΣΤΟΛΗ!",
+        "couponCode": "ΚΩΔΙΚΟΣ ΚΟΥΠΟΝΙΟΥ /",
+        "giftCard": "ΔΩΡΟΚΑΡΤΑ",
+        "total": "ΣΥΝΟΛΟ",
+        "checkout": "ΟΛΟΚΛΗΡΩΣΗ ΑΓΟΡΑΣ"
     }
 }

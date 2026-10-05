@@ -8,6 +8,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { useCartStore } from "@/store/cart-store"
 import { formatPrice } from "@/utils/formatPrice"
 import { validateCoupon } from "@/app/actions/coupon"
+import { useTranslations } from "next-intl"
 
 
 const CheckoutModal = ({ onClose, onCloseAll, onGuest }) => (
@@ -48,6 +49,7 @@ const CheckoutModal = ({ onClose, onCloseAll, onGuest }) => (
 )
 
 const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
+    const t = useTranslations("cart")
     const { cartItems, cartOpen, closeCart, removeFromCart, updateQty, appliedCoupon, couponDiscount, applyCoupon, removeCoupon } = useCartStore()
 
     const bundleSuggestions = useMemo(() => {
@@ -134,9 +136,9 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                 <div className="px-4 xl:px-8 pt-8 pb-0">
                     <div className="flex items-center justify-between">
                         <div className="flex items-baseline gap-3">
-                            <h2 className="font-aeonik text-[20px] md:text-[28px] xl:text-[35px] text-black-custom">Your bag</h2>
+                            <h2 className="font-aeonik text-[20px] md:text-[28px] xl:text-[35px] text-black-custom">{t("title")}</h2>
                             <span className="font-aeonik text-[13px] xl:text-[18px] text-black-custom underline">
-                                {cartItems.reduce((sum, i) => sum + i.qty, 0)} {cartItems.reduce((sum, i) => sum + i.qty, 0) === 1 ? "ITEM" : "ITEMS"}
+                                {t("items", { count: cartItems.reduce((sum, i) => sum + i.qty, 0) })}
                             </span>
                         </div>
                         <button onClick={handleDrawerClose} className="p-1 hover:opacity-60 transition-opacity duration-200 cursor-pointer">
@@ -157,7 +159,7 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                     <div className="px-4 xl:px-8 pt-4 pb-4">
                         <p className="font-aeonik text-[13px] xl:text-[22px] text-black-custom">
                             {remaining > 0
-                                ? `You are ${formatPrice(remaining)}€ away from FREE SHIPPING!`
+                                ? t("freeShippingRemaining", { amount: formatPrice(remaining) })
                                 : "You've unlocked FREE SHIPPING!"}
                         </p>
                     </div>
@@ -329,7 +331,7 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                         <div className="mb-6">
                             <div className="flex items-center gap-4">
                                 <span className="font-aeonik text-[11px] xl:text-[14px] uppercase text-black-custom leading-tight shrink-0">
-                                    COUPON CODE /<br />GIFT CARD
+                                    {t("couponCode")}<br />{t("giftCard")}
                                 </span>
                                 <div className="flex-1 flex items-center border border-gray-mint rounded-sm">
                                     <input
@@ -370,7 +372,7 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                             </>
                         )}
                         <div className="flex items-center justify-between">
-                            <span className="font-aeonik text-[13px] xl:text-[14px] uppercase text-black-custom">TOTAL</span>
+                            <span className="font-aeonik text-[13px] xl:text-[14px] uppercase text-black-custom">{t("total")}</span>
                             <span className="font-aeonik text-[20px] xl:text-[30px] font-bold text-black-custom">{formatPrice(total)}€</span>
                         </div>
                     </div>
@@ -381,7 +383,7 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                         disabled={!userLoaded || cartItems.length === 0}
                         className="w-full h-12 bg-black-custom font-aeonik text-[14px] xl:text-[16px] uppercase text-white-custom rounded-[18px] hover:bg-gray-text transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
                     >
-                        PROCEED TO CHECKOUT
+                        {t("checkout")}
                     </button>
                     </div>
                 </div>

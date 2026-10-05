@@ -334,3 +334,26 @@ test.describe("Product copy translations", () => {
     });
   }
 });
+
+// The cart drawer is always in the DOM (off-screen when closed). The seeded item
+// (qty 2, 1€) shows the coupon field and keeps the subtotal under the free
+// shipping threshold.
+test.describe("Cart drawer translations", () => {
+  for (const { locale, expected, absent } of [
+    { locale: "en", expected: ["Your bag", "2 ITEMS", /You are \d+,\d{2}€ away from FREE SHIPPING!/, "COUPON CODE /", "GIFT CARD", "TOTAL", "PROCEED TO CHECKOUT"], absent: "Το καλάθι σου" },
+    { locale: "el", expected: ["Το καλάθι σου", "2 ΠΡΟΪΟΝΤΑ", /Σου λείπουν \d+,\d{2}€ για ΔΩΡΕΑΝ ΑΠΟΣΤΟΛΗ!/, "ΚΩΔΙΚΟΣ ΚΟΥΠΟΝΙΟΥ /", "ΔΩΡΟΚΑΡΤΑ", "ΣΥΝΟΛΟ", "ΟΛΟΚΛΗΡΩΣΗ ΑΓΟΡΑΣ"], absent: "Your bag" },
+  ]) {
+    test(`cart drawer on /${locale}`, async ({ page }) => {
+      await page.addInitScript(() => {
+        localStorage.setItem("spotteq-cart-v2", JSON.stringify({
+          state: { cartItems: [{ id: "test-product-id", type: "product", cartId: "test-cart-id", qty: 2, price: 1, inventory: 10, name: "Test Product" }] },
+          version: 0,
+        }));
+      });
+      await page.goto(`/${locale}`);
+      const body = page.locator("body");
+      for (const text of expected) await expect(body).toContainText(text);
+      await expect(body).not.toContainText(absent);
+    });
+  }
+});
