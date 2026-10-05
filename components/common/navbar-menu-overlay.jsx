@@ -23,6 +23,7 @@ const BRAND_SUPPORT = [
 
 const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }) => {
     const t = useTranslations("navMenu");
+    const tFooter = useTranslations("footer");
     const fade = (delay) => ({
         opacity: isOpen ? 1 : 0,
         transition: `opacity 380ms ease ${isOpen ? delay : 0}ms`,
@@ -98,11 +99,12 @@ const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }
                 {/* Information + Terms */}
                 <div className="flex flex-col gap-8 mt-10">
                     <div>
-                        <h4 className="font-aeonik text-[13px] uppercase text-black-custom mb-4">Information</h4>
+                        {/* Same heading and labels as the footer's Information column */}
+                        <h4 className="font-aeonik text-[13px] uppercase text-black-custom mb-4">{tFooter("headings.information")}</h4>
                         <div className="flex flex-col gap-2">
-                            {["Payment & Security", "Shipping & Returns"].map((t) => (
-                                <Link key={t} href="#" onClick={isOnClose} tabIndex={isOpen ? 0 : -1} className="font-aeonik text-[13px] uppercase text-black-custom hover:opacity-60 transition-opacity">
-                                    {t}
+                            {["shippingPayments", "returns"].map((key) => (
+                                <Link key={key} href="#" onClick={isOnClose} tabIndex={isOpen ? 0 : -1} className="font-aeonik text-[13px] uppercase text-black-custom hover:opacity-60 transition-opacity">
+                                    {tFooter(`links.${key}`)}
                                 </Link>
                             ))}
                         </div>

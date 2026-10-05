@@ -234,5 +234,14 @@
                 "sub": "Επικοινώνησε με την ομάδα της SPOTTEQ"
             }
         }
+    },
+    "shopFilters": {
+        "allProducts": "Όλα τα προϊόντα",
+        "allBundles": "Όλα τα Bundles",
+        "shopBy": "{group}",
+        "shopByBundle": "Bundles",
+        "results": "{total, plural, one {# αποτέλεσμα} other {# αποτελέσματα}}",
+        "filters": "Φίλτρα",
+        "close": "Κλείσιμο"
     }
 }

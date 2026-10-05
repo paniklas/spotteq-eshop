@@ -194,15 +194,31 @@ test.describe("Footer translations", () => {
 // copy is checked; group, category and bundle names come from Sanity.
 test.describe("Menu translations", () => {
   for (const { locale, expected, absent } of [
-    { locale: "en", expected: ["View all products", "About", "Who we are and what we stand for", "Get in touch with the SPOTTEQ team", "Shop by "], absent: "Όλα τα προϊόντα" },
+    { locale: "en", expected: ["View all products", "About", "Who we are and what we stand for", "Get in touch with the SPOTTEQ team", "Shop by ", "SHIPPING & PAYMENTS", "RETURNS POLICY"], absent: "Όλα τα προϊόντα" },
     // Greek has no "Shop by" prefix: the Sanity group titles read "Ανά Σειρά" / "Ανά Στόχο".
-    { locale: "el", expected: ["Όλα τα προϊόντα", "Σχετικά", "Ποιοι είμαστε και τι πρεσβεύουμε", "Επικοινώνησε με την ομάδα της SPOTTEQ", "Επικοινωνία"], absent: "Shop by " },
+    { locale: "el", expected: ["Όλα τα προϊόντα", "Σχετικά", "Ποιοι είμαστε και τι πρεσβεύουμε", "Επικοινώνησε με την ομάδα της SPOTTEQ", "Επικοινωνία", "ΑΠΟΣΤΟΛΕΣ & ΠΛΗΡΩΜΕΣ", "ΠΟΛΙΤΙΚΗ ΕΠΙΣΤΡΟΦΩΝ"], absent: "Shop by " },
   ]) {
     test(`menu on /${locale}`, async ({ page }) => {
       await page.goto(`/${locale}`);
       const menu = page.locator('[aria-label="Site navigation"]');
       for (const text of expected) await expect(menu).toContainText(text);
       await expect(menu).not.toContainText(absent);
+    });
+  }
+});
+
+// Shop sidebar (client component). Category and group names come from Sanity;
+// Greek has no "SHOP BY" prefix because its group titles read "Ανά …".
+test.describe("Shop sidebar translations", () => {
+  for (const { locale, expected, absent } of [
+    { locale: "en", expected: ["All Products", "All Bundles", "SHOP BY ", "SHOP BY BUNDLE", "Results", "Filters"], absent: "Όλα τα προϊόντα" },
+    { locale: "el", expected: ["Όλα τα προϊόντα", "Όλα τα Bundles", "Bundles", "αποτελέσματα", "Φίλτρα", "Κλείσιμο"], absent: "SHOP BY" },
+  ]) {
+    test(`Shop All sidebar on /${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}/shop/shop-all`);
+      const main = page.locator("main");
+      for (const text of expected) await expect(main).toContainText(text);
+      await expect(main).not.toContainText(absent);
     });
   }
 });

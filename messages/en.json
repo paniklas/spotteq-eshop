@@ -234,5 +234,14 @@
                 "sub": "Get in touch with the SPOTTEQ team"
             }
         }
+    },
+    "shopFilters": {
+        "allProducts": "All Products",
+        "allBundles": "All Bundles",
+        "shopBy": "SHOP BY {group}",
+        "shopByBundle": "SHOP BY BUNDLE",
+        "results": "{total, plural, one {# Result} other {# Results}}",
+        "filters": "Filters",
+        "close": "Close"
     }
 }
