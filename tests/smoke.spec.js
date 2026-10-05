@@ -302,3 +302,35 @@ test.describe("Home page translations", () => {
     });
   }
 });
+
+// Product copy that lives in code (client components); titles, flavours and
+// accordion bodies come from Sanity.
+test.describe("Product copy translations", () => {
+  for (const { locale, expected, absent } of [
+    { locale: "en", expected: ["ADD TO BAG", "VIEW DETAILS"], absent: "ΠΡΟΣΘΗΚΗ ΣΤΟ ΚΑΛΑΘΙ" },
+    { locale: "el", expected: ["ΠΡΟΣΘΗΚΗ ΣΤΟ ΚΑΛΑΘΙ", "ΔΕΣ ΛΕΠΤΟΜΕΡΕΙΕΣ"], absent: "ADD TO BAG" },
+  ]) {
+    test(`home product and bundle cards on /${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}`);
+      for (const id of ["#featured-products-section", "#bundle-section"]) {
+        const section = page.locator(id);
+        for (const text of expected) await expect(section).toContainText(text);
+        await expect(section).not.toContainText(absent);
+      }
+    });
+  }
+
+  for (const { locale, expected, absent } of [
+    { locale: "en", expected: ["Back", "ADD TO BAG"], absent: "ΠΡΟΣΘΗΚΗ ΣΤΟ ΚΑΛΑΘΙ" },
+    { locale: "el", expected: ["Πίσω", "ΠΡΟΣΘΗΚΗ ΣΤΟ ΚΑΛΑΘΙ"], absent: "ADD TO BAG" },
+  ]) {
+    test(`product page on /${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}/shop/shop-all`);
+      const href = await page.locator(`main a[href*="/shop/product/"]`).first().getAttribute("href");
+      await page.goto(href);
+      const main = page.locator("main");
+      for (const text of expected) await expect(main).toContainText(text);
+      await expect(main).not.toContainText(absent);
+    });
+  }
+});

@@ -11,6 +11,7 @@ import { useFavouritesStore } from "@/store/favourites-store";
 import { useFavouritesHydrated } from "@/hooks/use-favourites-hydrated";
 import { formatPrice } from "@/utils/formatPrice";
 import { PortableText } from "@portabletext/react";
+import { useTranslations } from "next-intl";
 
 
 const AccordionItem = ({ label, children }) => {
@@ -43,6 +44,7 @@ const AccordionItem = ({ label, children }) => {
 }
 
 const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = [] }) => {
+    const t = useTranslations("product")
     const router = useRouter()
     const [quantity, setQuantity] = useState(1)
     const [flavourOpen, setFlavourOpen] = useState(false)
@@ -141,7 +143,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                                 className="transition-transform duration-300 group-hover:-translate-x-1"
                             />
                             <span className="relative font-aeonik text-[14px] xl:text-[16px] text-black-custom">
-                                Back
+                                {t("back")}
                                 <span className="absolute bottom-0 left-0 h-px w-0 bg-black-custom group-hover:w-full transition-all duration-500 ease-out" />
                             </span>
                         </button>
@@ -409,7 +411,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                                 }}
                                 className="flex-1 flex items-center justify-center px-6 py-4 md:h-12 md:px-0 md:py-0 bg-black-custom rounded-full font-aeonik text-[16px] uppercase text-white-custom hover:bg-gray-text transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                             >
-                                {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : "ADD TO BAG"}
+                                {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : t("addToBag")}
                             </button>
                             <button
                                 onClick={handleQuickBuy}
@@ -425,14 +427,14 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                         {/* Accordions */}
                         <div className="flex flex-col gap-3 pt-2">
                             {product.productDetails?.ingredients?.length > 0 && (
-                                <AccordionItem label="Ingredients">
+                                <AccordionItem label={t("ingredients")}>
                                     <div className="[&_p]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 text-black-custom">
                                         <PortableText value={product.productDetails.ingredients} />
                                     </div>
                                 </AccordionItem>
                             )}
                             {product.productDetails?.directions?.length > 0 && (
-                                <AccordionItem label="Direction for Use">
+                                <AccordionItem label={t("directionsForUse")}>
                                     <div className="[&_p]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 text-black-custom">
                                         <PortableText value={product.productDetails.directions} />
                                     </div>
@@ -444,7 +446,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                         {bundleCallouts?.length > 0 && (
                             <div className="pt-4">
                                 <p className="font-aeonik text-[11px] xl:text-[14px] uppercase text-black-custom mb-4">
-                                    Also Available as a Bundle
+                                    {t("alsoAvailableAsBundle")}
                                 </p>
                                 <div className="flex flex-col gap-3">
                                     {bundleCallouts.map((bundle) => {
@@ -510,7 +512,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                         {relatedProducts?.length > 0 && (
                             <div className="pt-4">
                                 <p className="font-aeonik text-[11px] xl:text-[14px] uppercase text-black-custom mb-5">
-                                    Complete Your Routine
+                                    {t("completeYourRoutine")}
                                 </p>
                                 <div className="flex gap-4">
                                     {relatedProducts.map((rp) => {
@@ -555,7 +557,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                                                     onClick={() => addToCart({ id: rp._id, type: "product", slug: rp.slug, name: rp.title, subtitle: rp.flavourName ? [rp.flavourName] : [], price: rpEffectivePrice, image: rp.imageUrl, flavour: rp.flavourName || "" })}
                                                     className="w-full md:w-auto flex items-center justify-center gap-2 px-4 md:px-8 h-9 xl:h-11 bg-black-custom rounded-full font-aeonik text-[11px] xl:text-[16px] mt-10 xl:mt-0 uppercase text-white-custom hover:bg-gray-text transition-colors duration-300 cursor-pointer"
                                                 >
-                                                    <span>Add to Bag</span>
+                                                    <span>{t("addToBag")}</span>
                                                     {/* Price — mobile only, shown inside the button */}
                                                     <span className="md:hidden flex items-baseline gap-1.5">
                                                         <span>{formatPrice(rpEffectivePrice)}€</span>

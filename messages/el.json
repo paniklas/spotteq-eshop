@@ -244,5 +244,14 @@
         "results": "{total, plural, one {# αποτέλεσμα} other {# αποτελέσματα}}",
         "filters": "Φίλτρα",
         "close": "Κλείσιμο"
+    },
+    "product": {
+        "addToBag": "ΠΡΟΣΘΗΚΗ ΣΤΟ ΚΑΛΑΘΙ",
+        "viewDetails": "ΔΕΣ ΛΕΠΤΟΜΕΡΕΙΕΣ",
+        "back": "Πίσω",
+        "alsoAvailableAsBundle": "Διαθέσιμο και σε Bundle",
+        "completeYourRoutine": "Ολοκλήρωσε τη ρουτίνα σου",
+        "ingredients": "Συστατικά",
+        "directionsForUse": "Οδηγίες χρήσης"
     }
 }

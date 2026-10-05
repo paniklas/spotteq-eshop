@@ -244,5 +244,14 @@
         "results": "{total, plural, one {# Result} other {# Results}}",
         "filters": "Filters",
         "close": "Close"
+    },
+    "product": {
+        "addToBag": "ADD TO BAG",
+        "viewDetails": "VIEW DETAILS",
+        "back": "Back",
+        "alsoAvailableAsBundle": "Also Available as a Bundle",
+        "completeYourRoutine": "Complete Your Routine",
+        "ingredients": "Ingredients",
+        "directionsForUse": "Direction for Use"
     }
 }

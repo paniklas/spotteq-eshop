@@ -11,9 +11,11 @@ import { useCartStore, makeCartId } from "@/store/cart-store";
 import { useFavouritesStore } from "@/store/favourites-store";
 import { useFavouritesHydrated } from "@/hooks/use-favourites-hydrated";
 import { formatPrice } from "@/utils/formatPrice";
+import { useTranslations } from "next-intl";
 
 
 const ProductCard = ({ product, priority = false }) => {
+    const t = useTranslations("product")
     const [isAdding, setIsAdding] = useState(false)
     const { addToCart, cartItems } = useCartStore()
 
@@ -175,13 +177,13 @@ const ProductCard = ({ product, priority = false }) => {
                         disabled={isAdding || atMax}
                         className="flex-1 h-7 xl:h-11 bg-black-custom rounded-[20px] font-aeonik text-white-custom text-[16px] cursor-pointer hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                        {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : "ADD TO BAG"}
+                        {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : t("addToBag")}
                     </button>
                     <Link
                         href={`/shop/product/${productSlug}`}
                         className="flex-1 h-7 xl:h-11 bg-gray-soft rounded-[20px] font-aeonik text-black-custom text-[16px] cursor-pointer hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out flex items-center justify-center"
                     >
-                        VIEW DETAILS
+                        {t("viewDetails")}
                     </Link>
                 </div>
             </div>
