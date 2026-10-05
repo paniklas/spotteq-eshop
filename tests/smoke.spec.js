@@ -383,13 +383,15 @@ test.describe("Cart drawer translations", () => {
       await expect(body).not.toContainText(absent);
     });
 
-    test(`free shipping reached and empty bag on /${locale}`, async ({ page }) => {
+    test(`free shipping reached on /${locale}`, async ({ page }) => {
       await seedCart(page, 1000);
       await page.goto(`/${locale}`);
       await expect(page.locator("body")).toContainText(copy.unlocked);
-      // Init scripts run in order, so this one empties the bag on the next load.
+    });
+
+    test(`empty bag on /${locale}`, async ({ page }) => {
       await seedCart(page, 0);
-      await page.reload();
+      await page.goto(`/${locale}`);
       await expect(page.locator("body")).toContainText(copy.empty);
     });
 
