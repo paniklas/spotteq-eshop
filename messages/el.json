@@ -210,5 +210,29 @@
             "about": "ΣΧΕΤΙΚΑ ΜΕ ΤΗΝ SPOTTEQ",
             "contact": "ΕΠΙΚΟΙΝΩΝΙΑ"
         }
+    },
+    "navMenu": {
+        "shopBy": "{group}",
+        "bundles": "Bundles",
+        "viewAll": "Όλα τα προϊόντα",
+        "about": "Σχετικά",
+        "links": {
+            "spotteq": {
+                "label": "SPOTTEQ",
+                "sub": "Ποιοι είμαστε και τι πρεσβεύουμε"
+            },
+            "ambassador": {
+                "label": "Brand Ambassador",
+                "sub": "Οι κοινές μας αξίες με τον Νάσο Γκαβέλα"
+            },
+            "faq": {
+                "label": "FAQ & Support",
+                "sub": "Χρήσιμες πληροφορίες, οδηγίες και απαντήσεις σε συχνές ερωτήσεις"
+            },
+            "contact": {
+                "label": "Επικοινωνία",
+                "sub": "Επικοινώνησε με την ομάδα της SPOTTEQ"
+            }
+        }
     }
 }

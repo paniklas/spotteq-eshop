@@ -190,6 +190,23 @@ test.describe("Footer translations", () => {
   }
 });
 
+// The menu overlay is always in the DOM (hidden when closed). Only the code-side
+// copy is checked; group, category and bundle names come from Sanity.
+test.describe("Menu translations", () => {
+  for (const { locale, expected, absent } of [
+    { locale: "en", expected: ["View all products", "About", "Who we are and what we stand for", "Get in touch with the SPOTTEQ team", "Shop by "], absent: "Όλα τα προϊόντα" },
+    // Greek has no "Shop by" prefix: the Sanity group titles read "Ανά Σειρά" / "Ανά Στόχο".
+    { locale: "el", expected: ["Όλα τα προϊόντα", "Σχετικά", "Ποιοι είμαστε και τι πρεσβεύουμε", "Επικοινώνησε με την ομάδα της SPOTTEQ", "Επικοινωνία"], absent: "Shop by " },
+  ]) {
+    test(`menu on /${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}`);
+      const menu = page.locator('[aria-label="Site navigation"]');
+      for (const text of expected) await expect(menu).toContainText(text);
+      await expect(menu).not.toContainText(absent);
+    });
+  }
+});
+
 // The home page is force-static, so a section that forgets to pass `locale` to
 // getTranslations silently falls back to the default (el) on /en. textContent
 // covers both the mobile and desktop layouts (one of them is always hidden).

@@ -210,5 +210,29 @@
             "about": "ABOUT SPOTTEQ",
             "contact": "CONTACT"
         }
+    },
+    "navMenu": {
+        "shopBy": "Shop by {group}",
+        "bundles": "Bundles",
+        "viewAll": "View all products",
+        "about": "About",
+        "links": {
+            "spotteq": {
+                "label": "SPOTTEQ",
+                "sub": "Who we are and what we stand for"
+            },
+            "ambassador": {
+                "label": "Brand Ambassador",
+                "sub": "Our Shared Values with Nasos Gavelas"
+            },
+            "faq": {
+                "label": "FAQ & Support",
+                "sub": "Answers, product information and important guidance"
+            },
+            "contact": {
+                "label": "Contact",
+                "sub": "Get in touch with the SPOTTEQ team"
+            }
+        }
     }
 }
