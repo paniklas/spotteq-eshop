@@ -26,6 +26,9 @@ const ORDER_EMAIL_QUERY = `
     billingAddress,
     boxNowLockerName,
     boxNowLockerAddress,
+    // Set by the Stripe webhook's BoxNow step, which runs before the emails.
+    // Absent when that step failed — the email then just omits it.
+    boxNowParcelId,
     "shippingMethodName": coalesce(
       shippingMethod->name[language == $locale][0].value,
       shippingMethod->name[language == "el"][0].value

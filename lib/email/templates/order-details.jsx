@@ -120,6 +120,12 @@ export default function OrderDetails({ order, locale }) {
           .map((line, i) => (
             <Text key={i} style={{ ...styles.text, margin: 0 }}>{line}</Text>
           ))}
+        {isBoxNow && order.boxNowParcelId ? (
+          <>
+            <Label>{t.boxNowTracking}</Label>
+            <Text style={{ ...styles.text, margin: 0 }}>{order.boxNowParcelId}</Text>
+          </>
+        ) : null}
       </Section>
     </>
   );
