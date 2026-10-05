@@ -259,11 +259,12 @@ const cartItemSchema = z.object({
 
 // Stored on the order and passed on to invoicing, both of which need an ISO code.
 // Older account profiles held free text ("Ελλάδα"); Greece is the only shipping
-// country, so anything that isn't a two-letter code is treated as GR.
+// country, so whatever the client sends is stored as GR. Replace with an explicit
+// allowlist if more destinations are ever supported.
 const countrySchema = z
   .string()
   .optional()
-  .transform((v) => (v && /^[A-Z]{2}$/.test(v) ? v : "GR"));
+  .transform(() => "GR");
 
 const bodySchema = z.object({
   items: z.array(cartItemSchema).min(1).max(50),
