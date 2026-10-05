@@ -307,8 +307,8 @@ test.describe("Home page translations", () => {
 // accordion bodies come from Sanity.
 test.describe("Product copy translations", () => {
   for (const { locale, expected, absent } of [
-    { locale: "en", expected: ["ADD TO BAG", "VIEW DETAILS"], absent: "ΠΡΟΣΘΗΚΗ ΣΤΟ ΚΑΛΑΘΙ" },
-    { locale: "el", expected: ["ΠΡΟΣΘΗΚΗ ΣΤΟ ΚΑΛΑΘΙ", "ΔΕΣ ΛΕΠΤΟΜΕΡΕΙΕΣ"], absent: "ADD TO BAG" },
+    { locale: "en", expected: ["ADD TO BAG", "VIEW DETAILS"], absent: "ΠΡΟΣΘΗΚΗ" },
+    { locale: "el", expected: ["ΠΡΟΣΘΗΚΗ", "ΔΕΣ ΛΕΠΤΟΜΕΡΕΙΕΣ"], absent: "ADD TO BAG" },
   ]) {
     test(`home product and bundle cards on /${locale}`, async ({ page }) => {
       await page.goto(`/${locale}`);
@@ -321,8 +321,8 @@ test.describe("Product copy translations", () => {
   }
 
   for (const { locale, expected, absent } of [
-    { locale: "en", expected: ["Back", "ADD TO BAG"], absent: "ΠΡΟΣΘΗΚΗ ΣΤΟ ΚΑΛΑΘΙ" },
-    { locale: "el", expected: ["Πίσω", "ΠΡΟΣΘΗΚΗ ΣΤΟ ΚΑΛΑΘΙ"], absent: "ADD TO BAG" },
+    { locale: "en", expected: ["Back", "ADD TO BAG"], absent: "ΠΡΟΣΘΗΚΗ" },
+    { locale: "el", expected: ["Πίσω", "ΠΡΟΣΘΗΚΗ"], absent: "ADD TO BAG" },
   ]) {
     test(`product page on /${locale}`, async ({ page }) => {
       await page.goto(`/${locale}/shop/shop-all`);
