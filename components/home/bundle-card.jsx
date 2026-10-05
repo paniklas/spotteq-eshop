@@ -10,6 +10,7 @@ import { useCartStore, makeCartId } from "@/store/cart-store";
 import { useFavouritesStore } from "@/store/favourites-store";
 import { useFavouritesHydrated } from "@/hooks/use-favourites-hydrated";
 import { formatPrice } from "@/utils/formatPrice";
+import { useTranslations } from "next-intl";
 
 const BundleCard = ({
     _id,
@@ -22,6 +23,7 @@ const BundleCard = ({
     imageUrl,
     variant = "horizontal",
 }) => {
+    const t = useTranslations("product")
     const [isAdding, setIsAdding] = useState(false)
     const { addToCart, cartItems } = useCartStore()
 
@@ -175,13 +177,13 @@ const BundleCard = ({
                         disabled={isAdding || atMax}
                         className="flex-1 h-7 xl:h-11 bg-black-custom rounded-[21px] font-aeonik text-white-custom cursor-pointer text-[13px] hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                        {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : "ADD TO BAG"}
+                        {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : t("addToBag")}
                     </button>
                     <Link
                         href={`/shop/bundle/${slug}`}
                         className="flex-1 h-7 xl:h-11 bg-white-custom rounded-[21px] font-aeonik text-black-custom text-[13px] hover:bg-gray-soft transition-colors duration-500 flex items-center justify-center"
                     >
-                        VIEW DETAILS
+                        {t("viewDetails")}
                     </Link>
                 </div>
             </div>
@@ -222,13 +224,13 @@ const BundleCard = ({
                             disabled={isAdding || atMax}
                             className="flex-1 h-10 bg-black-custom rounded-[21px] font-aeonik text-white-custom cursor-pointer text-[14px] hover:bg-gray-mint hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                            {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : "ADD TO BAG"}
+                            {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : t("addToBag")}
                         </button>
                         <Link
                             href={`/shop/bundle/${slug}`}
                             className="flex-1 h-10 bg-white-custom rounded-[21px] font-aeonik text-black-custom text-[14px] hover:bg-gray-mint hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 flex items-center justify-center"
                         >
-                            VIEW DETAILS
+                            {t("viewDetails")}
                         </Link>
                     </div>
                 </div>
@@ -272,13 +274,13 @@ const BundleCard = ({
                             disabled={isAdding || atMax}
                             className="w-full h-11.25 bg-black-custom rounded-[20px] font-aeonik text-white-custom cursor-pointer text-[14px] hover:bg-gray-mint hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                            {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : "ADD TO BAG"}
+                            {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : t("addToBag")}
                         </button>
                         <Link
                             href={`/shop/bundle/${slug}`}
                             className="w-full h-11.25 bg-white-custom rounded-[20px] font-aeonik text-black-custom text-[14px] hover:bg-gray-mint hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 flex items-center justify-center"
                         >
-                            VIEW DETAILS
+                            {t("viewDetails")}
                         </Link>
                     </div>
                 </div>

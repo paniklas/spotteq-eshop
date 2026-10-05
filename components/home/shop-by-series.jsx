@@ -23,6 +23,7 @@ const ShopBySeries = async ({ locale }) => {
                         <Link
                             key={s._id}
                             href={`/shop/category/${s.slug}`}
+                            locale={locale}
                             className="group relative z-20 block"
                         >
                             <div

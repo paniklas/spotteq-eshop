@@ -8,46 +8,51 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { useCartStore } from "@/store/cart-store"
 import { formatPrice } from "@/utils/formatPrice"
 import { validateCoupon } from "@/app/actions/coupon"
+import { useTranslations } from "next-intl"
 
 
-const CheckoutModal = ({ onClose, onCloseAll, onGuest }) => (
-    <>
-        <div
-            className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
-            onClick={onClose}
-        />
-        <div className="fixed inset-0 z-[70] flex items-center justify-center px-6">
-            <div className="bg-white-custom rounded-2xl p-8 w-full max-w-md shadow-xl">
-                <div className="flex items-center justify-between mb-6">
-                    <h3 className="font-aeonik text-[22px] text-black-custom">Before you continue</h3>
-                    <button onClick={onClose} aria-label="Close" className="p-1 hover:opacity-60 transition-opacity cursor-pointer">
-                        <X size={20} strokeWidth={1.5} />
-                    </button>
-                </div>
-                <p className="font-aeonik text-[14px] text-gray-text mb-8 leading-relaxed">
-                    Sign in or create a free account to track your orders, save your details, and enjoy a faster checkout next time.
-                </p>
-                <div className="flex flex-col gap-3">
-                    <Link
-                        href="/sign-in"
-                        onClick={onCloseAll}
-                        className="w-full h-14 bg-black-custom font-aeonik text-[13px] xl:text-[15px] uppercase text-white-custom rounded-[18px] hover:bg-gray-text transition-colors duration-300 flex items-center justify-center"
-                    >
-                        Sign in / Create account
-                    </Link>
-                    <button
-                        onClick={onGuest}
-                        className="w-full h-14 border border-black-custom font-aeonik text-[13px] xl:text-[15px] uppercase text-black-custom rounded-[18px] hover:bg-gray-soft transition-colors duration-300 cursor-pointer"
-                    >
-                        Continue as guest
-                    </button>
+const CheckoutModal = ({ onClose, onCloseAll, onGuest }) => {
+    const t = useTranslations("cart")
+    return (
+        <>
+            <div
+                className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
+                onClick={onClose}
+            />
+            <div className="fixed inset-0 z-[70] flex items-center justify-center px-6">
+                <div className="bg-white-custom rounded-2xl p-8 w-full max-w-md shadow-xl">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="font-aeonik text-[22px] text-black-custom">{t("checkoutModal.title")}</h3>
+                        <button onClick={onClose} aria-label={t("close")} className="p-1 hover:opacity-60 transition-opacity cursor-pointer">
+                            <X size={20} strokeWidth={1.5} />
+                        </button>
+                    </div>
+                    <p className="font-aeonik text-[14px] text-gray-text mb-8 leading-relaxed">
+                        {t("checkoutModal.description")}
+                    </p>
+                    <div className="flex flex-col gap-3">
+                        <Link
+                            href="/sign-in"
+                            onClick={onCloseAll}
+                            className="w-full h-14 bg-black-custom font-aeonik text-[13px] xl:text-[15px] uppercase text-white-custom rounded-[18px] hover:bg-gray-text transition-colors duration-300 flex items-center justify-center"
+                        >
+                            {t("checkoutModal.signIn")}
+                        </Link>
+                        <button
+                            onClick={onGuest}
+                            className="w-full h-14 border border-black-custom font-aeonik text-[13px] xl:text-[15px] uppercase text-black-custom rounded-[18px] hover:bg-gray-soft transition-colors duration-300 cursor-pointer"
+                        >
+                            {t("checkoutModal.guest")}
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
-    </>
-)
+        </>
+    )
+}
 
 const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
+    const t = useTranslations("cart")
     const { cartItems, cartOpen, closeCart, removeFromCart, updateQty, appliedCoupon, couponDiscount, applyCoupon, removeCoupon } = useCartStore()
 
     const bundleSuggestions = useMemo(() => {
@@ -91,7 +96,7 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
         const result = await validateCoupon(couponInput)
         setCouponApplying(false)
         if (!result.valid) {
-            setCouponError(result.error)
+            setCouponError(result.code ? t(`couponErrors.${result.code}`) : result.error)
             return
         }
         applyCoupon(result.coupon)
@@ -134,15 +139,15 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                 <div className="px-4 xl:px-8 pt-8 pb-0">
                     <div className="flex items-center justify-between">
                         <div className="flex items-baseline gap-3">
-                            <h2 className="font-aeonik text-[20px] md:text-[28px] xl:text-[35px] text-black-custom">Your bag</h2>
+                            <h2 className="font-aeonik text-[20px] md:text-[28px] xl:text-[35px] text-black-custom">{t("title")}</h2>
                             <span className="font-aeonik text-[13px] xl:text-[18px] text-black-custom underline">
-                                {cartItems.reduce((sum, i) => sum + i.qty, 0)} {cartItems.reduce((sum, i) => sum + i.qty, 0) === 1 ? "ITEM" : "ITEMS"}
+                                {t("items", { count: cartItems.reduce((sum, i) => sum + i.qty, 0) })}
                             </span>
                         </div>
                         <button onClick={handleDrawerClose} className="p-1 hover:opacity-60 transition-opacity duration-200 cursor-pointer">
                             <Image
                                 src="/icons/X.svg"
-                                alt="Close"
+                                alt={t("close")}
                                 width={20}
                                 height={20}
                                 className="w-full h-auto"
@@ -157,8 +162,8 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                     <div className="px-4 xl:px-8 pt-4 pb-4">
                         <p className="font-aeonik text-[13px] xl:text-[22px] text-black-custom">
                             {remaining > 0
-                                ? `You are ${formatPrice(remaining)}€ away from FREE SHIPPING!`
-                                : "You've unlocked FREE SHIPPING!"}
+                                ? t("freeShippingRemaining", { amount: formatPrice(remaining) })
+                                : t("freeShippingUnlocked")}
                         </p>
                     </div>
                 )}
@@ -166,7 +171,7 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                 {/* Items */}
                 <div data-lenis-prevent className="flex-1 overflow-y-auto px-4 xl:px-8">
                     {cartItems.length === 0 && (
-                        <p className="font-aeonik text-[14px] xl:text-[22px] text-gray-text text-center mt-12">Your bag is empty.</p>
+                        <p className="font-aeonik text-[14px] xl:text-[22px] text-gray-text text-center mt-12">{t("empty")}</p>
                     )}
                     {cartItems.map((item, i) => (
                         <div key={item.cartId}>
@@ -240,7 +245,7 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                                             onClick={() => removeFromCart(item.cartId)}
                                             className="flex items-center gap-1.5 font-aeonik text-[11px] xl:text-[14px] uppercase tracking-wide text-black-custom hover:opacity-60 transition-opacity cursor-pointer"
                                         >
-                                            REMOVE
+                                            {t("remove")}
                                             <Trash2 size={16} strokeWidth={1.5} />
                                         </button>
                                     </div>
@@ -256,7 +261,7 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                         <hr className="border-gray-mint" />
                         <div className="py-5">
                             <p className="font-aeonik text-[10px] xl:text-[12px] uppercase tracking-wide mb-4">
-                                Bundle Deal Available
+                                {t("bundleDeal")}
                             </p>
                             <div className="flex flex-col gap-4">
                                 {bundleSuggestions.map((bundle) => {
@@ -285,7 +290,7 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                                                 </p>
                                                 {savings > 0 && (
                                                     <p className="font-tt text-[11px] xl:text-[13px]">
-                                                        Save {formatPrice(savings)}€ vs buying individually
+                                                        {t("bundleSavings", { amount: formatPrice(savings) })}
                                                     </p>
                                                 )}
                                             </div>
@@ -294,7 +299,7 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                                                 onClick={closeCart}
                                                 className="group shrink-0 flex items-center gap-1.5 px-4 h-9 border border-black-custom rounded-full font-aeonik text-[11px] xl:text-[13px] uppercase text-black-custom hover:bg-black-custom hover:text-white-custom transition-colors duration-300"
                                             >
-                                                View Bundle
+                                                {t("viewBundle")}
                                                 <ArrowRight size={13} strokeWidth={1.5} className="group-hover:translate-x-0.5 transition-transform duration-300" />
                                             </Link>
                                         </div>
@@ -319,7 +324,7 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                         <div className="flex items-center justify-between mb-6 px-3 py-2.5 bg-teal-accent/10 border border-teal-accent rounded-sm">
                             <span className="font-aeonik text-[13px] text-black-custom">
                                 <span className="font-semibold">{appliedCoupon.couponCode}</span>
-                                {" — "}{appliedCoupon.discountAmount}% off
+                                {" — "}{t("couponOff", { percent: appliedCoupon.discountAmount })}
                             </span>
                             <button onClick={handleRemoveCoupon} className="p-1 hover:opacity-60 transition-opacity cursor-pointer">
                                 <X size={14} strokeWidth={1.5} />
@@ -329,15 +334,15 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                         <div className="mb-6">
                             <div className="flex items-center gap-4">
                                 <span className="font-aeonik text-[11px] xl:text-[14px] uppercase text-black-custom leading-tight shrink-0">
-                                    COUPON CODE /<br />GIFT CARD
+                                    {t("couponCode")}<br />{t("giftCard")}
                                 </span>
-                                <div className="flex-1 flex items-center border border-gray-mint rounded-sm">
+                                <div className="flex-1 min-w-0 flex items-center border border-gray-mint rounded-sm">
                                     <input
                                         value={couponInput}
                                         onChange={(e) => { setCouponInput(e.target.value); setCouponError("") }}
                                         onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
-                                        placeholder="Enter code"
-                                        className="flex-1 px-3 py-2.5 font-tt text-[16px] md:text-[13px] text-black-custom outline-none bg-transparent placeholder:text-gray-text/50"
+                                        placeholder={t("enterCode")}
+                                        className="flex-1 min-w-0 px-3 py-2.5 font-tt text-[16px] md:text-[13px] text-black-custom outline-none bg-transparent placeholder:text-gray-text/50"
                                     />
                                     <button
                                         onClick={handleApplyCoupon}
@@ -345,7 +350,7 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                                         className="px-3 py-2.5 hover:opacity-60 transition-opacity cursor-pointer disabled:opacity-40 flex items-center gap-1 font-aeonik text-[11px] xl:text-[13px] uppercase shrink-0"
                                     >
                                         <Check size={13} strokeWidth={1.5} />
-                                        {couponApplying ? "..." : "Apply"}
+                                        {couponApplying ? "..." : t("apply")}
                                     </button>
                                 </div>
                             </div>
@@ -360,17 +365,17 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                         {discountAmount > 0 && (
                             <>
                                 <div className="flex items-center justify-between">
-                                    <span className="font-aeonik text-[13px] xl:text-[14px] uppercase text-black-custom">SUBTOTAL</span>
+                                    <span className="font-aeonik text-[13px] xl:text-[14px] uppercase text-black-custom">{t("subtotal")}</span>
                                     <span className="font-aeonik text-[16px] text-black-custom">{formatPrice(subTotal)}€</span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="font-aeonik text-[13px] xl:text-[14px] uppercase text-teal-accent">DISCOUNT ({appliedCoupon.discountAmount}%)</span>
+                                    <span className="font-aeonik text-[13px] xl:text-[14px] uppercase text-teal-accent">{t("discount", { percent: appliedCoupon.discountAmount })}</span>
                                     <span className="font-aeonik text-[16px] text-teal-accent">-{formatPrice(discountAmount)}€</span>
                                 </div>
                             </>
                         )}
                         <div className="flex items-center justify-between">
-                            <span className="font-aeonik text-[13px] xl:text-[14px] uppercase text-black-custom">TOTAL</span>
+                            <span className="font-aeonik text-[13px] xl:text-[14px] uppercase text-black-custom">{t("total")}</span>
                             <span className="font-aeonik text-[20px] xl:text-[30px] font-bold text-black-custom">{formatPrice(total)}€</span>
                         </div>
                     </div>
@@ -381,7 +386,7 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                         disabled={!userLoaded || cartItems.length === 0}
                         className="w-full h-12 bg-black-custom font-aeonik text-[14px] xl:text-[16px] uppercase text-white-custom rounded-[18px] hover:bg-gray-text transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
                     >
-                        PROCEED TO CHECKOUT
+                        {t("checkout")}
                     </button>
                     </div>
                 </div>

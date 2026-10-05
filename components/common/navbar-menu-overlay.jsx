@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation"
 import Image from "next/image";
 import { useLocaleSwitch } from "@/hooks/use-locale-switch";
@@ -11,31 +12,18 @@ const LANGUAGES = [
 ];
 
 
+// Label and subtitle: navMenu.links.<key>.label / .sub messages.
 const BRAND_SUPPORT = [
-    {
-        label: "About SPOTTEQ",
-        sub: "Who we are and what we stand for",
-        href: "/about",
-    },
-    {
-        label: "Ambassador & CSR",
-        sub: "Partnerships, Nasos Ghavelas and our social projects",
-        href: "/ambassador",
-    },
-    {
-        label: "FAQ & Support",
-        sub: "Orders, shipping, returns and product questions",
-        href: "/faq",
-    },
-    {
-        label: "Contact",
-        sub: "Get in touch with the SPOTTEQ team",
-        href: "/contact",
-    },
+    { key: "spotteq", href: "/about" },
+    { key: "ambassador", href: "/ambassador" },
+    { key: "faq", href: "/faq" },
+    { key: "contact", href: "/contact" },
 ];
 
 
 const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }) => {
+    const t = useTranslations("navMenu");
+    const tFooter = useTranslations("footer");
     const fade = (delay) => ({
         opacity: isOpen ? 1 : 0,
         transition: `opacity 380ms ease ${isOpen ? delay : 0}ms`,
@@ -62,28 +50,28 @@ const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }
                     {categoryGroups.map((group) => (
                         <MobileAccordion
                             key={group.slug}
-                            title={`Shop by ${group.title}`}
+                            title={t("shopBy", { group: group.title })}
                             links={group.categories.map((cat) => ({ label: cat.title, href: `/shop/category/${cat.slug}` }))}
                             isMenuOpen={isOpen}
                             onClose={isOnClose}
                         />
                     ))}
                     <MobileAccordion
-                        title="Bundles"
+                        title={t("bundles")}
                         links={navBundles.map((b) => ({ label: b.title, href: `/shop/bundle/${b.slug}` }))}
                         isMenuOpen={isOpen}
                         onClose={isOnClose}
                     />
 
-                    {BRAND_SUPPORT.map(({ label, href }) => (
+                    {BRAND_SUPPORT.map(({ key, href }) => (
                         <Link
-                            key={label}
+                            key={key}
                             href={href}
                             onClick={isOnClose}
                             tabIndex={isOpen ? 0 : -1}
                             className="flex items-center py-2 border-b border-black/15 font-aeonik text-[20px] text-black-custom hover:opacity-60 transition-opacity"
                         >
-                            {label}
+                            {t(`links.${key}.label`)}
                         </Link>
                     ))}
                 </div>
@@ -104,18 +92,19 @@ const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }
                         tabIndex={isOpen ? 0 : -1}
                         className="h-12 flex items-center justify-center border border-black-custom text-black-custom rounded-[15px] font-aeonik text-[14px] tracking-wide"
                     >
-                        ACCOUNT
+                        {t("account")}
                     </Link>
                 </div>
 
                 {/* Information + Terms */}
                 <div className="flex flex-col gap-8 mt-10">
                     <div>
-                        <h4 className="font-aeonik text-[13px] uppercase text-black-custom mb-4">Information</h4>
+                        {/* Same heading and labels as the footer's Information column */}
+                        <h4 className="font-aeonik text-[13px] uppercase text-black-custom mb-4">{tFooter("headings.information")}</h4>
                         <div className="flex flex-col gap-2">
-                            {["Payment & Security", "Shipping & Returns"].map((t) => (
-                                <Link key={t} href="#" onClick={isOnClose} tabIndex={isOpen ? 0 : -1} className="font-aeonik text-[13px] uppercase text-black-custom hover:opacity-60 transition-opacity">
-                                    {t}
+                            {["shippingPayments", "returns"].map((key) => (
+                                <Link key={key} href="#" onClick={isOnClose} tabIndex={isOpen ? 0 : -1} className="font-aeonik text-[13px] uppercase text-black-custom hover:opacity-60 transition-opacity">
+                                    {tFooter(`links.${key}`)}
                                 </Link>
                             ))}
                         </div>
@@ -159,7 +148,7 @@ const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }
                             />
                         ))}
                         <NavColumn
-                            title="Bundles"
+                            title={t("bundles")}
                             links={navBundles.map(b => ({ label: b.title, href: `/shop/bundle/${b.slug}` }))}
                             isOpen={isOpen}
                             delay={100 + categoryGroups.length * 40}
@@ -174,7 +163,7 @@ const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }
                                 tabIndex={isOpen ? 0 : -1}
                                 className="inline-flex items-center font-aeonik text-[20px] text-black-custom"
                             >
-                                View all products 
+                                {t("viewAll")}
                                 <span aria-hidden="true">
                                     <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M30.5303 20.5303C30.8232 20.2374 30.8232 19.7626 30.5303 19.4697L25.7574 14.6967C25.4645 14.4038 24.9896 14.4038 24.6967 14.6967C24.4038 14.9896 24.4038 15.4645 24.6967 15.7574L28.9393 20L24.6967 24.2426C24.4038 24.5355 24.4038 25.0104 24.6967 25.3033C24.9896 25.5962 25.4645 25.5962 25.7574 25.3033L30.5303 20.5303ZM10 20L10 20.75L30 20.75L30 20L30 19.25L10 19.25L10 20Z" fill="black"/>
@@ -186,20 +175,20 @@ const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }
         
                     {/* Brand & Support */}
                     <div className="mt-10" style={fade(200)}>
-                        <SectionHeader label="Brand & Support" />
+                        <SectionHeader label={t("about")} />
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-5 mt-5">
-                            {BRAND_SUPPORT.map(({ label, sub, href }) => (
-                                <div key={label}>
+                            {BRAND_SUPPORT.map(({ key, href }) => (
+                                <div key={key}>
                                     <Link
                                         href={href}
                                         onClick={isOnClose}
                                         tabIndex={isOpen ? 0 : -1}
                                         className="font-aeonik text-[15px] xl:text-[20px] text-black-custom hover:opacity-50 transition-opacity leading-snug"
                                     >
-                                        {label}
+                                        {t(`links.${key}.label`)}
                                     </Link>
                                     <p className="font-aeonik text-[13px] xl:text-[16px] text-gray-text mt-0.5 leading-none">
-                                        {sub}
+                                        {t(`links.${key}.sub`)}
                                     </p>
                                 </div>
                             ))}

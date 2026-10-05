@@ -22,7 +22,7 @@ const Home = async ({ params }) => {
     <>
       <HeroSection locale={locale} />
       <AnnouncementBar locale={locale} />
-      <AboutSection />
+      <AboutSection locale={locale} />
       <Suspense fallback={<ShopBySeriesSkeleton />}>
         <ShopBySeries locale={locale} />
       </Suspense>
@@ -30,9 +30,9 @@ const Home = async ({ params }) => {
         <BundleSection locale={locale} />
       </Suspense>
       <FeaturedProducts locale={locale} />
-      <StoriesThatMove />
+      <StoriesThatMove locale={locale} />
       <TrainingBanner />
-      <QualitySection />
+      <QualitySection locale={locale} />
       <SpotteqImage />
     </>
   )

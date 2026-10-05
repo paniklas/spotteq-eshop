@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation"
 import FeaturedProductsSlider from "./featured-products-slider";
 import ProductCarousel from "./product-carousel";
@@ -5,7 +6,12 @@ import { getFeaturedProducts } from "@/sanity/getData/getFeaturedProducts";
 
 
 const FeaturedProducts = async ({ compact = false, locale }) => {
-    const products = await getFeaturedProducts(locale)
+    // Explicit locale: the home page is force-static, so next-intl has no
+    // request to read it from (see stories-that-move).
+    const [products, t] = await Promise.all([
+        getFeaturedProducts(locale),
+        getTranslations({ locale, namespace: "home.featuredProducts" }),
+    ])
 
     if (!products.length) return null
 
@@ -24,13 +30,12 @@ const FeaturedProducts = async ({ compact = false, locale }) => {
                         </h2>
 
                         <p className="font-aeonik text-black-custom text-[16px] xl:text-[18px] leading-[1.45] md:max-w-163 md:mb-12">
-                            A focused line of science-driven formulas for strength, performance,
-                            recovery and everyday health. Explore all our series, flavours and
-                            formats to build the system that works for your body and training.
+                            {t("description")}
                         </p>
 
                         <Link
                             href="/shop/shop-all"
+                            locale={locale}
                             className="hidden xl:inline-flex items-center justify-center h-10.25 w-35 bg-black rounded-[20.5px] font-aeonik text-white text-[14px] hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out shrink-0 self-center"
                         >
                             SHOP ALL
@@ -42,6 +47,7 @@ const FeaturedProducts = async ({ compact = false, locale }) => {
                 {!compact && (
                     <Link
                         href="/shop/shop-all"
+                        locale={locale}
                         className="md:hidden inline-flex items-center justify-center h-7 xl:h-11 w-35 bg-black rounded-[21px] font-aeonik text-white text-[14px] mt-6 mb-8"
                     >
                         SHOP ALL
@@ -63,6 +69,7 @@ const FeaturedProducts = async ({ compact = false, locale }) => {
                     <div className="mt-10 hidden md:flex justify-center xl:hidden">
                         <Link
                             href="/shop/shop-all"
+                            locale={locale}
                             className="inline-flex items-center justify-center h-10.25 w-35 bg-black rounded-[21px] font-aeonik text-white text-[14px] hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out"
                         >
                             SHOP ALL

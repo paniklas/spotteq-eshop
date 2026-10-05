@@ -167,5 +167,134 @@
         "accept": "Accept All",
         "decline": "Decline",
         "close": "Close"
+    },
+    "home": {
+        "storiesThatMove": {
+            "name": "Nassos Ghavelas",
+            "role": "Paralympic Champion, SPOTTEQ Ambassador",
+            "quote": "In elite sport, it’s the small details that make the difference. What I appreciate about SPOTTEQ is that it doesn’t promise miracles; it delivers clean, targeted formulas and I know exactly what they do to my body. For me, performance is not just about times and records, but about feeling safe and confident in every training session and every race.",
+            "imageAlt": "Nassos Ghavelas – Paralympic Champion",
+            "previous": "Previous",
+            "next": "Next"
+        },
+        "featuredProducts": {
+            "description": "A focused line of science-driven formulas for strength, performance, recovery and everyday health. Explore all our series, flavours and formats to build the system that works for your body and training."
+        },
+        "bundles": {
+            "description": "Curated combinations of products that work together – for strength, performance, recovery and everyday health. Choose a Performance or Clinical bundle to simplify your routine and get a complete SPOTTEQ system in just one step."
+        },
+        "about": {
+            "description": "SPOTTEQ is a performance nutrition brand created for athletes who care about what goes into their body. Each formula is science-driven, clean and clearly labelled, and part of a small, carefully curated line of products designed to support strength, recovery and everyday health in one focused system – like a trusted spotter that’s always there, even when no one else is."
+        },
+        "quality": {
+            "description": "The core principle of SPOTTEQ is to offer premium products, providing a reliable and transparent choice for every athlete. With an emphasis on high bioavailability, easy digestion, and exceptional taste, our products are manufactured under strict international quality standards and are notified to the EOF (National Organization for Medicines), ensuring premium quality and safe consumption."
+        }
+    },
+    "footer": {
+        "newsletter": {
+            "description": "Sign up for SPOTTEQ updates and be the first to know about our promotions and news",
+            "consent": "By subscribing you agree to receive email marketing communications from SPOTTEQ",
+            "emailLabel": "Your email",
+            "subscribe": "SUBSCRIBE",
+            "subscribing": "SUBSCRIBING…",
+            "subscribeLabel": "Subscribe",
+            "success": "Thanks for subscribing!",
+            "invalidEmail": "Please enter a valid email address.",
+            "failed": "Could not subscribe right now. Please try again."
+        },
+        "headings": {
+            "information": "INFORMATION",
+            "terms": "TERMS",
+            "company": "COMPANY"
+        },
+        "links": {
+            "faq": "FAQS AND HELP CENTRE",
+            "shippingPayments": "SHIPPING & PAYMENTS",
+            "returns": "RETURNS POLICY",
+            "termsOfUse": "TERMS OF USE",
+            "privacy": "PRIVACY POLICY",
+            "cookies": "COOKIES POLICY",
+            "about": "ABOUT SPOTTEQ",
+            "contact": "CONTACT"
+        }
+    },
+    "navMenu": {
+        "shopBy": "Shop by {group}",
+        "bundles": "Bundles",
+        "viewAll": "View all products",
+        "about": "About",
+        "account": "ACCOUNT",
+        "links": {
+            "spotteq": {
+                "label": "SPOTTEQ",
+                "sub": "Who we are and what we stand for"
+            },
+            "ambassador": {
+                "label": "Brand Ambassador",
+                "sub": "Our Shared Values with Nasos Gavelas"
+            },
+            "faq": {
+                "label": "FAQ & Support",
+                "sub": "Answers, product information and important guidance"
+            },
+            "contact": {
+                "label": "Contact",
+                "sub": "Get in touch with the SPOTTEQ team"
+            }
+        }
+    },
+    "shopFilters": {
+        "allProducts": "All Products",
+        "allBundles": "All Bundles",
+        "shopBy": "SHOP BY {group}",
+        "shopByBundle": "SHOP BY BUNDLE",
+        "results": "{total, plural, one {# Result} other {# Results}}",
+        "filters": "Filters",
+        "close": "Close"
+    },
+    "product": {
+        "addToBag": "ADD TO BAG",
+        "viewDetails": "VIEW DETAILS",
+        "back": "Back",
+        "alsoAvailableAsBundle": "Also Available as a Bundle",
+        "completeYourRoutine": "Complete Your Routine",
+        "ingredients": "Ingredients",
+        "directionsForUse": "Direction for Use"
+    },
+    "cart": {
+        "title": "Your bag",
+        "items": "{count, plural, one {# ITEM} other {# ITEMS}}",
+        "freeShippingRemaining": "You are {amount}€ away from FREE SHIPPING!",
+        "couponCode": "COUPON CODE /",
+        "giftCard": "GIFT CARD",
+        "total": "TOTAL",
+        "checkout": "PROCEED TO CHECKOUT",
+        "freeShippingUnlocked": "You've unlocked FREE SHIPPING!",
+        "empty": "Your bag is empty.",
+        "remove": "REMOVE",
+        "enterCode": "Enter code",
+        "apply": "Apply",
+        "couponOff": "{percent}% off",
+        "subtotal": "SUBTOTAL",
+        "discount": "DISCOUNT ({percent}%)",
+        "bundleDeal": "Bundle Deal Available",
+        "bundleSavings": "Save {amount}€ vs buying individually",
+        "viewBundle": "View Bundle",
+        "close": "Close",
+        "couponErrors": {
+            "empty": "Please enter a coupon code.",
+            "invalid": "Invalid coupon code.",
+            "fullyRedeemed": "This coupon has been fully redeemed.",
+            "inactive": "This coupon is no longer available.",
+            "notYetValid": "Coupon is not yet valid.",
+            "expired": "This coupon has expired.",
+            "failed": "Unable to validate coupon. Please try again."
+        },
+        "checkoutModal": {
+            "title": "Before you continue",
+            "description": "Sign in or create a free account to track your orders, save your details, and enjoy a faster checkout next time.",
+            "signIn": "Sign in / Create account",
+            "guest": "Continue as guest"
+        }
     }
 }

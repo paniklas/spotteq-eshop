@@ -1,10 +1,16 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import BundleCard from "./bundle-card";
 import BundleCarousel from "./bundle-carousel";
 import { getAllBundles } from "@/sanity/getData/getAllBundles";
 
 const BundleSection = async ({ locale }) => {
-    const bundles = await getAllBundles(locale)
+    // Explicit locale: the home page is force-static, so next-intl has no
+    // request to read it from (see stories-that-move).
+    const [bundles, t] = await Promise.all([
+        getAllBundles(locale),
+        getTranslations({ locale, namespace: "home.bundles" }),
+    ])
 
     return (
         <section
@@ -18,13 +24,11 @@ const BundleSection = async ({ locale }) => {
                         Our Bundles
                     </h2>
                     <p className="font-aeonik text-black-custom text-[16px] xl:text-[18px] leading-[1.2] md:max-w-175">
-                        Curated combinations of products that work together – for strength,
-                        performance, recovery and everyday health. Choose a Performance or
-                        Clinical bundle to simplify your routine and get a complete SPOTTEQ
-                        system in just one step.
+                        {t("description")}
                     </p>
                     <Link
                         href="/shop/bundles"
+                        locale={locale}
                         className="hidden xl:inline-flex items-center justify-center h-[41px] w-[159px] bg-black rounded-[21px] font-aeonik text-white-custom text-[14px] hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-700 shrink-0"
                     >
                         VIEW OUR BUNDLES
@@ -34,6 +38,7 @@ const BundleSection = async ({ locale }) => {
                 {/* Mobile — button sits below the description, above the carousel */}
                 <Link
                     href="/shop/bundles"
+                    locale={locale}
                     className="md:hidden inline-flex items-center justify-center h-7 px-6 bg-black-custom rounded-[21px] font-aeonik text-white text-[14px] mb-12"
                 >
                     VIEW OUR BUNDLES
@@ -69,6 +74,7 @@ const BundleSection = async ({ locale }) => {
                 <div className="mt-8 hidden md:flex justify-center xl:hidden">
                     <Link
                         href="/shop/bundles"
+                        locale={locale}
                         className="inline-flex items-center justify-center h-[41px] w-[159px] bg-black-custom rounded-[20px] font-aeonik text-white text-[14px]"
                     >
                         VIEW OUR BUNDLES

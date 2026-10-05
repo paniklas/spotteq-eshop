@@ -69,6 +69,7 @@ const HeroSection = async ({ locale }) => {
                 <div className="flex justify-center pt-2">
                     <Link
                         href="/shop/shop-all"
+                        locale={locale}
                         className="inline-flex items-center justify-center h-9.5 px-10 bg-black-custom text-white-custom rounded-[21px] font-aeonik text-[13px] tracking-wide hover:bg-white-custom hover:text-black-custom border border-black-custom transition-colors duration-700"
                     >
                         SHOP ALL
@@ -104,6 +105,7 @@ const HeroSection = async ({ locale }) => {
                     <div>
                         <Link
                             href="/shop/shop-all"
+                            locale={locale}
                             className="pointer-events-auto inline-flex items-center justify-center h-10.25 w-39.75 bg-white-custom rounded-[21px] font-aeonik text-black-custom text-[14px] tracking-wide hover:bg-black-custom hover:text-white-custom transition-colors duration-700"
                         >
                             SHOP NOW

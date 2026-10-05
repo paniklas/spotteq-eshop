@@ -15,7 +15,7 @@ export default async function ShopBundles({ params }) {
             <Suspense fallback={<ShopSkeleton />}>
                 <ShopBundlesContent locale={locale} />
             </Suspense>
-            <QualitySection />
+            <QualitySection locale={locale} />
             <SpotteqImage />
         </>
     )

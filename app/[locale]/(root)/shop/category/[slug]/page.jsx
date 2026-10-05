@@ -25,7 +25,7 @@ export default async function CategoryPageBySlug({ params }) {
             <Suspense fallback={<ShopSkeleton />}>
                 <CategoryContent locale={locale} slug={slug} />
             </Suspense>
-            <QualitySection />
+            <QualitySection locale={locale} />
             <SpotteqImage />
         </>
     )
@@ -53,6 +53,7 @@ async function CategoryContent({ locale, slug }) {
             activeSlug={slug}
             heading={category.title}
             description={category.description}
+            locale={locale}
         >
             <ProductGrid
                 initialProducts={products}

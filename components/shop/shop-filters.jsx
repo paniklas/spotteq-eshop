@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useTranslations } from "next-intl"
 import { Link } from "@/i18n/navigation"
 
 const FilterNav = ({ 
@@ -10,7 +11,10 @@ const FilterNav = ({
     activeBundleSlug,
     activeBundlesPage,
     onNavigate,
-    tabIndex = 0 }) => (
+    tabIndex = 0 }) => {
+    const t = useTranslations("shopFilters")
+
+    return (
     <>
         <div className="flex flex-col gap-2">
             <Link
@@ -21,7 +25,7 @@ const FilterNav = ({
                     !activeSlug && !activeBundleSlug && !activeBundlesPage ? "text-orange-accent font-semibold" : "text-black-custom hover:text-panBlack"
                 }`}
             >
-                All Products
+                {t("allProducts")}
             </Link>
             <Link
                 href="/shop/bundles"
@@ -31,14 +35,14 @@ const FilterNav = ({
                     activeBundlesPage ? "text-orange-accent font-semibold" : "text-black-custom hover:text-panBlack"
                 }`}
             >
-                All Bundles
+                {t("allBundles")}
             </Link>
         </div>
 
         {sortedGroups.map(([groupSlug, group]) => (
             <div key={groupSlug} className="mt-8">
                 <p className="font-aeonik text-[12px] xl:text-[14px] uppercase text-black-custom">
-                    SHOP BY {group.title}
+                    {t("shopBy", { group: group.title })}
                 </p>
                 <ul className="mt-4 flex flex-col">
                     {group.items.map((cat) => (
@@ -64,7 +68,7 @@ const FilterNav = ({
         {bundles.length > 0 && (
             <div className="mt-8">
                 <p className="font-aeonik text-[12px] xl:text-[14px] uppercase text-black-custom">
-                    SHOP BY BUNDLE
+                    {t("shopByBundle")}
                 </p>
                 <ul className="mt-4 flex flex-col">
                     {bundles.filter(b => b.title && b.slug).map((bundle) => (
@@ -87,9 +91,11 @@ const FilterNav = ({
             </div>
         )}
     </>
-)
+    )
+}
 
 const ShopFilters = ({ total, sortedGroups = [], bundles = [], activeSlug, activeBundleSlug, activeBundlesPage = false }) => {
+    const t = useTranslations("shopFilters")
     const [open, setOpen] = useState(false)
 
     useEffect(() => {
@@ -109,7 +115,7 @@ const ShopFilters = ({ total, sortedGroups = [], bundles = [], activeSlug, activ
             <div className="hidden md:block">
                 {total != null && (
                     <p className="mb-12 font-aeonik text-[14px] xl:text-[18px] uppercase text-black-custom border-b-2 border-black-custom">
-                        {total} Results
+                        {t("results", { total })}
                     </p>
                 )}
                 <div className="mt-8">
@@ -130,11 +136,11 @@ const ShopFilters = ({ total, sortedGroups = [], bundles = [], activeSlug, activ
                     onClick={() => setOpen(true)}
                     className="font-aeonik text-[14px] uppercase text-black-custom border-b border-black-custom cursor-pointer"
                 >
-                    Filters
+                    {t("filters")}
                 </button>
                 {total != null && (
                     <span className="font-aeonik text-[14px] uppercase text-black-custom border-b border-black-custom">
-                        {total} Results
+                        {t("results", { total })}
                     </span>
                 )}
             </div>
@@ -168,7 +174,7 @@ const ShopFilters = ({ total, sortedGroups = [], bundles = [], activeSlug, activ
                             tabIndex={open ? 0 : -1}
                             className="font-aeonik text-[13px] uppercase text-black-custom mb-10 cursor-pointer hover:opacity-60 transition-opacity"
                         >
-                            Close
+                            {t("close")}
                         </button>
 
                         <FilterNav

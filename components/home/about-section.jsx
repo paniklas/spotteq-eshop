@@ -1,4 +1,10 @@
-const AboutSection = () => {
+import { getTranslations } from "next-intl/server";
+
+// Explicit locale: the home page is force-static, so next-intl has no request
+// to read it from (see stories-that-move).
+const AboutSection = async ({ locale }) => {
+    const t = await getTranslations({ locale, namespace: "home.about" });
+
     return (
         <section
             id="about-section"
@@ -6,12 +12,7 @@ const AboutSection = () => {
         >
             <div className="max-w-480 mx-auto page-x">
                 <p className="font-aeonik text-black text-[20px] md:text-[28px] xl:text-[30px] leading-[1.2] max-w-[1261px]">
-                    SPOTTEQ is a performance nutrition brand created for athletes who care
-                    about what goes into their body. Each formula is science-driven, clean
-                    and clearly labelled, and part of a small, carefully curated line of
-                    products designed to support strength, recovery and everyday health in
-                    one focused system – like a trusted spotter that&rsquo;s always there,
-                    even when no one else is.
+                    {t("description")}
                 </p>
             </div>
 

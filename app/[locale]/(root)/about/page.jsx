@@ -26,7 +26,7 @@ export default async function AboutUs({ params }) {
             <Suspense fallback={<FeaturedProductsSkeleton />}>
                 <FeaturedProducts locale={locale} />
             </Suspense>
-            <QualitySection />
+            <QualitySection locale={locale} />
             <SpotteqImage />
         </>
     )

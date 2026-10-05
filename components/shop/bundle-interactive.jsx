@@ -11,6 +11,7 @@ import { useFavouritesHydrated } from "@/hooks/use-favourites-hydrated";
 import { formatPrice } from "@/utils/formatPrice";
 import { PortableText } from "@portabletext/react";
 import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
 // The selectable flavours for a slot: the admin's default product plus any active
 // sibling variants, deduped (the default may or may not appear in its own flavours list).
@@ -75,6 +76,7 @@ const FlavourDropdown = ({ options, selectedId, onSelect }) => {
 
 
 const BundleInteractive = ({ bundle }) => {
+    const t = useTranslations("product")
     const router = useRouter()
     const [isAdding, setIsAdding] = useState(false)
     const [isBuying, setIsBuying] = useState(false)
@@ -223,7 +225,7 @@ const BundleInteractive = ({ bundle }) => {
                         className="transition-transform duration-300 group-hover:-translate-x-1"
                     />
                     <span className="relative font-aeonik text-[14px] xl:text-[16px] text-black-custom">
-                        Back
+                        {t("back")}
                         <span className="absolute bottom-0 left-0 h-px w-0 bg-black-custom group-hover:w-full transition-all duration-500 ease-out" />
                     </span>
                 </button>
@@ -384,7 +386,7 @@ const BundleInteractive = ({ bundle }) => {
                                 disabled={isAdding || atMax}
                                 className="flex-1 flex items-center justify-center px-6 py-4 md:h-12 md:px-0 md:py-0 bg-black-custom rounded-full font-aeonik text-[16px] uppercase text-white-custom hover:bg-gray-text transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                             >
-                                {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : "ADD TO BAG"}
+                                {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : t("addToBag")}
                             </button>
                             <button
                                 onClick={handleQuickBuy}

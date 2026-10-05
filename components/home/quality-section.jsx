@@ -1,9 +1,14 @@
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
 
 const ATHLETE_IMG = "/images/certified-quality.webp";
 
 
-const QualitySection = () => {
+// Explicit locale: on the force-static home page next-intl has no request to
+// read it from (see stories-that-move). Every page using this section passes it.
+const QualitySection = async ({ locale }) => {
+    const t = await getTranslations({ locale, namespace: "home.quality" });
+
     return (
         <section
             id="quality-section-section"
@@ -13,14 +18,11 @@ const QualitySection = () => {
                 {/* Text side */}
                 <div className="order-2 xl:order-1 py-10 xl:py-20 flex flex-col justify-center gap-6 xl:gap-8">
                     <h2 className="font-aeonik text-black text-[28px] xl:text-[35px] leading-[1.45]">
-                        Built on certified quality
+                        High-Standard Quality
                     </h2>
 
                     <p className="font-aeonik text-black text-[16px] xl:text-[20px] leading-[1.2] max-w-229.25">
-                        SPOTTEQ products are manufactured in the European Union, in GMP- and
-                        HACCP-certified facilities that comply with EU food and food
-                        supplement standards. Each batch is produced under strict quality
-                        controls, so you know exactly what goes into every scoop.
+                        {t("description")}
                     </p>
 
                     {/* Certification logos */}
@@ -28,9 +30,9 @@ const QualitySection = () => {
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src="/images/gmp-logo.png" alt="GMP Certified" className="h-14 xl:h-20 w-auto" />
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/images/haccp-logo.png" alt="HACCP Certified" className="h-[54px] xl:h-[78px] w-auto" />
+                        <img src="/images/haccp-logo.png" alt="HACCP Certified" className="h-13.5 xl:h-19.5 w-auto" />
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/images/isoqar-logo.png" alt="ISOQAR Certified" className="h-[55px] xl:h-[79px] w-auto object-contain" />
+                        <img src="/images/isoqar-logo.png" alt="ISOQAR Certified" className="h-13.75 xl:h-19.75 w-auto object-contain" />
                     </div>
                 </div>
 

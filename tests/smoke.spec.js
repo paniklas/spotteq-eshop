@@ -134,22 +134,289 @@ test.describe("UserWay widget", () => {
 
   // UserWay picks its language once at startup, so an in-app locale switch has
   // to tell it. The real widget is blocked and stubbed so the test can see the call.
+  // The stub is installed before any page script: in dev, hydration can finish
+  // after "load", so a stub added later raced LocaleLanguageSetter's mount call.
   test("follows an in-app locale switch", async ({ page, isMobile }) => {
     test.skip(isMobile, "The navbar language toggle is desktop-only");
     await page.route("https://cdn.userway.org/**", (route) => route.abort());
-    await page.goto("/el");
-    await page.waitForLoadState("load");
-    await page.evaluate(() => {
+    await page.addInitScript(() => {
       window.__userwayLangCalls = [];
       window.UserWay = { changeWidgetLanguage: (lang) => window.__userwayLangCalls.push(lang) };
     });
+    await page.goto("/el");
+    // LocaleLanguageSetter reports "el" on mount: the page has hydrated, so the
+    // toggle's click handler is attached.
+    await expect.poll(() => page.evaluate(() => window.__userwayLangCalls)).toContain("el");
 
     await page.getByRole("button", { name: "Switch to English" }).click();
     await expect(page).toHaveURL(/\/en$/);
-    // Deduped: the locale switch remounts the [locale] layout, and dev Strict
-    // Mode runs that mount effect twice.
-    await expect
-      .poll(() => page.evaluate(() => [...new Set(window.__userwayLangCalls)]))
-      .toEqual(["en"]);
+    await expect.poll(() => page.evaluate(() => window.__userwayLangCalls.at(-1))).toBe("en");
   });
+});
+
+// Same force-static pitfall for links: a Server Component's i18n <Link> without
+// an explicit `locale` falls back to el, sending /en visitors to Greek pages.
+test.describe("Home page links keep the locale", () => {
+  for (const { locale, other } of [
+    { locale: "en", other: "el" },
+    { locale: "el", other: "en" },
+  ]) {
+    test(`no /${other}/ links on /${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}`);
+      const hrefs = await page.locator("main a[href]").evaluateAll((as) => as.map((a) => a.getAttribute("href")));
+      expect(hrefs.filter((h) => h.startsWith(`/${other}/`) || h === `/${other}`)).toEqual([]);
+    });
+  }
+});
+
+// The footer is a Server Component in the (root) layout: on the force-static
+// home page it needs the explicit locale too.
+test.describe("Footer translations", () => {
+  const en = ["Sign up for SPOTTEQ updates", "By subscribing you agree", "Your email", "SUBSCRIBE", "INFORMATION", "SHIPPING & PAYMENTS", "RETURNS POLICY", "TERMS OF USE"];
+  const el = ["Μείνε ενημερωμένος για τη SPOTTEQ", "Με την εγγραφή σου συμφωνείς", "Το email σου", "ΕΓΓΡΑΦΗ", "ΠΛΗΡΟΦΟΡΙΕΣ", "ΑΠΟΣΤΟΛΕΣ & ΠΛΗΡΩΜΕΣ", "ΠΟΛΙΤΙΚΗ ΕΠΙΣΤΡΟΦΩΝ", "ΟΡΟΙ ΧΡΗΣΗΣ",
+    // All-Greek letters (the source text had a Latin E and H in it).
+    "\u03a3\u03a5\u03a7\u039d\u0395\u03a3 \u0395\u03a1\u03a9\u03a4\u0397\u03a3\u0395\u0399\u03a3"];
+  for (const { path, expected, absent } of [
+    { path: "/en", expected: en, absent: el[0] },
+    { path: "/el", expected: el, absent: en[0] },
+    { path: "/en/about", expected: en, absent: el[0] },
+  ]) {
+    test(`footer on ${path}`, async ({ page }) => {
+      await page.goto(path);
+      const footer = page.locator("#footer-section");
+      for (const text of expected) await expect(footer).toContainText(text);
+      // The label text doubles as the input's placeholder.
+      await expect(footer.getByPlaceholder(expected[2], { exact: true })).toHaveCount(1);
+      await expect(footer).not.toContainText(absent);
+    });
+  }
+});
+
+// The menu overlay is always in the DOM (hidden when closed). Only the code-side
+// copy is checked; group, category and bundle names come from Sanity.
+test.describe("Menu translations", () => {
+  for (const { locale, expected, absent } of [
+    { locale: "en", expected: ["View all products", "About", "Who we are and what we stand for", "Get in touch with the SPOTTEQ team", "Shop by ", "SHIPPING & PAYMENTS", "RETURNS POLICY"], absent: "Όλα τα προϊόντα" },
+    // Greek has no "Shop by" prefix: the Sanity group titles read "Ανά Σειρά" / "Ανά Στόχο".
+    { locale: "el", expected: ["Όλα τα προϊόντα", "Σχετικά", "Ποιοι είμαστε και τι πρεσβεύουμε", "Επικοινώνησε με την ομάδα της SPOTTEQ", "Επικοινωνία", "ΑΠΟΣΤΟΛΕΣ & ΠΛΗΡΩΜΕΣ", "ΠΟΛΙΤΙΚΗ ΕΠΙΣΤΡΟΦΩΝ", "ΛΟΓΑΡΙΑΣΜΟΣ"], absent: "Shop by " },
+  ]) {
+    test(`menu on /${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}`);
+      const menu = page.locator('[aria-label="Site navigation"]');
+      for (const text of expected) await expect(menu).toContainText(text);
+      await expect(menu).not.toContainText(absent);
+    });
+  }
+});
+
+// Shop sidebar (client component). Category and group names come from Sanity;
+// Greek has no "SHOP BY" prefix because its group titles read "Ανά …".
+test.describe("Shop sidebar translations", () => {
+  for (const { locale, expected, absent } of [
+    { locale: "en", expected: ["All Products", "All Bundles", "SHOP BY ", "SHOP BY BUNDLE", "Results", "Filters"], absent: "Όλα τα προϊόντα" },
+    { locale: "el", expected: ["Όλα τα προϊόντα", "Όλα τα Bundles", "Bundles", "αποτελέσματα", "Φίλτρα", "Κλείσιμο"], absent: "SHOP BY" },
+  ]) {
+    test(`Shop All sidebar on /${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}/shop/shop-all`);
+      const main = page.locator("main");
+      for (const text of expected) await expect(main).toContainText(text);
+      await expect(main).not.toContainText(absent);
+    });
+  }
+});
+
+// The home page is force-static, so a section that forgets to pass `locale` to
+// getTranslations silently falls back to the default (el) on /en. textContent
+// covers both the mobile and desktop layouts (one of them is always hidden).
+test.describe("Home page translations", () => {
+  for (const { locale, expected, absent } of [
+    { locale: "en", expected: ["Nassos Ghavelas", "Paralympic Champion, SPOTTEQ Ambassador", "Feb 6, 2026", "In elite sport"], absent: "Νάσος Γκαβέλας" },
+    { locale: "el", expected: ["Νάσος Γκαβέλας", "Παραολυμπιονίκης, Brand Ambassador της SPOTTEQ", "6 Φεβ 2026", "Στον πρωταθλητισμό"], absent: "Nassos Ghavelas" },
+  ]) {
+    test(`Stories that move is in ${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}`);
+      const section = page.locator("#stories-that-move-section");
+      for (const text of expected) await expect(section).toContainText(text);
+      await expect(section).not.toContainText(absent);
+      // The heading stays in English on both locales.
+      await expect(section).toContainText("Stories that move");
+    });
+  }
+
+  for (const { locale, expected, absent } of [
+    { locale: "en", expected: "A focused line of science-driven formulas", absent: "Μια στοχευμένη σειρά προϊόντων" },
+    { locale: "el", expected: "Μια στοχευμένη σειρά προϊόντων", absent: "A focused line of science-driven formulas" },
+  ]) {
+    test(`Featured Products description is in ${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}`);
+      const section = page.locator("#featured-products-section");
+      await expect(section).toContainText(expected);
+      await expect(section).not.toContainText(absent);
+    });
+  }
+
+  for (const { locale, expected, absent } of [
+    { locale: "en", expected: "Curated combinations of products that work together", absent: "Προσεκτικά επιλεγμένοι συνδυασμοί" },
+    { locale: "el", expected: "Προσεκτικά επιλεγμένοι συνδυασμοί", absent: "Curated combinations of products that work together" },
+  ]) {
+    test(`Bundles description is in ${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}`);
+      const section = page.locator("#bundle-section");
+      await expect(section).toContainText(expected);
+      await expect(section).not.toContainText(absent);
+    });
+  }
+
+  for (const { locale, expected, absent } of [
+    { locale: "en", expected: "SPOTTEQ is a performance nutrition brand", absent: "Η SPOTTEQ είναι ένα brand αθλητικής διατροφής" },
+    { locale: "el", expected: "Η SPOTTEQ είναι ένα brand αθλητικής διατροφής", absent: "SPOTTEQ is a performance nutrition brand" },
+  ]) {
+    test(`About description is in ${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}`);
+      const section = page.locator("#about-section");
+      await expect(section).toContainText(expected);
+      await expect(section).not.toContainText(absent);
+    });
+  }
+
+  for (const { locale, expected, absent } of [
+    { locale: "en", expected: "The core principle of SPOTTEQ is to offer premium products", absent: "Βασική αρχή της SPOTTEQ" },
+    { locale: "el", expected: "Βασική αρχή της SPOTTEQ", absent: "The core principle of SPOTTEQ is to offer premium products" },
+  ]) {
+    test(`Quality description is in ${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}`);
+      const section = page.locator("#quality-section-section");
+      await expect(section).toContainText(expected);
+      await expect(section).not.toContainText(absent);
+    });
+  }
+
+  // Shop All has no description of its own and falls back to the Featured Products text.
+  for (const { locale, expected, absent } of [
+    { locale: "en", expected: "A focused line of science-driven formulas", absent: "Μια στοχευμένη σειρά προϊόντων" },
+    { locale: "el", expected: "Μια στοχευμένη σειρά προϊόντων", absent: "A focused line of science-driven formulas" },
+  ]) {
+    test(`Shop All description is in ${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}/shop/shop-all`);
+      const main = page.locator("main");
+      await expect(main).toContainText(expected);
+      await expect(main).not.toContainText(absent);
+    });
+  }
+});
+
+// Product copy that lives in code (client components); titles, flavours and
+// accordion bodies come from Sanity.
+test.describe("Product copy translations", () => {
+  for (const { locale, expected, absent } of [
+    { locale: "en", expected: ["ADD TO BAG", "VIEW DETAILS"], absent: "ΠΡΟΣΘΗΚΗ" },
+    { locale: "el", expected: ["ΠΡΟΣΘΗΚΗ", "ΔΕΣ ΛΕΠΤΟΜΕΡΕΙΕΣ"], absent: "ADD TO BAG" },
+  ]) {
+    test(`home product and bundle cards on /${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}`);
+      for (const id of ["#featured-products-section", "#bundle-section"]) {
+        const section = page.locator(id);
+        for (const text of expected) await expect(section).toContainText(text);
+        await expect(section).not.toContainText(absent);
+      }
+    });
+  }
+
+  for (const { locale, expected, absent } of [
+    { locale: "en", expected: ["Back", "ADD TO BAG"], absent: "ΠΡΟΣΘΗΚΗ" },
+    { locale: "el", expected: ["Πίσω", "ΠΡΟΣΘΗΚΗ"], absent: "ADD TO BAG" },
+  ]) {
+    test(`product page on /${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}/shop/shop-all`);
+      const href = await page.locator(`main a[href*="/shop/product/"]`).first().getAttribute("href");
+      await page.goto(href);
+      const main = page.locator("main");
+      for (const text of expected) await expect(main).toContainText(text);
+      await expect(main).not.toContainText(absent);
+    });
+  }
+});
+
+// The cart drawer is always in the DOM (off-screen when closed). A seeded item
+// at 1€ shows the coupon field and stays under the free shipping threshold;
+// at 1000€ it clears it.
+test.describe("Cart drawer translations", () => {
+  const seedCart = (page, price) => page.addInitScript((price) => {
+    const cartItems = price ? [{ id: "test-product-id", type: "product", cartId: "test-cart-id", qty: 2, price, inventory: 10, name: "Test Product" }] : [];
+    localStorage.setItem("spotteq-cart-v2", JSON.stringify({ state: { cartItems }, version: 0 }));
+  }, price);
+
+  for (const { locale, copy, absent } of [
+    {
+      locale: "en",
+      absent: "Το καλάθι σου",
+      copy: {
+        drawer: ["Your bag", "2 ITEMS", /You are \d+,\d{2}€ away from FREE SHIPPING!/, "REMOVE", "COUPON CODE /", "GIFT CARD", "Apply", "TOTAL", "PROCEED TO CHECKOUT"],
+        placeholder: "Enter code",
+        unlocked: "You've unlocked FREE SHIPPING!",
+        empty: "Your bag is empty.",
+        checkout: "PROCEED TO CHECKOUT",
+        modal: ["Before you continue", "Sign in or create a free account", "Sign in / Create account", "Continue as guest"],
+        apply: "Apply",
+        couponErrors: ["Please enter a coupon code.", "Invalid coupon code."],
+      },
+    },
+    {
+      locale: "el",
+      absent: "Your bag",
+      copy: {
+        drawer: ["Το καλάθι σου", "2 ΠΡΟΪΟΝΤΑ", /Σου λείπουν \d+,\d{2}€ για ΔΩΡΕΑΝ ΑΠΟΣΤΟΛΗ!/, "ΑΦΑΙΡΕΣΗ", "ΚΩΔΙΚΟΣ ΚΟΥΠΟΝΙΟΥ /", "ΔΩΡΟΚΑΡΤΑ", "ΕΦΑΡΜΟΓΗ", "ΣΥΝΟΛΟ", "ΟΛΟΚΛΗΡΩΣΗ ΑΓΟΡΑΣ"],
+        placeholder: "Κωδικός",
+        unlocked: "Κέρδισες ΔΩΡΕΑΝ ΑΠΟΣΤΟΛΗ!",
+        empty: "Το καλάθι σου είναι άδειο.",
+        checkout: "ΟΛΟΚΛΗΡΩΣΗ ΑΓΟΡΑΣ",
+        modal: ["Πριν συνεχίσεις", "Συνδέσου ή δημιούργησε δωρεάν λογαριασμό", "ΣΥΝΔΕΣΗ / ΕΓΓΡΑΦΗ", "ΣΥΝΕΧΕΙΑ ΩΣ ΕΠΙΣΚΕΠΤΗΣ"],
+        apply: "ΕΦΑΡΜΟΓΗ",
+        couponErrors: ["Συμπλήρωσε έναν κωδικό κουπονιού.", "Μη έγκυρος κωδικός κουπονιού."],
+      },
+    },
+  ]) {
+    test(`cart drawer on /${locale}`, async ({ page }) => {
+      await seedCart(page, 1);
+      await page.goto(`/${locale}`);
+      const body = page.locator("body");
+      for (const text of copy.drawer) await expect(body).toContainText(text);
+      await expect(page.getByPlaceholder(copy.placeholder, { exact: true })).toHaveCount(1);
+      await expect(body).not.toContainText(absent);
+    });
+
+    test(`free shipping reached on /${locale}`, async ({ page }) => {
+      await seedCart(page, 1000);
+      await page.goto(`/${locale}`);
+      await expect(page.locator("body")).toContainText(copy.unlocked);
+    });
+
+    test(`empty bag on /${locale}`, async ({ page }) => {
+      await seedCart(page, 0);
+      await page.goto(`/${locale}`);
+      await expect(page.locator("body")).toContainText(copy.empty);
+    });
+
+    test(`checkout sign-in popup on /${locale}`, async ({ page }) => {
+      await seedCart(page, 1);
+      await page.goto(`/${locale}`);
+      await page.locator('[aria-label="Cart"]:visible').first().click();
+      await page.getByRole("button", { name: copy.checkout }).click();
+      await expect(page.getByRole("heading", { name: copy.modal[0] })).toBeVisible();
+      for (const text of copy.modal.slice(1)) await expect(page.locator("body")).toContainText(text);
+    });
+
+    // The server action returns an error code; the drawer shows it in the page's language.
+    test(`coupon errors on /${locale}`, async ({ page }) => {
+      await seedCart(page, 1);
+      await page.goto(`/${locale}`);
+      await page.locator('[aria-label="Cart"]:visible').first().click();
+      const apply = page.getByRole("button", { name: copy.apply, exact: true });
+      await apply.click();
+      await expect(page.getByText(copy.couponErrors[0])).toBeVisible();
+      await page.getByPlaceholder(copy.placeholder, { exact: true }).fill("NOT-A-REAL-CODE-0000");
+      await apply.click();
+      await expect(page.getByText(copy.couponErrors[1])).toBeVisible();
+    });
+  }
 });
