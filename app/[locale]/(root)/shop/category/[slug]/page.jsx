@@ -25,7 +25,7 @@ export default async function CategoryPageBySlug({ params }) {
             <Suspense fallback={<ShopSkeleton />}>
                 <CategoryContent locale={locale} slug={slug} />
             </Suspense>
-            <QualitySection />
+            <QualitySection locale={locale} />
             <SpotteqImage />
         </>
     )

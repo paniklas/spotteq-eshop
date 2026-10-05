@@ -16,7 +16,7 @@ export default async function ShopAll({ params }) {
             <Suspense fallback={<ShopSkeleton />}>
                 <ShopAllContent locale={locale} />
             </Suspense>
-            <QualitySection />
+            <QualitySection locale={locale} />
             <SpotteqImage />
         </>
     )

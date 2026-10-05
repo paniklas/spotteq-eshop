@@ -223,6 +223,18 @@ test.describe("Home page translations", () => {
     });
   }
 
+  for (const { locale, expected, absent } of [
+    { locale: "en", expected: "The core principle of SPOTTEQ is to offer premium products", absent: "Βασική αρχή της SPOTTEQ" },
+    { locale: "el", expected: "Βασική αρχή της SPOTTEQ", absent: "The core principle of SPOTTEQ is to offer premium products" },
+  ]) {
+    test(`Quality description is in ${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}`);
+      const section = page.locator("#quality-section-section");
+      await expect(section).toContainText(expected);
+      await expect(section).not.toContainText(absent);
+    });
+  }
+
   // Shop All has no description of its own and falls back to the Featured Products text.
   for (const { locale, expected, absent } of [
     { locale: "en", expected: "A focused line of science-driven formulas", absent: "Μια στοχευμένη σειρά προϊόντων" },

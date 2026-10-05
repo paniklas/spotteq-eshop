@@ -26,7 +26,7 @@ export default async function BundlePage({ params }) {
             </Suspense>
             <KeyFeaturesForSlug slug={slug} locale={locale} />
             <FeaturedProducts compact locale={locale} />
-            <QualitySection />
+            <QualitySection locale={locale} />
             <SpotteqImage />
         </>
     )

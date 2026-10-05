@@ -185,6 +185,9 @@
         },
         "about": {
             "description": "SPOTTEQ is a performance nutrition brand created for athletes who care about what goes into their body. Each formula is science-driven, clean and clearly labelled, and part of a small, carefully curated line of products designed to support strength, recovery and everyday health in one focused system – like a trusted spotter that’s always there, even when no one else is."
+        },
+        "quality": {
+            "description": "The core principle of SPOTTEQ is to offer premium products, providing a reliable and transparent choice for every athlete. With an emphasis on high bioavailability, easy digestion, and exceptional taste, our products are manufactured under strict international quality standards and are notified to the EOF (National Organization for Medicines), ensuring premium quality and safe consumption."
         }
     }
 }

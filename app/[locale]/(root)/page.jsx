@@ -32,7 +32,7 @@ const Home = async ({ params }) => {
       <FeaturedProducts locale={locale} />
       <StoriesThatMove locale={locale} />
       <TrainingBanner />
-      <QualitySection />
+      <QualitySection locale={locale} />
       <SpotteqImage />
     </>
   )

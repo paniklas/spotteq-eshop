@@ -30,7 +30,7 @@ export default async function ProductPage({ params }) {
             </Suspense>
             <KeyFeaturesForSlug slug={slug} locale={locale} />
             <RelatedProductsForSlug slug={slug} locale={locale} />
-            <QualitySection />
+            <QualitySection locale={locale} />
             <SpotteqImage />
         </>
     )
