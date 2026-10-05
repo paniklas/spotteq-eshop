@@ -333,13 +333,13 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                                 <span className="font-aeonik text-[11px] xl:text-[14px] uppercase text-black-custom leading-tight shrink-0">
                                     {t("couponCode")}<br />{t("giftCard")}
                                 </span>
-                                <div className="flex-1 flex items-center border border-gray-mint rounded-sm">
+                                <div className="flex-1 min-w-0 flex items-center border border-gray-mint rounded-sm">
                                     <input
                                         value={couponInput}
                                         onChange={(e) => { setCouponInput(e.target.value); setCouponError("") }}
                                         onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
                                         placeholder="Enter code"
-                                        className="flex-1 px-3 py-2.5 font-tt text-[16px] md:text-[13px] text-black-custom outline-none bg-transparent placeholder:text-gray-text/50"
+                                        className="flex-1 min-w-0 px-3 py-2.5 font-tt text-[16px] md:text-[13px] text-black-custom outline-none bg-transparent placeholder:text-gray-text/50"
                                     />
                                     <button
                                         onClick={handleApplyCoupon}
