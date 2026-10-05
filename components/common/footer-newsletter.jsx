@@ -42,7 +42,7 @@ const FooterNewsletter = () => {
       <h2 className="font-aeonik text-black text-[28px] xl:text-[35px] mb-6 leading-none">
         Stay in the loop
       </h2>
-      <p className="font-aeonik text-black text-[14px] xl:text-[16px] leading-[1.45] mb-8 max-w-[400px]">
+      <p className="font-aeonik text-black text-[14px] xl:text-[16px] leading-[1.45] mb-8 xl:max-w-150">
         {t("description")}
       </p>
 

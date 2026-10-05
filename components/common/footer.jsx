@@ -76,7 +76,7 @@ const Footer = async ({ locale }) => {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-10 xl:gap-20">
                                 {footerColumns.map((col) => (
                                     <div key={col.heading}>
-                                        <h4 className="font-aeonik text-[16px] text-black mb-4 uppercase">
+                                        <h4 className="font-aeonik text-[16px] text-black uppercase">
                                             {t(`headings.${col.heading}`)}
                                         </h4>
                                         <ul className="flex flex-col xl:pt-6">

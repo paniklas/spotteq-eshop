@@ -196,7 +196,7 @@ test.describe("Menu translations", () => {
   for (const { locale, expected, absent } of [
     { locale: "en", expected: ["View all products", "About", "Who we are and what we stand for", "Get in touch with the SPOTTEQ team", "Shop by ", "SHIPPING & PAYMENTS", "RETURNS POLICY"], absent: "Όλα τα προϊόντα" },
     // Greek has no "Shop by" prefix: the Sanity group titles read "Ανά Σειρά" / "Ανά Στόχο".
-    { locale: "el", expected: ["Όλα τα προϊόντα", "Σχετικά", "Ποιοι είμαστε και τι πρεσβεύουμε", "Επικοινώνησε με την ομάδα της SPOTTEQ", "Επικοινωνία", "ΑΠΟΣΤΟΛΕΣ & ΠΛΗΡΩΜΕΣ", "ΠΟΛΙΤΙΚΗ ΕΠΙΣΤΡΟΦΩΝ"], absent: "Shop by " },
+    { locale: "el", expected: ["Όλα τα προϊόντα", "Σχετικά", "Ποιοι είμαστε και τι πρεσβεύουμε", "Επικοινώνησε με την ομάδα της SPOTTEQ", "Επικοινωνία", "ΑΠΟΣΤΟΛΕΣ & ΠΛΗΡΩΜΕΣ", "ΠΟΛΙΤΙΚΗ ΕΠΙΣΤΡΟΦΩΝ", "ΛΟΓΑΡΙΑΣΜΟΣ"], absent: "Shop by " },
   ]) {
     test(`menu on /${locale}`, async ({ page }) => {
       await page.goto(`/${locale}`);

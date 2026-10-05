@@ -92,7 +92,7 @@ const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }
                         tabIndex={isOpen ? 0 : -1}
                         className="h-12 flex items-center justify-center border border-black-custom text-black-custom rounded-[15px] font-aeonik text-[14px] tracking-wide"
                     >
-                        ACCOUNT
+                        {t("account")}
                     </Link>
                 </div>
 
