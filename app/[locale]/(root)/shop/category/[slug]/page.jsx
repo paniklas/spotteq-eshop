@@ -10,8 +10,23 @@ import SpotteqImage from "@/components/home/spotteq-image";
 import { getAllProducts } from "@/sanity/getData/getAllProducts";
 import { getAllCategories, getCategoryBySlug } from "@/sanity/getData/getAllcategories";
 import { getShopBundles } from "@/sanity/getData/getShopBundles";
+import { seoMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+// Category SEO from Sanity (Category → SEO Metadata); empty fields fall back to
+// the category's own title, description and image.
+export async function generateMetadata({ params }, parent) {
+    const { locale, slug: rawSlug } = await params;
+    const { slug } = normalizeSlug(rawSlug);
+    const category = await getCategoryBySlug(slug, locale);
+    if (!category) return {};
+    return seoMetadata(category.seo, locale, {
+        title: category.title,
+        description: category.description,
+        image: category.image,
+    }, parent);
+}
 
 export default async function CategoryPageBySlug({ params }) {
     const { locale, slug: rawSlug } = await params;

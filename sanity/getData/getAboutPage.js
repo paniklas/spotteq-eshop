@@ -1,6 +1,7 @@
 import { defineQuery } from 'next-sanity'
 import { catalogFetch } from '../lib/catalogFetch'
 import { urlFor } from '../lib/image'
+import { seoProjection } from '../lib/seoProjection'
 
 export async function getAboutPage(locale) {
     const QUERY = defineQuery(`
@@ -16,6 +17,7 @@ export async function getAboutPage(locale) {
             "missionBody": missionBody[language == $locale][0].value,
             missionImage,
             "missionImageAlt": missionImageAlt[language == $locale][0].value,
+            ${seoProjection('metadata')}
         }
     `)
 

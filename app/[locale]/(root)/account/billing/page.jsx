@@ -1,9 +1,16 @@
 import { getTranslations } from "next-intl/server";
+import { brandTitle } from "@/lib/seo";
 import { getOrCreateUserInfo } from "@/sanity/getData/getOrCreateUserInfo";
 import { updateUserBillingInfo } from "@/app/actions/updateUserBillingInfo";
 import AddressForm from "@/components/account/address-form";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "account" });
+    return { title: brandTitle(t("nav.billing")) };
+}
 
 export default async function BillingPage() {
     const [userInfo, t] = await Promise.all([

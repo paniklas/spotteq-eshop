@@ -3,6 +3,15 @@ import { getShippingMethods } from "@/sanity/getData/getShippingMethods";
 import { getOrCreateUserInfo } from "@/sanity/getData/getOrCreateUserInfo";
 import { getFirstOrderPromoPercent } from "@/sanity/getData/getFirstOrderPromo";
 import CheckoutContent from "@/components/checkout/checkout-content";
+import { getTranslations } from "next-intl/server";
+import { brandTitle, NO_INDEX } from "@/lib/seo";
+
+// Private page: translated title, kept out of search engines.
+export async function generateMetadata({ params }) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "metadata" });
+    return { title: brandTitle(t("checkoutTitle")), robots: NO_INDEX };
+}
 
 const Checkout = async ({ params }) => {
     const { locale } = await params;

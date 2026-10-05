@@ -8,9 +8,22 @@ import FeaturedProducts from "@/components/home/featured-products"
 import FeaturedProductsSkeleton from "@/components/skeletons/featured-products-skeleton"
 import QualitySection from "@/components/home/quality-section"
 import SpotteqImage from "@/components/home/spotteq-image"
+import { seoMetadata } from "@/lib/seo"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 86400;
+
+// About SEO from Sanity (About Page → SEO Metadata); empty fields fall back to
+// the page heading and hero image.
+export async function generateMetadata({ params }, parent) {
+    const { locale } = await params
+    const about = await getAboutPage(locale)
+    if (!about) return {}
+    return seoMetadata(about.seo, locale, {
+        title: about.heading?.replace(/\s+/g, " ").trim(),
+        image: about.heroImage,
+    }, parent)
+}
 
 export default async function AboutUs({ params }) {
     const { locale } = await params

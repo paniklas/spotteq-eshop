@@ -1,5 +1,6 @@
 import { defineQuery } from 'next-sanity';
 import { catalogFetch } from '../lib/catalogFetch';
+import { seoProjection } from '../lib/seoProjection';
 
 export const getAllCategories = async (locale) => {
     const ALL_CATEGORIES_QUERY = defineQuery(`
@@ -70,7 +71,9 @@ export const getCategoryBySlug = async (slug, locale) => {
             "title": title[language == $locale][0].value,
             "slug": slugs[$locale].current,
             "description": description[language == $locale][0].value,
-            "group": categoryGroup->slug.current
+            "group": categoryGroup->slug.current,
+            image,
+            ${seoProjection('metadata')}
         }
     `)
     try {

@@ -2,6 +2,7 @@ import { cache } from 'react'
 import { defineQuery } from 'next-sanity'
 import { catalogFetch } from '../lib/catalogFetch'
 import { urlFor } from '../lib/image'
+import { seoProjection } from '../lib/seoProjection'
 
 export const getProductBySlug = cache(async (slug, locale) => {
     const QUERY = defineQuery(`
@@ -54,7 +55,8 @@ export const getProductBySlug = cache(async (slug, locale) => {
                 "ingredients": ingredients[language == $locale][0].value,
                 "directions": directions[language == $locale][0].value,
                 "additionalInfo": additionalInfo[language == $locale][0].value
-            }
+            },
+            ${seoProjection('metadata')}
         }
     `)
 
