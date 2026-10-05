@@ -11,9 +11,19 @@ import StoriesThatMove from "@/components/home/stories-that-move"
 import TrainingBanner from "@/components/home/training-banner"
 import ShopBySeriesSkeleton from "@/components/skeletons/shop-by-series-skeleton"
 import BundleSectionSkeleton from "@/components/skeletons/bundle-section-skeleton"
+import { getHomeSeo } from "@/sanity/getData/getHomeSeo"
+import { seoMetadata } from "@/lib/seo"
 
 export const dynamic = "force-static";
 export const revalidate = 3600;
+
+// Home page SEO from Sanity (Home Page → SEO). Fields left empty in Studio are
+// omitted, so they fall back to the layout's metadata.
+export async function generateMetadata({ params }, parent) {
+  const { locale } = await params;
+  const seo = await getHomeSeo(locale);
+  return seo ? seoMetadata(seo, locale, {}, parent) : {};
+}
 
 const Home = async ({ params }) => {
   const { locale } = await params;

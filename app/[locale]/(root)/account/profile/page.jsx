@@ -1,9 +1,16 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { getTranslations } from "next-intl/server";
+import { brandTitle } from "@/lib/seo";
 import { getOrCreateUserInfo } from "@/sanity/getData/getOrCreateUserInfo";
 import ProfileForm from "@/components/account/profile-form";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "account" });
+    return { title: brandTitle(t("nav.profile")) };
+}
 
 export default async function ProfilePage() {
     const [user, userInfo, t] = await Promise.all([

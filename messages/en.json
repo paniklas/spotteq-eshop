@@ -297,5 +297,18 @@
             "signIn": "Sign in / Create account",
             "guest": "Continue as guest"
         }
+    },
+    "metadata": {
+        "siteTitle": "SPOTTEQ | Sports Nutrition Supplements",
+        "siteDescription": "Discover SPOTTEQ sports nutrition supplements for strength, performance, recovery and everyday support.",
+        "shopAllTitle": "All products",
+        "shopAllDescription": "All SPOTTEQ sports nutrition supplements: whey protein, creatine, magnesium, vitamin C and more, for strength, performance and recovery.",
+        "bundlesTitle": "Bundles",
+        "bundlesDescription": "SPOTTEQ supplement bundles at a special price, combined for strength, performance and recovery.",
+        "checkoutTitle": "Checkout",
+        "orderConfirmationTitle": "Order confirmation",
+        "signInTitle": "Sign in",
+        "signUpTitle": "Create account",
+        "accountTitle": "My account"
     }
 }

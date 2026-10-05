@@ -9,8 +9,23 @@ import SpotteqImage from "@/components/home/spotteq-image";
 import FeaturedProducts from "@/components/home/featured-products";
 import KeyFeatures from "@/components/product/key-features";
 import { getBundleBySlug } from "@/sanity/getData/getBundleBySlug";
+import { seoMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+// Bundle SEO from Sanity (Bundle → SEO Metadata); empty fields fall back to the
+// bundle's own title, description and main image.
+export async function generateMetadata({ params }, parent) {
+    const { locale, slug: rawSlug } = await params;
+    const { slug } = normalizeSlug(rawSlug);
+    const bundle = await getBundleBySlug(slug, locale);
+    if (!bundle) return {};
+    return seoMetadata(bundle.seo, locale, {
+        title: bundle.title,
+        description: bundle.description,
+        image: bundle.image,
+    }, parent);
+}
 
 export default async function BundlePage({ params }) {
     const { locale, slug: rawSlug } = await params;

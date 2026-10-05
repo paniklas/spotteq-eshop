@@ -1,9 +1,16 @@
 import { getTranslations } from "next-intl/server";
+import { brandTitle } from "@/lib/seo";
 import { getOrCreateUserInfo } from "@/sanity/getData/getOrCreateUserInfo";
 import { getUserOrders } from "@/sanity/getData/getUserOrders";
 import OrderList from "@/components/account/order-list";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "account" });
+    return { title: brandTitle(t("nav.orders")) };
+}
 
 export default async function OrdersPage({ params }) {
     const { locale } = await params;

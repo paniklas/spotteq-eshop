@@ -1,9 +1,16 @@
 import { getTranslations } from "next-intl/server";
+import { brandTitle } from "@/lib/seo";
 import { Heart } from "lucide-react";
 import { getUserFavourites } from "@/sanity/getData/getUserFavourites";
 import WishlistTable from "@/components/account/wishlist-table";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "account" });
+    return { title: brandTitle(t("nav.wishlist")) };
+}
 
 export default async function WishlistPage({ params }) {
     const { locale } = await params;

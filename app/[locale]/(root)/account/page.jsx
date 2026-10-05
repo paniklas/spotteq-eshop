@@ -1,5 +1,6 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { getTranslations } from "next-intl/server";
+import { brandTitle } from "@/lib/seo";
 import { Link } from "@/i18n/navigation";
 import { ShoppingBag, Package, Heart, ArrowRight, Tag } from "lucide-react";
 import { getOrCreateUserInfo } from "@/sanity/getData/getOrCreateUserInfo";
@@ -27,6 +28,12 @@ const StatCard = ({ icon: Icon, value, label }) => (
         </div>
     </div>
 );
+
+export async function generateMetadata({ params }) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "metadata" });
+    return { title: brandTitle(t("accountTitle")) };
+}
 
 export default async function OverviewPage({ params }) {
     const { locale } = await params;

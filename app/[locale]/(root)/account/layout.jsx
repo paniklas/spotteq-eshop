@@ -1,8 +1,13 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import AccountNav from "@/components/account/account-nav";
+import { NO_INDEX } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+// Every account page is per-user: kept out of search engines. Inherited by the
+// pages below, which set only their own title.
+export const metadata = { robots: NO_INDEX };
 
 export default async function AccountLayout({ children, params }) {
     const { locale } = await params;

@@ -12,9 +12,24 @@ import SpotteqImage from "@/components/home/spotteq-image"
 import FeaturedProducts from "@/components/home/featured-products"
 import FeaturedProductsSlider from "@/components/home/featured-products-slider"
 import KeyFeatures from "@/components/product/key-features"
+import { seoMetadata } from "@/lib/seo"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 86400;
+
+// Product SEO from Sanity (Product → SEO Metadata); empty fields fall back to
+// the product's own title, tagline and main image.
+export async function generateMetadata({ params }, parent) {
+    const { slug: rawSlug, locale } = await params
+    const { slug } = normalizeSlug(rawSlug)
+    const product = await getProductBySlug(slug, locale)
+    if (!product) return {}
+    return seoMetadata(product.seo, locale, {
+        title: product.title,
+        description: product.tagline,
+        image: product.image,
+    }, parent)
+}
 
 export default async function ProductPage({ params }) {
     const { slug: rawSlug, locale } = await params
