@@ -59,7 +59,9 @@ export default function OrderDetails({ order, locale }) {
 
   const discount = order.amountDiscount ?? 0;
   const shippingCost = order.shippingCost ?? 0;
-  const isBoxNow = Boolean(order.boxNowLockerName);
+  // Any BoxNow field marks a locker delivery: the locker name is optional and
+  // can be stored as an empty string.
+  const isBoxNow = Boolean(order.boxNowLockerName || order.boxNowLockerAddress || order.boxNowParcelId);
 
   return (
     <>
@@ -120,7 +122,6 @@ export default function OrderDetails({ order, locale }) {
           .map((line, i) => (
             <Text key={i} style={{ ...styles.text, margin: 0 }}>{line}</Text>
           ))}
-        {/* The parcel ID alone marks a BoxNow shipment: the locker name can be stored empty. */}
         {order.boxNowParcelId ? (
           <>
             <Label>{t.boxNowTracking}</Label>
