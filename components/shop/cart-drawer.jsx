@@ -96,7 +96,7 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
         const result = await validateCoupon(couponInput)
         setCouponApplying(false)
         if (!result.valid) {
-            setCouponError(result.error)
+            setCouponError(result.code ? t(`couponErrors.${result.code}`) : result.error)
             return
         }
         applyCoupon(result.coupon)

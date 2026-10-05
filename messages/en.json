@@ -274,6 +274,15 @@
         "bundleSavings": "Save {amount}€ vs buying individually",
         "viewBundle": "View Bundle",
         "close": "Close",
+        "couponErrors": {
+            "empty": "Please enter a coupon code.",
+            "invalid": "Invalid coupon code.",
+            "fullyRedeemed": "This coupon has been fully redeemed.",
+            "inactive": "This coupon is no longer available.",
+            "notYetValid": "Coupon is not yet valid.",
+            "expired": "This coupon has expired.",
+            "failed": "Unable to validate coupon. Please try again."
+        },
         "checkoutModal": {
             "title": "Before you continue",
             "description": "Sign in or create a free account to track your orders, save your details, and enjoy a faster checkout next time.",

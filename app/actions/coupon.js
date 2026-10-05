@@ -42,33 +42,35 @@ const COUPON_WITH_EMAIL_QUERY = defineQuery(`
     }
 `)
 
+// Each failure carries a `code` next to the English `error`, so the client can
+// show it in the visitor's language (messages: cart.couponErrors).
 function checkValidity(coupon) {
     const now = new Date()
     // Checked before isActive: a coupon that reached its limit deactivates
     // itself, and "fully redeemed" explains that better than "no longer active".
     if (coupon.maxUses != null && coupon.usedCount >= coupon.maxUses) {
-        return { valid: false, error: "This coupon has been fully redeemed." }
+        return { valid: false, error: "This coupon has been fully redeemed.", code: "fullyRedeemed" }
     }
     if (coupon.isActive !== true) {
-        return { valid: false, error: "This coupon is no longer available." }
+        return { valid: false, error: "This coupon is no longer available.", code: "inactive" }
     }
     if (coupon.validFrom && new Date(coupon.validFrom) > now) {
-        return { valid: false, error: "Coupon is not yet valid." }
+        return { valid: false, error: "Coupon is not yet valid.", code: "notYetValid" }
     }
     if (coupon.validUntil && new Date(coupon.validUntil) < now) {
-        return { valid: false, error: "This coupon has expired." }
+        return { valid: false, error: "This coupon has expired.", code: "expired" }
     }
     return { valid: true }
 }
 
 export async function validateCoupon(couponCode) {
     if (!couponCode?.trim()) {
-        return { valid: false, error: "Please enter a coupon code." }
+        return { valid: false, error: "Please enter a coupon code.", code: "empty" }
     }
     try {
         const result = await sanityFetch({ query: COUPON_QUERY, params: { couponCode: couponCode.trim() } })
         const coupon = result.data
-        if (!coupon) return { valid: false, error: "Invalid coupon code." }
+        if (!coupon) return { valid: false, error: "Invalid coupon code.", code: "invalid" }
 
         const validity = checkValidity(coupon)
         if (!validity.valid) return validity
@@ -83,16 +85,16 @@ export async function validateCoupon(couponCode) {
             },
         }
     } catch {
-        return { valid: false, error: "Unable to validate coupon. Please try again." }
+        return { valid: false, error: "Unable to validate coupon. Please try again.", code: "failed" }
     }
 }
 
 export async function validateCouponWithEmail(couponCode, email) {
     if (!couponCode?.trim()) {
-        return { valid: false, error: "Please enter a coupon code." }
+        return { valid: false, error: "Please enter a coupon code.", code: "empty" }
     }
     if (!email?.trim()) {
-        return { valid: false, error: "Please enter your email address first." }
+        return { valid: false, error: "Please enter your email address first.", code: "emailRequired" }
     }
     try {
         const result = await sanityFetch({
@@ -100,13 +102,13 @@ export async function validateCouponWithEmail(couponCode, email) {
             params: { couponCode: couponCode.trim(), email: email.trim() },
         })
         const coupon = result.data
-        if (!coupon) return { valid: false, error: "Invalid coupon code." }
+        if (!coupon) return { valid: false, error: "Invalid coupon code.", code: "invalid" }
 
         const validity = checkValidity(coupon)
         if (!validity.valid) return validity
 
         if (coupon.emailUsed) {
-            return { valid: false, error: "You have already used this coupon with this email address." }
+            return { valid: false, error: "You have already used this coupon with this email address.", code: "alreadyUsed" }
         }
 
         return {
@@ -119,7 +121,7 @@ export async function validateCouponWithEmail(couponCode, email) {
             },
         }
     } catch {
-        return { valid: false, error: "Unable to validate coupon. Please try again." }
+        return { valid: false, error: "Unable to validate coupon. Please try again.", code: "failed" }
     }
 }
 

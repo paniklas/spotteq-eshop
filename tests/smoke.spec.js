@@ -355,6 +355,8 @@ test.describe("Cart drawer translations", () => {
         empty: "Your bag is empty.",
         checkout: "PROCEED TO CHECKOUT",
         modal: ["Before you continue", "Sign in or create a free account", "Sign in / Create account", "Continue as guest"],
+        apply: "Apply",
+        couponErrors: ["Please enter a coupon code.", "Invalid coupon code."],
       },
     },
     {
@@ -367,6 +369,8 @@ test.describe("Cart drawer translations", () => {
         empty: "Το καλάθι σου είναι άδειο.",
         checkout: "ΟΛΟΚΛΗΡΩΣΗ ΑΓΟΡΑΣ",
         modal: ["Πριν συνεχίσεις", "Συνδέσου ή δημιούργησε δωρεάν λογαριασμό", "ΣΥΝΔΕΣΗ / ΕΓΓΡΑΦΗ", "ΣΥΝΕΧΕΙΑ ΩΣ ΕΠΙΣΚΕΠΤΗΣ"],
+        apply: "ΕΦΑΡΜΟΓΗ",
+        couponErrors: ["Συμπλήρωσε έναν κωδικό κουπονιού.", "Μη έγκυρος κωδικός κουπονιού."],
       },
     },
   ]) {
@@ -396,6 +400,19 @@ test.describe("Cart drawer translations", () => {
       await page.getByRole("button", { name: copy.checkout }).click();
       await expect(page.getByRole("heading", { name: copy.modal[0] })).toBeVisible();
       for (const text of copy.modal.slice(1)) await expect(page.locator("body")).toContainText(text);
+    });
+
+    // The server action returns an error code; the drawer shows it in the page's language.
+    test(`coupon errors on /${locale}`, async ({ page }) => {
+      await seedCart(page, 1);
+      await page.goto(`/${locale}`);
+      await page.locator('[aria-label="Cart"]:visible').first().click();
+      const apply = page.getByRole("button", { name: copy.apply, exact: true });
+      await apply.click();
+      await expect(page.getByText(copy.couponErrors[0])).toBeVisible();
+      await page.getByPlaceholder(copy.placeholder, { exact: true }).fill("NOT-A-REAL-CODE-0000");
+      await apply.click();
+      await expect(page.getByText(copy.couponErrors[1])).toBeVisible();
     });
   }
 });
