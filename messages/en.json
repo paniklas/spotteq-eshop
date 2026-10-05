@@ -193,7 +193,14 @@
     "footer": {
         "newsletter": {
             "description": "Sign up for SPOTTEQ updates and be the first to know about our promotions and news",
-            "consent": "By subscribing you agree to receive email marketing communications from SPOTTEQ"
+            "consent": "By subscribing you agree to receive email marketing communications from SPOTTEQ",
+            "emailLabel": "Your email",
+            "subscribe": "SUBSCRIBE",
+            "subscribing": "SUBSCRIBING…",
+            "subscribeLabel": "Subscribe",
+            "success": "Thanks for subscribing!",
+            "invalidEmail": "Please enter a valid email address.",
+            "failed": "Could not subscribe right now. Please try again."
         },
         "headings": {
             "information": "INFORMATION",

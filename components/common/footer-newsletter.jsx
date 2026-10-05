@@ -24,15 +24,15 @@ const FooterNewsletter = () => {
         if (!res.ok) {
           toast.error(
             res.error === "invalid"
-              ? "Please enter a valid email address."
-              : "Could not subscribe right now. Please try again."
+              ? t("invalidEmail")
+              : t("failed")
           );
           return;
         }
-        toast.success("Thanks for subscribing!");
+        toast.success(t("success"));
         setEmail("");
       } catch {
-        toast.error("Could not subscribe right now. Please try again.");
+        toast.error(t("failed"));
       }
     });
   }
@@ -51,7 +51,7 @@ const FooterNewsletter = () => {
           htmlFor="footer-newsletter-email"
           className="hidden md:block font-aeonik text-black text-[14px] mb-1 pl-3"
         >
-          Your email
+          {t("emailLabel")}
         </label>
         <div className="relative">
           <input
@@ -59,7 +59,7 @@ const FooterNewsletter = () => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Your email"
+            placeholder={t("emailLabel")}
             required
             className="w-full h-[37px] border border-black/20 rounded-[20px] px-4 pr-12 md:pr-4 font-aeonik text-[16px] md:text-[14px] text-black bg-white focus:outline-none focus:border-black/40"
           />
@@ -69,12 +69,12 @@ const FooterNewsletter = () => {
             disabled={isPending}
             className="hidden md:block disabled:opacity-60 disabled:cursor-wait absolute right-0 top-0 h-[37px] w-[140px] bg-black rounded-[20px] font-aeonik text-white text-[12px] hover:bg-white-custom cursor-pointer hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out"
           >
-            {isPending ? "SUBSCRIBING…" : "SUBSCRIBE"}
+            {isPending ? t("subscribing") : t("subscribe")}
           </button>
           {/* Mobile — circular arrow */}
           <button
             type="submit"
-            aria-label="Subscribe"
+            aria-label={t("subscribeLabel")}
             disabled={isPending}
             className="md:hidden disabled:opacity-60 disabled:cursor-wait absolute right-0 top-0 h-[37px] w-[37px] rounded-full bg-black flex items-center justify-center cursor-pointer"
           >
