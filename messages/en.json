@@ -189,5 +189,26 @@
         "quality": {
             "description": "The core principle of SPOTTEQ is to offer premium products, providing a reliable and transparent choice for every athlete. With an emphasis on high bioavailability, easy digestion, and exceptional taste, our products are manufactured under strict international quality standards and are notified to the EOF (National Organization for Medicines), ensuring premium quality and safe consumption."
         }
+    },
+    "footer": {
+        "newsletter": {
+            "description": "Sign up for SPOTTEQ updates and be the first to know about our promotions and news",
+            "consent": "By subscribing you agree to receive email marketing communications from SPOTTEQ"
+        },
+        "headings": {
+            "information": "INFORMATION",
+            "terms": "TERMS",
+            "company": "COMPANY"
+        },
+        "links": {
+            "faq": "FAQS AND HELP CENTRE",
+            "shippingPayments": "SHIPPING & PAYMENTS",
+            "returns": "RETURNS POLICY",
+            "termsOfUse": "TERMS OF USE",
+            "privacy": "PRIVACY POLICY",
+            "cookies": "COOKIES POLICY",
+            "about": "ABOUT SPOTTEQ",
+            "contact": "CONTACT"
+        }
     }
 }

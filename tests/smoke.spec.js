@@ -169,6 +169,27 @@ test.describe("Home page links keep the locale", () => {
   }
 });
 
+// The footer is a Server Component in the (root) layout: on the force-static
+// home page it needs the explicit locale too.
+test.describe("Footer translations", () => {
+  const en = ["Sign up for SPOTTEQ updates", "By subscribing you agree", "INFORMATION", "SHIPPING & PAYMENTS", "RETURNS POLICY", "TERMS OF USE"];
+  const el = ["Μείνε ενημερωμένος για τη SPOTTEQ", "Με την εγγραφή σου συμφωνείς", "ΠΛΗΡΟΦΟΡΙΕΣ", "ΑΠΟΣΤΟΛΕΣ & ΠΛΗΡΩΜΕΣ", "ΠΟΛΙΤΙΚΗ ΕΠΙΣΤΡΟΦΩΝ", "ΟΡΟΙ ΧΡΗΣΗΣ",
+    // All-Greek letters (the source text had a Latin E and H in it).
+    "\u03a3\u03a5\u03a7\u039d\u0395\u03a3 \u0395\u03a1\u03a9\u03a4\u0397\u03a3\u0395\u0399\u03a3"];
+  for (const { path, expected, absent } of [
+    { path: "/en", expected: en, absent: el[0] },
+    { path: "/el", expected: el, absent: en[0] },
+    { path: "/en/about", expected: en, absent: el[0] },
+  ]) {
+    test(`footer on ${path}`, async ({ page }) => {
+      await page.goto(path);
+      const footer = page.locator("#footer-section");
+      for (const text of expected) await expect(footer).toContainText(text);
+      await expect(footer).not.toContainText(absent);
+    });
+  }
+});
+
 // The home page is force-static, so a section that forgets to pass `locale` to
 // getTranslations silently falls back to the default (el) on /en. textContent
 // covers both the mobile and desktop layouts (one of them is always hidden).

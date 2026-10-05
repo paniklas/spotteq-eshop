@@ -1,34 +1,36 @@
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import FooterNewsletter from "./footer-newsletter";
 import ScrollToTopButton from "./scroll-to-top-button";
 
 
-// `href` is omitted while a destination page doesn't exist yet — those render
-// as inert links, as they did before.
+// Labels are footer.headings.* / footer.links.* messages. `href` is omitted
+// while a destination page doesn't exist yet — those render as inert links,
+// as they did before.
 const footerColumns = [
     {
-        heading: "INFORMATION",
+        heading: "information",
         links: [
-            { label: "FAQs and help centre" },
-            { label: "Payment & Security" },
-            { label: "Shipping & Returns" },
+            { key: "faq" },
+            { key: "shippingPayments" },
+            { key: "returns" },
         ],
     },
     {
-        heading: "TERMS",
+        heading: "terms",
         links: [
-            { label: "Terms & Conditions" },
-            { label: "Privacy Policy" },
-            { label: "Cookies Policy" },
+            { key: "termsOfUse" },
+            { key: "privacy" },
+            { key: "cookies" },
         ],
     },
     {
-        heading: "COMPANY",
+        heading: "company",
         links: [
-            { label: "ABOUT SPOTTEQ", href: "/about" },
-            { label: "CONTACT" },
-            { label: "SUPPORT" },
+            { key: "about", href: "/about" },
+            { key: "contact" },
+            // { key: "support" }, — hidden for now (no message yet)
         ],
     },
 ];
@@ -53,7 +55,9 @@ const paymentMethods = [
 
 // `locale` is passed explicitly: on the force-static home page the server
 // i18n Link has no request to read it from and would fall back to el.
-const Footer = ({ locale }) => {
+const Footer = async ({ locale }) => {
+    const t = await getTranslations({ locale, namespace: "footer" });
+
     return (
         <footer id="footer-section" className="w-full bg-white-custom pt-5 xl:pt-42">
             {/* Top section: Newsletter (left) + Links (right) + Back-to-top */}
@@ -73,18 +77,18 @@ const Footer = ({ locale }) => {
                                 {footerColumns.map((col) => (
                                     <div key={col.heading}>
                                         <h4 className="font-aeonik text-[16px] text-black mb-4 uppercase">
-                                            {col.heading}
+                                            {t(`headings.${col.heading}`)}
                                         </h4>
                                         <ul className="flex flex-col xl:pt-6">
                                             {col.links.map((link) => (
-                                                <li key={link.label}>
+                                                <li key={link.key}>
                                                     {link.href ? (
                                                         <Link href={link.href} locale={locale} className={footerLinkClass}>
-                                                            {link.label}
+                                                            {t(`links.${link.key}`)}
                                                         </Link>
                                                     ) : (
                                                         <a href="#" className={footerLinkClass}>
-                                                            {link.label}
+                                                            {t(`links.${link.key}`)}
                                                         </a>
                                                     )}
                                                 </li>
@@ -138,7 +142,7 @@ const Footer = ({ locale }) => {
             {/* Copyright row */}
             <div className="max-w-480 mx-auto px-10 xl:px-40 pb-8 flex flex-col md:flex-row items-center justify-between gap-3">
                 <p className="font-aeonik text-[12px] text-black">
-                    © 2026 SPOTTEQ. All Rights Reserved.
+                    © 2026 SPOTTEQ, a brand of M100 Impact Agency. All rights reserved.
                 </p>
                 <p className="font-aeonik text-[12px] text-black opacity-70">
                     Designed by pecora nera design studio + Coded by Impruves Web Dev

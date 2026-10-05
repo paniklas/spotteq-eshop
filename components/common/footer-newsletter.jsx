@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 const FooterNewsletter = () => {
   const [email, setEmail] = useState("");
   const [isPending, startTransition] = useTransition();
   const locale = useLocale();
+  const t = useTranslations("footer.newsletter");
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -41,9 +42,8 @@ const FooterNewsletter = () => {
       <h2 className="font-aeonik text-black text-[28px] xl:text-[35px] mb-6 leading-none">
         Stay in the loop
       </h2>
-      <p className="font-aeonik text-black text-[14px] xl:text-[16px] leading-[1.45] mb-8 max-w-83">
-        Sign up for SPOTTEQ updates and be the first to know about our
-        promotions and news
+      <p className="font-aeonik text-black text-[14px] xl:text-[16px] leading-[1.45] mb-8 max-w-[400px]">
+        {t("description")}
       </p>
 
       <form onSubmit={handleSubmit} className="relative w-full max-w-101.5">
@@ -86,8 +86,7 @@ const FooterNewsletter = () => {
       </form>
 
       <p className="font-aeonik text-black text-[11px] leading-[1.45] mt-4 max-w-[450px]">
-        By subscribing you agree to receive email marketing communications
-        from SPOTTEQ
+        {t("consent")}
       </p>
     </div>
   );
