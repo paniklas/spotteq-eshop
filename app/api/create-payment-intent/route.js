@@ -257,6 +257,15 @@ const cartItemSchema = z.object({
   selectedFlavours: z.array(bundleFlavourSchema).max(20).optional(),
 });
 
+// Stored on the order and passed on to invoicing, both of which need an ISO code.
+// Older account profiles held free text ("Ελλάδα"); Greece is the only shipping
+// country, so whatever the client sends is stored as GR. Replace with an explicit
+// allowlist if more destinations are ever supported.
+const countrySchema = z
+  .string()
+  .optional()
+  .transform(() => "GR");
+
 const bodySchema = z.object({
   items: z.array(cartItemSchema).min(1).max(50),
   shippingMethodId: z.string().min(1),
@@ -271,7 +280,7 @@ const bodySchema = z.object({
     apartment: z.string().optional(),
     city: z.string().optional(),
     postalCode: z.string().optional(),
-    country: z.string().optional(),
+    country: countrySchema,
     phone: z.string().optional(),
     // The checkout's marketing opt-in. Acted on only once the payment succeeds
     // (Stripe webhook), so an abandoned checkout subscribes no one.
@@ -285,7 +294,7 @@ const bodySchema = z.object({
         apartment: z.string().optional(),
         city: z.string().optional(),
         postalCode: z.string().optional(),
-        country: z.string().optional(),
+        country: countrySchema,
         phone: z.string().optional(),
       })
       .optional(),

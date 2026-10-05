@@ -31,6 +31,31 @@ const FloatingInput = ({ id, label, optional = false, error, className = "", reg
     </div>
 );
 
+// Country is stored as an ISO code (Stripe rejects anything else). Greece is the
+// only shipping country, matching the checkout form's select.
+const CountrySelect = ({ label, optionLabel, register }) => (
+    <div className="relative">
+        <select
+            id="country"
+            {...register("country")}
+            className="peer w-full border border-gray-mint rounded-xl px-4 py-4 font-aeonik text-[16px] md:text-[14px] text-black-custom outline-none bg-transparent focus:border-black-custom transition-colors duration-200 appearance-none"
+        >
+            <option value="GR">{optionLabel}</option>
+        </select>
+        <label
+            htmlFor="country"
+            className="absolute left-3 top-0 -translate-y-1/2 bg-white-custom px-1 font-aeonik text-[11px] text-black-custom/50 pointer-events-none transition-colors duration-200 peer-focus:text-black-custom"
+        >
+            {label}
+        </label>
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+            <svg width="12" height="7" viewBox="0 0 12 7" fill="none">
+                <path d="M1 1L6 6L11 1" stroke="#000" strokeWidth="1.2" strokeLinecap="round" />
+            </svg>
+        </div>
+    </div>
+);
+
 const AddressForm = ({ defaultValues, action }) => {
     const t = useTranslations("account");
     const [isPending, startTransition] = useTransition();
@@ -43,8 +68,10 @@ const AddressForm = ({ defaultValues, action }) => {
         resolver: zodResolver(addressSchema),
         defaultValues: {
             firstName: "", lastName: "", company: "", address: "", apartment: "",
-            city: "", postalCode: "", country: "", phone: "",
+            city: "", postalCode: "", phone: "",
             ...defaultValues,
+            // Overrides older profiles saved with free text ("Ελλάδα"), so re-saving cleans them.
+            country: "GR",
         },
     });
 
@@ -70,7 +97,7 @@ const AddressForm = ({ defaultValues, action }) => {
                 <FloatingInput id="postalCode" label={t("postalCode")} register={register} error={errors.postalCode} />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FloatingInput id="country" label={t("country")} register={register} error={errors.country} />
+                <CountrySelect label={t("country")} optionLabel={t("countryGreece")} register={register} />
                 <FloatingInput id="phone" label={t("phone")} register={register} error={errors.phone} />
             </div>
 

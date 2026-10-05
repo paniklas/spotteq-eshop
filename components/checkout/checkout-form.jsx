@@ -193,7 +193,9 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
       apartment: accountDefaults.apartment ?? "",
       city: accountDefaults.city ?? "",
       postalCode: accountDefaults.postalCode ?? "",
-      country: accountDefaults.country || "GR",
+      // Not read from the profile: older profiles hold free text ("Ελλάδα"), which
+      // Stripe rejects — it needs an ISO code. Greece is the only shipping country.
+      country: "GR",
       phone: accountDefaults.phone ?? "",
     });
     // Sync the prefilled email into the cart store — the coupon validator reads
