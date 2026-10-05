@@ -261,6 +261,24 @@
         "couponCode": "COUPON CODE /",
         "giftCard": "GIFT CARD",
         "total": "TOTAL",
-        "checkout": "PROCEED TO CHECKOUT"
+        "checkout": "PROCEED TO CHECKOUT",
+        "freeShippingUnlocked": "You've unlocked FREE SHIPPING!",
+        "empty": "Your bag is empty.",
+        "remove": "REMOVE",
+        "enterCode": "Enter code",
+        "apply": "Apply",
+        "couponOff": "{percent}% off",
+        "subtotal": "SUBTOTAL",
+        "discount": "DISCOUNT ({percent}%)",
+        "bundleDeal": "Bundle Deal Available",
+        "bundleSavings": "Save {amount}€ vs buying individually",
+        "viewBundle": "View Bundle",
+        "close": "Close",
+        "checkoutModal": {
+            "title": "Before you continue",
+            "description": "Sign in or create a free account to track your orders, save your details, and enjoy a faster checkout next time.",
+            "signIn": "Sign in / Create account",
+            "guest": "Continue as guest"
+        }
     }
 }

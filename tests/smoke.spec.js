@@ -335,25 +335,67 @@ test.describe("Product copy translations", () => {
   }
 });
 
-// The cart drawer is always in the DOM (off-screen when closed). The seeded item
-// (qty 2, 1€) shows the coupon field and keeps the subtotal under the free
-// shipping threshold.
+// The cart drawer is always in the DOM (off-screen when closed). A seeded item
+// at 1€ shows the coupon field and stays under the free shipping threshold;
+// at 1000€ it clears it.
 test.describe("Cart drawer translations", () => {
-  for (const { locale, expected, absent } of [
-    { locale: "en", expected: ["Your bag", "2 ITEMS", /You are \d+,\d{2}€ away from FREE SHIPPING!/, "COUPON CODE /", "GIFT CARD", "TOTAL", "PROCEED TO CHECKOUT"], absent: "Το καλάθι σου" },
-    { locale: "el", expected: ["Το καλάθι σου", "2 ΠΡΟΪΟΝΤΑ", /Σου λείπουν \d+,\d{2}€ για ΔΩΡΕΑΝ ΑΠΟΣΤΟΛΗ!/, "ΚΩΔΙΚΟΣ ΚΟΥΠΟΝΙΟΥ /", "ΔΩΡΟΚΑΡΤΑ", "ΣΥΝΟΛΟ", "ΟΛΟΚΛΗΡΩΣΗ ΑΓΟΡΑΣ"], absent: "Your bag" },
+  const seedCart = (page, price) => page.addInitScript((price) => {
+    const cartItems = price ? [{ id: "test-product-id", type: "product", cartId: "test-cart-id", qty: 2, price, inventory: 10, name: "Test Product" }] : [];
+    localStorage.setItem("spotteq-cart-v2", JSON.stringify({ state: { cartItems }, version: 0 }));
+  }, price);
+
+  for (const { locale, copy, absent } of [
+    {
+      locale: "en",
+      absent: "Το καλάθι σου",
+      copy: {
+        drawer: ["Your bag", "2 ITEMS", /You are \d+,\d{2}€ away from FREE SHIPPING!/, "REMOVE", "COUPON CODE /", "GIFT CARD", "Apply", "TOTAL", "PROCEED TO CHECKOUT"],
+        placeholder: "Enter code",
+        unlocked: "You've unlocked FREE SHIPPING!",
+        empty: "Your bag is empty.",
+        checkout: "PROCEED TO CHECKOUT",
+        modal: ["Before you continue", "Sign in or create a free account", "Sign in / Create account", "Continue as guest"],
+      },
+    },
+    {
+      locale: "el",
+      absent: "Your bag",
+      copy: {
+        drawer: ["Το καλάθι σου", "2 ΠΡΟΪΟΝΤΑ", /Σου λείπουν \d+,\d{2}€ για ΔΩΡΕΑΝ ΑΠΟΣΤΟΛΗ!/, "ΑΦΑΙΡΕΣΗ", "ΚΩΔΙΚΟΣ ΚΟΥΠΟΝΙΟΥ /", "ΔΩΡΟΚΑΡΤΑ", "ΕΦΑΡΜΟΓΗ", "ΣΥΝΟΛΟ", "ΟΛΟΚΛΗΡΩΣΗ ΑΓΟΡΑΣ"],
+        placeholder: "Κωδικός",
+        unlocked: "Κέρδισες ΔΩΡΕΑΝ ΑΠΟΣΤΟΛΗ!",
+        empty: "Το καλάθι σου είναι άδειο.",
+        checkout: "ΟΛΟΚΛΗΡΩΣΗ ΑΓΟΡΑΣ",
+        modal: ["Πριν συνεχίσεις", "Συνδέσου ή δημιούργησε δωρεάν λογαριασμό", "ΣΥΝΔΕΣΗ / ΕΓΓΡΑΦΗ", "ΣΥΝΕΧΕΙΑ ΩΣ ΕΠΙΣΚΕΠΤΗΣ"],
+      },
+    },
   ]) {
     test(`cart drawer on /${locale}`, async ({ page }) => {
-      await page.addInitScript(() => {
-        localStorage.setItem("spotteq-cart-v2", JSON.stringify({
-          state: { cartItems: [{ id: "test-product-id", type: "product", cartId: "test-cart-id", qty: 2, price: 1, inventory: 10, name: "Test Product" }] },
-          version: 0,
-        }));
-      });
+      await seedCart(page, 1);
       await page.goto(`/${locale}`);
       const body = page.locator("body");
-      for (const text of expected) await expect(body).toContainText(text);
+      for (const text of copy.drawer) await expect(body).toContainText(text);
+      await expect(page.getByPlaceholder(copy.placeholder, { exact: true })).toHaveCount(1);
       await expect(body).not.toContainText(absent);
+    });
+
+    test(`free shipping reached and empty bag on /${locale}`, async ({ page }) => {
+      await seedCart(page, 1000);
+      await page.goto(`/${locale}`);
+      await expect(page.locator("body")).toContainText(copy.unlocked);
+      // Init scripts run in order, so this one empties the bag on the next load.
+      await seedCart(page, 0);
+      await page.reload();
+      await expect(page.locator("body")).toContainText(copy.empty);
+    });
+
+    test(`checkout sign-in popup on /${locale}`, async ({ page }) => {
+      await seedCart(page, 1);
+      await page.goto(`/${locale}`);
+      await page.locator('[aria-label="Cart"]:visible').first().click();
+      await page.getByRole("button", { name: copy.checkout }).click();
+      await expect(page.getByRole("heading", { name: copy.modal[0] })).toBeVisible();
+      for (const text of copy.modal.slice(1)) await expect(page.locator("body")).toContainText(text);
     });
   }
 });
