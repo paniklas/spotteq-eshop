@@ -1,8 +1,8 @@
 import { defineField, defineType } from 'sanity'
 
-// Legal text pages (Privacy Policy, and later Terms and Cookies Policy). One
-// type for all of them; each page is a singleton with a fixed document id
-// (e.g. "privacyPage") set in sanity/structure.js.
+// Legal text pages: Privacy Policy, Terms of Use and Cookies Policy. One type
+// for all three; each page is a singleton with a fixed document id
+// ("privacyPage", "termsPage", "cookiesPage") set in sanity/structure.js.
 export const legalPageType = defineType({
   name: 'legalPage',
   title: 'Legal Page',

@@ -3,7 +3,9 @@ import { catalogFetch } from '../lib/catalogFetch'
 import { seoProjection } from '../lib/seoProjection'
 
 // A legal page singleton by its fixed document id ("privacyPage", …), in
-// $locale. Returns null when the document doesn't exist yet or the fetch fails.
+// $locale. Returns null only when the document doesn't exist, which the page
+// turns into a 404. Fetch errors are rethrown, so a Sanity outage is a 500
+// (crawlers retry) rather than a 404 (crawlers may drop the page).
 export async function getLegalPage(id, locale) {
     const QUERY = defineQuery(`
         *[_type == "legalPage" && _id == $id][0] {
@@ -21,6 +23,6 @@ export async function getLegalPage(id, locale) {
         })
     } catch (error) {
         console.error(`Error fetching legal page ${id}`, error)
-        return null
+        throw error
     }
 }
