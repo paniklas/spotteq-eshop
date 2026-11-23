@@ -6,7 +6,7 @@ import { parseBody } from "next-sanity/webhook";
 //   URL:      https://<your-domain>/api/webhook/sanity-revalidate
 //   Dataset:  production
 //   Trigger:  Create, Update, Delete
-//   Filter:   _type in ["product", "category", "categoryGroup", "bundle", "homePage", "aboutPage", "contactPage", "legalPage", "faqPage", "announcement", "firstOrderPromo", "shipping"]
+//   Filter:   _type in ["product", "category", "categoryGroup", "bundle", "homePage", "aboutPage", "contactPage", "legalPage", "faqPage", "ambassadorPage", "announcement", "firstOrderPromo", "shipping"]
 //   Projection:
 //     {
 //       "type": _type,
@@ -67,6 +67,9 @@ export async function POST(req) {
       break;
     case "faqPage":
       tags.push("faqPage");
+      break;
+    case "ambassadorPage":
+      tags.push("ambassadorPage");
       break;
     case "announcement":
       tags.push("announcement");

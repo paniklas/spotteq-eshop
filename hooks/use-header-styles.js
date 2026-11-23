@@ -64,6 +64,22 @@ const SECTION_CONFIGS = [
         color: '#000000',
         scrollBg: 'backdrop-blur-md bg-white/30',
     },
+    // Ambassador page: gray / white / gray sections, all light.
+    {
+        id: 'ambassador-hero-section',
+        color: '#000000',
+        scrollBg: 'backdrop-blur-md bg-white/30',
+    },
+    {
+        id: 'ambassador-story-section',
+        color: '#000000',
+        scrollBg: 'backdrop-blur-md bg-white/30',
+    },
+    {
+        id: 'ambassador-interview-section',
+        color: '#000000',
+        scrollBg: 'backdrop-blur-md bg-white/30',
+    },
     {
         id: 'spotteq-image-section',
         color: '#ffffff',
