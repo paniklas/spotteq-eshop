@@ -99,6 +99,13 @@ export const structure = (S) =>
                     .schemaType('faqPage')
                     .documentId('faqPage')
                 ),
+              S.listItem()
+                .title('Ambassador Page')
+                .child(
+                  S.document()
+                    .schemaType('ambassadorPage')
+                    .documentId('ambassadorPage')
+                ),
               S.divider(),
               S.documentTypeListItem('categoryGroup').title('Category Groups'),
               S.divider(),

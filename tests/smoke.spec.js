@@ -230,8 +230,8 @@ test.describe("Shop sidebar translations", () => {
 // covers both the mobile and desktop layouts (one of them is always hidden).
 test.describe("Home page translations", () => {
   for (const { locale, expected, absent } of [
-    { locale: "en", expected: ["Nassos Ghavelas", "Paralympic Champion, SPOTTEQ Ambassador", "Feb 6, 2026", "In elite sport"], absent: "Νάσος Γκαβέλας" },
-    { locale: "el", expected: ["Νάσος Γκαβέλας", "Παραολυμπιονίκης, Brand Ambassador της SPOTTEQ", "6 Φεβ 2026", "Στον πρωταθλητισμό"], absent: "Nassos Ghavelas" },
+    { locale: "en", expected: ["Nasos Gavelas", "Paralympic Champion, SPOTTEQ Ambassador", "Feb 6, 2026", "In elite sport"], absent: "Νάσος Γκαβέλας" },
+    { locale: "el", expected: ["Νάσος Γκαβέλας", "Παραολυμπιονίκης, Brand Ambassador της SPOTTEQ", "6 Φεβ 2026", "Στον πρωταθλητισμό"], absent: "Nasos Gavelas" },
   ]) {
     test(`Stories that move is in ${locale}`, async ({ page }) => {
       await page.goto(`/${locale}`);
