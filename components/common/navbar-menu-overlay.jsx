@@ -102,8 +102,8 @@ const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }
                         {/* Same heading and labels as the footer's Information column */}
                         <h4 className="font-aeonik text-[13px] uppercase text-black-custom mb-4">{tFooter("headings.information")}</h4>
                         <div className="flex flex-col gap-2">
-                            {["shippingPayments", "returns"].map((key) => (
-                                <Link key={key} href="#" onClick={isOnClose} tabIndex={isOpen ? 0 : -1} className="font-aeonik text-[13px] uppercase text-black-custom hover:opacity-60 transition-opacity">
+                            {[["shippingPayments", "/shipping"], ["returns", "/returns"]].map(([key, href]) => (
+                                <Link key={key} href={href} onClick={isOnClose} tabIndex={isOpen ? 0 : -1} className="font-aeonik text-[13px] uppercase text-black-custom hover:opacity-60 transition-opacity">
                                     {tFooter(`links.${key}`)}
                                 </Link>
                             ))}

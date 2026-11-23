@@ -1,8 +1,9 @@
 import { defineField, defineType } from 'sanity'
 
-// Legal text pages: Privacy Policy, Terms of Use and Cookies Policy. One type
-// for all three; each page is a singleton with a fixed document id
-// ("privacyPage", "termsPage", "cookiesPage") set in sanity/structure.js.
+// Text pages: Privacy Policy, Terms of Use, Cookies Policy, Shipping & Payments
+// and Returns Policy. One type for all of them; each page is a singleton with a
+// fixed document id ("privacyPage", "termsPage", "cookiesPage", "shippingPage",
+// "returnsPage") set in sanity/structure.js.
 export const legalPageType = defineType({
   name: 'legalPage',
   title: 'Legal Page',
@@ -23,7 +24,7 @@ export const legalPageType = defineType({
     defineField({
       name: 'body',
       title: 'Text',
-      description: 'Use H2 for the section headings (shown underlined) and Bullet for lists.',
+      description: 'Use H2 for the section headings (shown underlined), and Bullet or Numbered for lists.',
       type: 'internationalizedArrayBlockContent',
     }),
 
