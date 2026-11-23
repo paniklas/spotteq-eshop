@@ -12,6 +12,8 @@ const components = {
     },
     list: {
         bullet: ({ children }) => <ul className="mt-3 list-disc pl-6">{children}</ul>,
+        // Numbered steps (Shipping & Payments) are spaced apart like paragraphs.
+        number: ({ children }) => <ol className="mt-3 list-decimal pl-6 space-y-3">{children}</ol>,
     },
     marks: {
         // Site paths (/contact) stay in the current language via the i18n Link;
@@ -33,7 +35,7 @@ const components = {
     },
 };
 
-// Privacy Policy / Terms of Use / Cookies Policy page body: heading, then the
+// Privacy / Terms / Cookies / Shipping & Payments / Returns page body: heading, then the
 // Sanity text. pt keeps it below the fixed navbar (h-24). The dot pattern sits
 // at the viewport edge as on the contact page, so from lg the text keeps clear
 // of it, and the min-height keeps a short page (Cookies) tall enough for the

@@ -78,6 +78,20 @@ export const structure = (S) =>
                     .schemaType('legalPage')
                     .documentId('cookiesPage')
                 ),
+              S.listItem()
+                .title('Shipping & Payments')
+                .child(
+                  S.document()
+                    .schemaType('legalPage')
+                    .documentId('shippingPage')
+                ),
+              S.listItem()
+                .title('Returns Policy')
+                .child(
+                  S.document()
+                    .schemaType('legalPage')
+                    .documentId('returnsPage')
+                ),
               S.divider(),
               S.documentTypeListItem('categoryGroup').title('Category Groups'),
               S.divider(),

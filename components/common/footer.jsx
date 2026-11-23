@@ -13,8 +13,8 @@ const footerColumns = [
         heading: "information",
         links: [
             { key: "faq" },
-            { key: "shippingPayments" },
-            { key: "returns" },
+            { key: "shippingPayments", href: "/shipping" },
+            { key: "returns", href: "/returns" },
         ],
     },
     {
