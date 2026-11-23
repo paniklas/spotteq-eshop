@@ -29,7 +29,7 @@ const footerColumns = [
         heading: "company",
         links: [
             { key: "about", href: "/about" },
-            { key: "contact" },
+            { key: "contact", href: "/contact" },
             // { key: "support" }, — hidden for now (no message yet)
         ],
     },
