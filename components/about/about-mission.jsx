@@ -16,7 +16,7 @@ const AboutMission = ({ heading, body, imageUrl, imageAlt }) => {
 
                     {/* Text column */}
                     {body?.length > 0 && (
-                        <div className="font-aeonik text-black text-[16px] xl:text-[24px] leading-[1.5] max-w-[950px] [&_p:not(:first-child)]:mt-6 xl:[&_p:not(:first-child)]:mt-10">
+                        <div className="font-aeonik text-black text-[16px] xl:text-[24px] leading-[1.5] max-w-[950px] [&_p:not(:first-child)]:mt-6 xl:[&_p:not(:first-child)]:mt-10 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5">
                             <PortableText value={body} />
                         </div>
                     )}

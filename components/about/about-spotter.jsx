@@ -7,7 +7,7 @@ const AboutSpotter = ({ lines, body, imageUrl, imageAlt }) => {
             <div className="max-w-480 mx-auto page-x grid grid-cols-1 xl:grid-cols-[1fr_auto] gap-10 xl:gap-16 items-start">
 
                 {/* Text column */}
-                <div className="font-aeonik text-black text-[16px] xl:text-[24px] leading-[1.5] max-w-[950px]">
+                <div className="font-aeonik text-black text-[16px] xl:text-[24px] leading-[1.5] max-w-[950px] [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5">
                     {lines?.length > 0 && (
                         <div>
                             <PortableText value={lines} />
