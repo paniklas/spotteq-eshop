@@ -12,7 +12,7 @@ const footerColumns = [
     {
         heading: "information",
         links: [
-            { key: "faq" },
+            { key: "faq", href: "/faq" },
             { key: "shippingPayments", href: "/shipping" },
             { key: "returns", href: "/returns" },
         ],

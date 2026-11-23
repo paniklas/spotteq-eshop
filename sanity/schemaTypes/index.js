@@ -10,6 +10,7 @@ import { couponClaimType } from './couponClaimType'
 import { firstOrderPromoType } from './firstOrderPromoType'
 import { homePageType } from './homePageType'
 import { legalPageType } from './legalPageType'
+import { faqPageType } from './faqPageType'
 import { newsletterSubscriberType } from './newsletterSubscriberType'
 import { orderType } from './orderType'
 import { productType } from './productType'
@@ -31,6 +32,7 @@ export const schemaTypes = [
   aboutPageType,
   contactPageType,
   legalPageType,
+  faqPageType,
   announcementType,
   firstOrderPromoType,
   couponClaimType,
