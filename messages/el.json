@@ -165,6 +165,7 @@
     "cookieBanner": {
         "title": "Χρησιμοποιούμε cookies",
         "description": "Χρησιμοποιούμε cookies για να βελτιώσουμε την εμπειρία σας.",
+        "learnMore": "Μάθετε περισσότερα",
         "accept": "Αποδοχή",
         "decline": "Απόρριψη",
         "close": "Κλείσιμο"

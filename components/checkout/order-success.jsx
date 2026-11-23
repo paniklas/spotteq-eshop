@@ -226,7 +226,8 @@ const OrderNotFound = () => (
     <PackageSearch className="w-16 h-16 text-gray-text" strokeWidth={1.5} />
     <h1 className="font-aeonik text-[28px] text-black-custom">Order not found</h1>
     <p className="font-aeonik text-[14px] text-gray-text max-w-md">
-      We could not find this order. If you believe this is an error, please contact support.
+      We could not find this order. If you believe this is an error, please{" "}
+      <Link href="/contact" className="underline">contact support</Link>.
     </p>
     <Link
       href="/shop/shop-all"
