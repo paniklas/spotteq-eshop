@@ -51,6 +51,13 @@ const SECTION_CONFIGS = [
         color: '#000000',
         scrollBg: 'backdrop-blur-md bg-white/20',
     },
+    // Privacy / Terms / Cookies text on white. Without an entry, scrolling back
+    // up from the dark spotteq image below kept its white icons over the text.
+    {
+        id: 'legal-page-section',
+        color: '#000000',
+        scrollBg: 'backdrop-blur-md bg-white/30',
+    },
     {
         id: 'spotteq-image-section',
         color: '#ffffff',

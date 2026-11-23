@@ -4,6 +4,7 @@ import { useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Cookie, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 
 // The stored choice is informational for now: the site only uses essential
 // storage (cart, auth, payments) plus UserWay, which loads regardless.
@@ -74,7 +75,10 @@ export default function CookieBanner() {
 
                         {/* Body */}
                         <p className="font-aeonik text-[13px] text-gray-text leading-relaxed mb-4">
-                            {t("description")}
+                            {t("description")}{" "}
+                            <Link href="/cookies" className="text-black-custom underline hover:opacity-60 transition-opacity">
+                                {t("learnMore")}
+                            </Link>
                         </p>
 
                         {/* Actions */}

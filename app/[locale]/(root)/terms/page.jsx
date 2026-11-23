@@ -1,0 +1,30 @@
+import { notFound } from "next/navigation";
+import { getLegalPage } from "@/sanity/getData/getLegalPage";
+import LegalPage from "@/components/legal/legal-page";
+import SpotteqImage from "@/components/home/spotteq-image";
+import { seoMetadata } from "@/lib/seo";
+
+export const dynamic = "force-dynamic"
+export const revalidate = 86400;
+
+// Terms of Use from Sanity (Site Settings → Terms of Use); empty SEO fields
+// fall back to the page heading.
+export async function generateMetadata({ params }, parent) {
+    const { locale } = await params
+    const page = await getLegalPage("termsPage", locale)
+    if (!page) return {}
+    return seoMetadata(page.seo, locale, { title: page.heading }, parent)
+}
+
+export default async function TermsPage({ params }) {
+    const { locale } = await params
+    const page = await getLegalPage("termsPage", locale)
+    if (!page) notFound()
+
+    return (
+        <>
+            <LegalPage heading={page.heading} body={page.body} />
+            <SpotteqImage />
+        </>
+    )
+}

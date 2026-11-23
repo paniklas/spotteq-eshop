@@ -165,6 +165,7 @@
     "cookieBanner": {
         "title": "We use cookies",
         "description": "We use cookies to improve your experience.",
+        "learnMore": "Learn more",
         "accept": "Accept All",
         "decline": "Decline",
         "close": "Close"

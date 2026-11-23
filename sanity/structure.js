@@ -57,6 +57,27 @@ export const structure = (S) =>
                     .schemaType('contactPage')
                     .documentId('contactPage')
                 ),
+              S.listItem()
+                .title('Privacy Policy')
+                .child(
+                  S.document()
+                    .schemaType('legalPage')
+                    .documentId('privacyPage')
+                ),
+              S.listItem()
+                .title('Terms of Use')
+                .child(
+                  S.document()
+                    .schemaType('legalPage')
+                    .documentId('termsPage')
+                ),
+              S.listItem()
+                .title('Cookies Policy')
+                .child(
+                  S.document()
+                    .schemaType('legalPage')
+                    .documentId('cookiesPage')
+                ),
               S.divider(),
               S.documentTypeListItem('categoryGroup').title('Category Groups'),
               S.divider(),
