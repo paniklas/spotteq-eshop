@@ -14,6 +14,7 @@ import {
     FormControl,
     FormField,
     FormItem,
+    FormLabel,
     FormMessage,
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -144,12 +145,14 @@ const ContactForm = () => {
                                             className="mt-px rounded-xs border-black-custom data-[state=checked]:bg-black-custom data-[state=checked]:border-black-custom data-[state=checked]:text-white-custom"
                                         />
                                     </FormControl>
-                                    <span className="font-aeonik text-[11px] text-black-custom leading-snug">
+                                    {/* FormLabel points at the id FormControl gives the checkbox:
+                                        this text is its accessible name, and clicking it toggles it */}
+                                    <FormLabel className="block font-aeonik text-[11px] font-normal text-black-custom leading-snug select-auto cursor-pointer">
                                         {t.rich("agreeTerms", {
                                             terms: (chunks) => <Link href="/terms" className="underline">{chunks}</Link>,
                                             privacy: (chunks) => <Link href="/privacy" className="underline">{chunks}</Link>,
                                         })}
-                                    </span>
+                                    </FormLabel>
                                 </div>
                                 <FormMessage className={messageClass} />
                             </FormItem>
