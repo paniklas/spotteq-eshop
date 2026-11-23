@@ -92,6 +92,13 @@ export const structure = (S) =>
                     .schemaType('legalPage')
                     .documentId('returnsPage')
                 ),
+              S.listItem()
+                .title('FAQ Page')
+                .child(
+                  S.document()
+                    .schemaType('faqPage')
+                    .documentId('faqPage')
+                ),
               S.divider(),
               S.documentTypeListItem('categoryGroup').title('Category Groups'),
               S.divider(),

@@ -58,6 +58,12 @@ const SECTION_CONFIGS = [
         color: '#000000',
         scrollBg: 'backdrop-blur-md bg-white/30',
     },
+    // FAQ on light gray: same reason as the legal pages.
+    {
+        id: 'faq-section',
+        color: '#000000',
+        scrollBg: 'backdrop-blur-md bg-white/30',
+    },
     {
         id: 'spotteq-image-section',
         color: '#ffffff',
