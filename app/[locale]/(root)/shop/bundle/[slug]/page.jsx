@@ -57,5 +57,5 @@ async function BundleContent({ locale, slug }) {
 async function KeyFeaturesForSlug({ slug, locale }) {
     const bundle = await getBundleBySlug(slug, locale)
     if (!bundle?.keyFeatures) return null
-    return <KeyFeatures keyFeatures={bundle.keyFeatures} />
+    return <KeyFeatures keyFeatures={bundle.keyFeatures} additionalInfo={bundle.productDetails?.additionalInfo} locale={locale} />
 }

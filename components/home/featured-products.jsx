@@ -26,7 +26,7 @@ const FeaturedProducts = async ({ compact = false, locale }) => {
                 {!compact && (
                     <div className="md:flex md:items-start md:justify-between mb-6">
                         <h2 className="font-aeonik text-black-custom text-[28px] xl:text-[35px] leading-none mb-4 md:mb-0 shrink-0">
-                            Featured Products
+                            {t("title")}
                         </h2>
 
                         <p className="font-aeonik text-black-custom text-[16px] xl:text-[18px] leading-[1.45] md:max-w-163 md:mb-12">

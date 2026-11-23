@@ -123,8 +123,15 @@ const BundleCard = ({
         </div>
     )
 
+    // A link to the bundle. Hidden from keyboard and screen readers because
+    // VIEW DETAILS is the same link.
     const imageStack = (
-        <div className="flex items-end justify-center gap-0">
+        <Link
+            href={`/shop/bundle/${slug}`}
+            tabIndex={-1}
+            aria-hidden="true"
+            className="flex items-end justify-center gap-0"
+        >
             {displayImages.map((src, i) => (
                 <Image
                     key={i}
@@ -142,7 +149,7 @@ const BundleCard = ({
                     }}
                 />
             ))}
-        </div>
+        </Link>
     )
 
     if (variant === "mobile") {

@@ -8,7 +8,6 @@ import QualitySection from "@/components/home/quality-section"
 import ShopBySeries from "@/components/home/shop-by-series"
 import SpotteqImage from "@/components/home/spotteq-image"
 import StoriesThatMove from "@/components/home/stories-that-move"
-import TrainingBanner from "@/components/home/training-banner"
 import ShopBySeriesSkeleton from "@/components/skeletons/shop-by-series-skeleton"
 import BundleSectionSkeleton from "@/components/skeletons/bundle-section-skeleton"
 import { getHomeSeo } from "@/sanity/getData/getHomeSeo"
@@ -39,9 +38,8 @@ const Home = async ({ params }) => {
       <Suspense fallback={<BundleSectionSkeleton />}>
         <BundleSection locale={locale} />
       </Suspense>
-      <FeaturedProducts locale={locale} />
       <StoriesThatMove locale={locale} />
-      <TrainingBanner />
+      <FeaturedProducts locale={locale} />
       <QualitySection locale={locale} />
       <SpotteqImage />
     </>

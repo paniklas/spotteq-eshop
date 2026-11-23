@@ -33,14 +33,15 @@ export default async function ShopAll({ params }) {
 }
 
 async function ShopAllContent({ locale }) {
-    const [{ products, total }, categories, bundles] = await Promise.all([
+    const [{ products, total }, categories, bundles, t] = await Promise.all([
         getAllProducts(locale),
         getAllCategories(locale),
         getShopBundles(locale),
+        getTranslations({ locale, namespace: "shopAll" }),
     ])
 
     return (
-        <ShopView categories={categories} bundles={bundles} total={total} heading="Shop All" locale={locale}>
+        <ShopView categories={categories} bundles={bundles} total={total} heading="Shop All" description={t("description")} locale={locale}>
             <ProductGrid initialProducts={products} total={total} locale={locale} />
         </ShopView>
     )

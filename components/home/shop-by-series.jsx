@@ -1,10 +1,16 @@
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { urlFor } from "@/sanity/lib/image";
 import { getCategoriesByGroup } from "@/sanity/getData/getAllcategories";
 
 const ShopBySeries = async ({ locale }) => {
-    const series = await getCategoriesByGroup(locale, 'series')
+    // Explicit locale: the home page is force-static, so next-intl has no
+    // request to read it from (see stories-that-move).
+    const [series, t] = await Promise.all([
+        getCategoriesByGroup(locale, 'series'),
+        getTranslations({ locale, namespace: "home.shopBySeries" }),
+    ])
 
     if (!series?.length) return null
 
@@ -15,7 +21,7 @@ const ShopBySeries = async ({ locale }) => {
         >
             <div className="max-w-480 mx-auto page-x">
                 <h2 className="font-aeonik text-black text-[28px] xl:text-[35px] leading-[1.45] mb-8">
-                    Shop by series
+                    {t("title")}
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

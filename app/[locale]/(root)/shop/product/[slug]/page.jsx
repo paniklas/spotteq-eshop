@@ -76,7 +76,7 @@ async function ProductPageContent({ slug, locale }) {
 async function KeyFeaturesForSlug({ slug, locale }) {
     const product = await getProductBySlug(slug, locale)
     if (!product?.keyFeatures) return null
-    return <KeyFeatures keyFeatures={product.keyFeatures} />
+    return <KeyFeatures keyFeatures={product.keyFeatures} additionalInfo={product.productDetails?.additionalInfo} locale={locale} />
 }
 
 async function RelatedProductsForSlug({ slug, locale }) {

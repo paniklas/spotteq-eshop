@@ -418,7 +418,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                                 disabled={isBuying || atMax}
                                 className="flex-1 flex items-center justify-center px-6 py-4 md:h-12 md:px-0 md:py-0 bg-gray-mint rounded-full font-aeonik text-[16px] uppercase text-black-custom hover:bg-white-custom hover:border hover:border-black-custom transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                             >
-                                {isBuying ? "..." : "QUICK BUY"}
+                                {isBuying ? "..." : t("quickBuy")}
                             </button>
                         </div>
 
@@ -519,7 +519,11 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                                         const rpEffectivePrice = rp.salePrice ?? rp.price
                                         return (
                                         <div key={rp._id} className="flex-1 flex flex-col gap-3">
-                                            <div className="relative aspect-square flex flex-col items-center justify-end gap-1 pb-3 mt-4 xl:mt-0">
+                                            {/* Image + title open the product */}
+                                            <Link
+                                                href={`/shop/product/${rp.slug}`}
+                                                className="relative aspect-square flex flex-col items-center justify-end gap-1 pb-3 mt-4 xl:mt-0"
+                                            >
                                                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[88%] md:w-[75%] xl:w-[65%] aspect-425/625 bg-gray-soft rounded-full z-0" />
                                                 {rp.imageUrl && (
                                                     <Image
@@ -540,7 +544,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                                                         </p>
                                                     )}
                                                 </div>
-                                            </div>
+                                            </Link>
                                             <div className="flex justify-center items-center gap-3">
                                                 {/* Price — desktop only, shown beside the button (as before) */}
                                                 <span className="hidden md:flex items-baseline gap-1.5">

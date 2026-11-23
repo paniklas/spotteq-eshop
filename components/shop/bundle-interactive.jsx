@@ -393,7 +393,7 @@ const BundleInteractive = ({ bundle }) => {
                                 disabled={isBuying || atMax}
                                 className="flex-1 flex items-center justify-center px-6 py-4 md:h-12 md:px-0 md:py-0 bg-gray-mint rounded-full font-aeonik text-[16px] uppercase text-black-custom hover:bg-white-custom hover:border hover:border-black-custom transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                             >
-                                {isBuying ? "..." : "QUICK BUY"}
+                                {isBuying ? "..." : t("quickBuy")}
                             </button>
                         </div>
                     </div>
