@@ -26,7 +26,15 @@ export const blockContentType = defineType({
             title: 'URL',
             name: 'link',
             type: 'object',
-            fields: [{ title: 'URL', name: 'href', type: 'url' }],
+            fields: [
+              {
+                title: 'URL',
+                name: 'href',
+                type: 'url',
+                description: 'A full URL, a site path such as /contact (no language prefix), or mailto:name@example.com',
+                validation: (Rule) => Rule.uri({ allowRelative: true, scheme: ['http', 'https', 'mailto'] }),
+              },
+            ],
           },
         ],
       },

@@ -20,9 +20,9 @@ const footerColumns = [
     {
         heading: "terms",
         links: [
-            { key: "termsOfUse" },
-            { key: "privacy" },
-            { key: "cookies" },
+            { key: "termsOfUse", href: "/terms" },
+            { key: "privacy", href: "/privacy" },
+            { key: "cookies", href: "/cookies" },
         ],
     },
     {
