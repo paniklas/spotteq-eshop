@@ -298,6 +298,32 @@
             "guest": "Continue as guest"
         }
     },
+    "contact": {
+        "heading": "Contact us",
+        "intro": "Have questions about our products or your order?\nSend us your message and the SPOTTEQ team will help you.",
+        "fullName": "Full name",
+        "email": "Email",
+        "orderNumber": "Order number",
+        "optional": "Optional",
+        "subject": "Subject",
+        "message": "Message",
+        "agreeTerms": "I have read and agree to the SPOTTEQ <terms>Terms and Conditions</terms> and <privacy>Privacy Policy</privacy>.",
+        "submit": "Send",
+        "submitting": "Sending…",
+        "sent": "Sent",
+        "success": "Your message has been sent. We'll get back to you soon.",
+        "invalid": "Please check the form and try again.",
+        "failed": "Could not send your message right now. Please try again.",
+        "errors": {
+            "fullNameRequired": "Please enter your full name.",
+            "emailRequired": "Please enter your email.",
+            "emailInvalid": "Please enter a valid email address.",
+            "subjectRequired": "Please enter a subject.",
+            "messageRequired": "Please write your message.",
+            "tooLong": "This text is too long.",
+            "agreeTermsRequired": "You must agree to the Terms and Conditions and Privacy Policy."
+        }
+    },
     "metadata": {
         "siteTitle": "SPOTTEQ | Sports Nutrition Supplements",
         "siteDescription": "Discover SPOTTEQ sports nutrition supplements for strength, performance, recovery and everyday support.",
@@ -309,6 +335,8 @@
         "orderConfirmationTitle": "Order confirmation",
         "signInTitle": "Sign in",
         "signUpTitle": "Create account",
-        "accountTitle": "My account"
+        "accountTitle": "My account",
+        "contactTitle": "Contact",
+        "contactDescription": "Get in touch with the SPOTTEQ team about our products or your order."
     }
 }

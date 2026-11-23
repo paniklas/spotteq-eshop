@@ -14,6 +14,8 @@ export const structure = (S) =>
       S.divider(),
       S.documentTypeListItem('newsletterSubscriber').title('Newsletter Subscribers'),
       S.divider(),
+      S.documentTypeListItem('contactMessage').title('Contact Messages'),
+      S.divider(),
       S.listItem()
         .title('Site Settings')
         .child(
@@ -47,6 +49,13 @@ export const structure = (S) =>
                   S.document()
                     .schemaType('aboutPage')
                     .documentId('aboutPage')
+                ),
+              S.listItem()
+                .title('Contact Page')
+                .child(
+                  S.document()
+                    .schemaType('contactPage')
+                    .documentId('contactPage')
                 ),
               S.divider(),
               S.documentTypeListItem('categoryGroup').title('Category Groups'),
