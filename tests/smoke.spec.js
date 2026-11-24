@@ -435,9 +435,10 @@ test.describe("Product copy translations", () => {
   }
 
   // Stock labels depend on inventory, so either state counts.
-  for (const { locale, stock, toast } of [
-    { locale: "en", stock: /IN STOCK|OUT OF STOCK/, toast: "Please sign in to save favourites." },
-    { locale: "el", stock: /ΣΕ ΑΠΟΘΕΜΑ|ΕΞΑΝΤΛΗΘΗΚΕ/, toast: "Συνδέσου για να αποθηκεύσεις τα αγαπημένα σου." },
+  // wishlist: the button's screen-reader label (a11y.addToWishlist), translated since #67.
+  for (const { locale, stock, toast, wishlist } of [
+    { locale: "en", stock: /IN STOCK|OUT OF STOCK/, toast: "Please sign in to save favourites.", wishlist: "Add to wishlist" },
+    { locale: "el", stock: /ΣΕ ΑΠΟΘΕΜΑ|ΕΞΑΝΤΛΗΘΗΚΕ/, toast: "Συνδέσου για να αποθηκεύσεις τα αγαπημένα σου.", wishlist: "Προσθήκη στα αγαπημένα" },
   ]) {
     test(`stock label and wishlist toast on /${locale}`, async ({ page }) => {
       await page.goto(`/${locale}/shop/shop-all`);
@@ -445,7 +446,7 @@ test.describe("Product copy translations", () => {
       await expect(card).toContainText(stock);
       // The wishlist button ignores clicks until Clerk has loaded.
       await page.waitForFunction(() => window.Clerk?.loaded);
-      await card.getByRole("button", { name: "Add to wishlist" }).click();
+      await card.getByRole("button", { name: wishlist }).click();
       await expect(page.getByText(toast)).toBeVisible();
 
       const href = await page.locator(`main a[href*="/shop/product/"]`).first().getAttribute("href");
@@ -560,7 +561,8 @@ test("add to bag highlights the item in the drawer", async ({ page }) => {
 test.describe("Cart drawer actions", () => {
   for (const { locale, open, cont, remove, empty } of [
     { locale: "en", open: "Cart", cont: "CONTINUE SHOPPING", remove: "REMOVE", empty: "Your bag is empty." },
-    { locale: "el", open: "Cart", cont: "ΣΥΝΕΧΕΙΑ ΣΤΙΣ ΑΓΟΡΕΣ", remove: "ΑΦΑΙΡΕΣΗ", empty: "Το καλάθι σου είναι άδειο." },
+    // open: the cart icon's screen-reader label (a11y.cart), translated since #67.
+    { locale: "el", open: "Καλάθι", cont: "ΣΥΝΕΧΕΙΑ ΣΤΙΣ ΑΓΟΡΕΣ", remove: "ΑΦΑΙΡΕΣΗ", empty: "Το καλάθι σου είναι άδειο." },
   ]) {
     test(`continue shopping and remove on /${locale}`, async ({ page }) => {
       await page.addInitScript(() => {
