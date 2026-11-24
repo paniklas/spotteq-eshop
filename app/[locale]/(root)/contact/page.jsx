@@ -22,7 +22,7 @@ export async function generateMetadata({ params }, parent) {
     return seoMetadata(seo, locale, {
         title: t("contactTitle"),
         description: t("contactDescription"),
-    }, parent)
+    }, parent, "/contact")
 }
 
 export default async function ContactPage({ params }) {

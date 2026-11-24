@@ -19,6 +19,7 @@ export const getProductBySlug = cache(async (slug, locale) => {
             badge,
             "flavourName": flavourName[language == $locale][0].value,
             "slug": slugs[$locale].current,
+            "slugsByLocale": { "el": slugs.el.current, "en": slugs.en.current },
             image,
             galleryImages,
             price,

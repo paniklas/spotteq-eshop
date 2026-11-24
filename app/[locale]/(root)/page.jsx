@@ -11,7 +11,7 @@ import StoriesThatMove from "@/components/home/stories-that-move"
 import ShopBySeriesSkeleton from "@/components/skeletons/shop-by-series-skeleton"
 import BundleSectionSkeleton from "@/components/skeletons/bundle-section-skeleton"
 import { getHomeSeo } from "@/sanity/getData/getHomeSeo"
-import { seoMetadata } from "@/lib/seo"
+import { localeAlternates, seoMetadata } from "@/lib/seo"
 
 export const dynamic = "force-static";
 export const revalidate = 3600;
@@ -21,7 +21,9 @@ export const revalidate = 3600;
 export async function generateMetadata({ params }, parent) {
   const { locale } = await params;
   const seo = await getHomeSeo(locale);
-  return seo ? seoMetadata(seo, locale, {}, parent) : {};
+  return seo
+    ? seoMetadata(seo, locale, {}, parent, "")
+    : { alternates: localeAlternates(locale, "") };
 }
 
 const Home = async ({ params }) => {

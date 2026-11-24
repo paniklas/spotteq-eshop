@@ -70,6 +70,7 @@ export const getCategoryBySlug = async (slug, locale) => {
             _id,
             "title": title[language == $locale][0].value,
             "slug": slugs[$locale].current,
+            "slugsByLocale": { "el": slugs.el.current, "en": slugs.en.current },
             "description": description[language == $locale][0].value,
             "group": categoryGroup->slug.current,
             image,

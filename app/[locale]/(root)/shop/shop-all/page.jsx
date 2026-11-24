@@ -8,7 +8,7 @@ import { getAllProducts } from "@/sanity/getData/getAllProducts";
 import { getAllCategories } from "@/sanity/getData/getAllcategories";
 import { getShopBundles } from "@/sanity/getData/getShopBundles";
 import { getTranslations } from "next-intl/server";
-import { brandTitle } from "@/lib/seo";
+import { brandTitle, localeAlternates } from "@/lib/seo";
 
 
 // Fixed el/en copy (messages → metadata); there is no Sanity document for this page.
@@ -16,7 +16,11 @@ import { brandTitle } from "@/lib/seo";
 export async function generateMetadata({ params }) {
     const { locale } = await params;
     const t = await getTranslations({ locale, namespace: "metadata" });
-    return { title: brandTitle(t("shopAllTitle")), description: t("shopAllDescription") };
+    return {
+        title: brandTitle(t("shopAllTitle")),
+        description: t("shopAllDescription"),
+        alternates: localeAlternates(locale, "/shop/shop-all"),
+    };
 }
 
 export default async function ShopAll({ params }) {

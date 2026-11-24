@@ -19,7 +19,7 @@ export async function generateMetadata({ params }, parent) {
     const { locale } = await params
     const page = await getAmbassadorPage(locale)
     if (!page) return {}
-    return seoMetadata(page.seo, locale, { title: page.name, image: page.heroImage }, parent)
+    return seoMetadata(page.seo, locale, { title: page.name, image: page.heroImage }, parent, "/ambassador")
 }
 
 // Below the interview, the same sections as the FAQ and contact pages.

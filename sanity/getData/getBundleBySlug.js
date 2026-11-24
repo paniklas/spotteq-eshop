@@ -11,6 +11,7 @@ export const getBundleBySlug = cache(async (slug, locale) => {
       "title": title[language == $locale][0].value,
       "description": description[language == $locale][0].value,
       "slug": slugs[$locale].current,
+      "slugsByLocale": { "el": slugs.el.current, "en": slugs.en.current },
       "productIds": products[].product->._id,
       image,
       galleryImages,
