@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useRef, useEffect } from "react"
-import { motion, MotionConfig } from "framer-motion"
+import { motion, MotionConfig, useReducedMotion } from "framer-motion"
 import Image from "next/image"
 import { Trash2, Check, X, ArrowRight } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
@@ -19,6 +19,9 @@ import { useTranslations } from "next-intl"
 // row by the add's nonce, so adding the same item again plays it again.
 const AddedRow = ({ added, children }) => {
     const ref = useRef(null)
+    // MotionConfig's reducedMotion="user" only drops transforms; the row's fade-in
+    // would still play, so with reduced motion on the row starts fully shown.
+    const reduceMotion = useReducedMotion()
     // Bring the row into view in the item list only. scrollIntoView would also
     // scroll the page behind the drawer, which is still sliding in off-screen.
     useEffect(() => {
@@ -36,7 +39,7 @@ const AddedRow = ({ added, children }) => {
             ref={ref}
             data-added={added ? (added.isNew ? "new" : "more") : undefined}
             className="relative isolate"
-            initial={added?.isNew ? { opacity: 0, x: 48 } : false}
+            initial={added?.isNew && !reduceMotion ? { opacity: 0, x: 48 } : false}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
         >
@@ -213,7 +216,7 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
 
                 {/* Items */}
                 {/* reducedMotion="user": with the OS setting on, the slide and pop are
-                    skipped and only the highlight fades. */}
+                    skipped (AddedRow also skips its fade-in); only the highlight fades. */}
                 <MotionConfig reducedMotion="user">
                 <div data-lenis-prevent data-cart-items className="flex-1 overflow-y-auto overflow-x-hidden px-4 xl:px-8">
                     {cartItems.length === 0 && (
