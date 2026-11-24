@@ -87,6 +87,9 @@ export default async function LocaleLayout({ children, params }) {
             <Script
                 src="https://cdn.userway.org/widget.js"
                 data-account="f8N3POMRAT"
+                // Bottom-left (UserWay: 1–3 right side top/middle/bottom,
+                // 5–7 left side bottom/middle/top). Overrides the dashboard.
+                data-position="5"
                 strategy="lazyOnload"
             />
         </>

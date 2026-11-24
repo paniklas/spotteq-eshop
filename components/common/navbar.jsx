@@ -31,6 +31,11 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [burgerHovered, setBurgerHovered] = useState(false);
+    // Width of the page scrollbar when the menu was opened (0 with overlay
+    // scrollbars: phones, macOS trackpad). The scroll lock removes it, which
+    // would widen the fixed header and shift its icons (and the centred logo
+    // above 1920px); the header keeps that gap while the menu is open.
+    const [scrollbarGap, setScrollbarGap] = useState(0);
     const { openCart, cartItems } = useCartStore();
     const { isSignedIn, user } = useUser();
     const { otherLocale, switchLocale, isPending: isSwitchingLocale } = useLocaleSwitch();
@@ -81,11 +86,18 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
             {/* Menu overlay */}
             <MenuOverlay isOpen={isMenuOpen} isOnClose={() => setIsMenuOpen(false)} categoryGroups={categoryGroups} navBundles={navBundles} />
 
-            <header className={`fixed top-0 left-0 right-0 z-50 h-24 transition-all duration-300 pointer-events-none ${headerBg} ${innerBg}`}>
-                <div className={`max-w-480 mx-auto h-full flex items-center justify-between page-x ${isMenuOpen ? "pt-0 md:pb-0" : (isHome ? "pt-10 xl:pb-0" : "")}`}>
+            {/* Only colours/blur transition: `right` must change instantly with the scroll lock. */}
+            <header
+                className={`fixed top-0 left-0 right-0 z-50 h-24 transition-[background-color,backdrop-filter] duration-300 pointer-events-none ${headerBg} ${innerBg}`}
+                style={isMenuOpen && scrollbarGap ? { right: scrollbarGap } : undefined}
+            >
+                {/* Same offset whether the menu is open or closed, so the logo and
+                    icons don't jump when the menu toggles on the home page. */}
+                <div className={`max-w-480 mx-auto h-full flex items-center justify-between page-x ${isHome ? "pt-10 xl:pb-0" : ""}`}>
 
-                    {/* Logo — crossfade between black and white versions */}
-                    <Link href="/" className="relative flex items-center pointer-events-auto" aria-label={tA("home")}>
+                    {/* Logo — crossfade between black and white versions. Closes the
+                        menu too, since the navbar (and its state) persists across pages. */}
+                    <Link href="/" onClick={() => setIsMenuOpen(false)} className="relative flex items-center pointer-events-auto" aria-label={tA("home")}>
                         <div className="relative w-35 h-7.75 md:w-50 md:h-11">
                             <motion.div
                                 animate={{ opacity: isLightIcons ? 0 : 1 }}
@@ -220,7 +232,12 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
                         <button
                             aria-label={isMenuOpen ? tA("closeMenu") : tA("openMenu")}
                             aria-expanded={isMenuOpen}
-                            onClick={() => { setIsMenuOpen((prev) => !prev); setBurgerHovered(false); }}
+                            onClick={() => {
+                                // Measured before opening, while the scrollbar is still there.
+                                if (!isMenuOpen) setScrollbarGap(window.innerWidth - document.documentElement.clientWidth);
+                                setIsMenuOpen((prev) => !prev);
+                                setBurgerHovered(false);
+                            }}
                             onMouseEnter={() => !isMenuOpen && setBurgerHovered(true)}
                             onMouseLeave={() => setBurgerHovered(false)}
                             className="flex flex-col justify-between w-10.5 h-5.5 relative cursor-pointer"
