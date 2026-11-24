@@ -12,6 +12,9 @@ import ShopBySeriesSkeleton from "@/components/skeletons/shop-by-series-skeleton
 import BundleSectionSkeleton from "@/components/skeletons/bundle-section-skeleton"
 import { getHomeSeo } from "@/sanity/getData/getHomeSeo"
 import { localeAlternates, seoMetadata } from "@/lib/seo"
+import { siteJsonLd } from "@/lib/jsonld"
+import JsonLd from "@/components/seo/json-ld"
+import { getActiveShipping } from "@/sanity/getData/getActiveShipping"
 
 export const dynamic = "force-static";
 export const revalidate = 3600;
@@ -28,9 +31,13 @@ export async function generateMetadata({ params }, parent) {
 
 const Home = async ({ params }) => {
   const { locale } = await params;
+  const shippingMethods = await getActiveShipping(locale);
 
   return (
     <>
+      {/* Site name + organization (with return and shipping policy): Google
+          reads these from the home page only. */}
+      <JsonLd data={siteJsonLd(shippingMethods)} />
       <HeroSection locale={locale} />
       <AnnouncementBar locale={locale} />
       <AboutSection locale={locale} />
