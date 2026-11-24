@@ -38,7 +38,7 @@ export const getAllCategories = async (locale) => {
 export const getCategoriesByGroup = async (locale, groupSlug) => {
     if (!locale || !groupSlug) return []
     const CATEGORIES_BY_GROUP_QUERY = defineQuery(`
-        *[_type == "category" && categoryGroup->slug.current == $groupSlug && status == true]
+        *[_type == "category" && categoryGroup._ref in *[_type == "categoryGroup" && slug.current == $groupSlug]._id && status == true]
             | order(sortOrder asc) {
             _id,
             "title": title[language == $locale][0].value,
