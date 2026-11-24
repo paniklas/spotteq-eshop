@@ -147,7 +147,14 @@ const Footer = async ({ locale }) => {
                     © 2026 SPOTTEQ, a brand of M100 Impact Agency. All rights reserved.
                 </p>
                 <p className="font-aeonik text-[12px] text-black opacity-70">
-                    Designed by pecora nera design studio + Coded by Impruves Web Dev
+                    Designed by{" "}
+                    <a href="https://www.pecoranera.gr/" target="_blank" rel="noopener noreferrer" className="underline-offset-2 hover:underline">
+                        pecora nera design studio
+                    </a>
+                    {" "}+ Coded by{" "}
+                    <a href="https://www.impruves.com" target="_blank" rel="noopener noreferrer" className="underline-offset-2 hover:underline">
+                        Impruves Web Dev
+                    </a>
                 </p>
             </div>
 

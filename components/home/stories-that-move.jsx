@@ -46,9 +46,11 @@ const StoriesThatMove = async ({ locale }) => {
 
                 {/* Tablet / desktop layout */}
                 <div className="hidden md:block pt-16 xl:pt-24">
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-12 items-center">
+                {/* One rounded card: text panel (same gray as the Bundles section)
+                    joined to the image, no gap between them. */}
+                <div className="grid grid-cols-1 xl:grid-cols-2 rounded-[15px] overflow-hidden">
                     {/* Text */}
-                    <div className="flex flex-col justify-between h-full py-6 xl:py-12">
+                    <div className="flex flex-col justify-between h-full bg-gray-light p-10 xl:px-10 xl:py-12">
                         <span className="font-aeonik text-[18px] xl:text-[20px] text-black">
                             Stories that move
                         </span>
