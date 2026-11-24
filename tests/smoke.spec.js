@@ -435,9 +435,10 @@ test.describe("Product copy translations", () => {
   }
 
   // Stock labels depend on inventory, so either state counts.
-  for (const { locale, stock, toast } of [
-    { locale: "en", stock: /IN STOCK|OUT OF STOCK/, toast: "Please sign in to save favourites." },
-    { locale: "el", stock: /ΣΕ ΑΠΟΘΕΜΑ|ΕΞΑΝΤΛΗΘΗΚΕ/, toast: "Συνδέσου για να αποθηκεύσεις τα αγαπημένα σου." },
+  // wishlist: the button's screen-reader label (a11y.addToWishlist), translated since #67.
+  for (const { locale, stock, toast, wishlist } of [
+    { locale: "en", stock: /IN STOCK|OUT OF STOCK/, toast: "Please sign in to save favourites.", wishlist: "Add to wishlist" },
+    { locale: "el", stock: /ΣΕ ΑΠΟΘΕΜΑ|ΕΞΑΝΤΛΗΘΗΚΕ/, toast: "Συνδέσου για να αποθηκεύσεις τα αγαπημένα σου.", wishlist: "Προσθήκη στα αγαπημένα" },
   ]) {
     test(`stock label and wishlist toast on /${locale}`, async ({ page }) => {
       await page.goto(`/${locale}/shop/shop-all`);
@@ -445,7 +446,7 @@ test.describe("Product copy translations", () => {
       await expect(card).toContainText(stock);
       // The wishlist button ignores clicks until Clerk has loaded.
       await page.waitForFunction(() => window.Clerk?.loaded);
-      await card.getByRole("button", { name: "Add to wishlist" }).click();
+      await card.getByRole("button", { name: wishlist }).click();
       await expect(page.getByText(toast)).toBeVisible();
 
       const href = await page.locator(`main a[href*="/shop/product/"]`).first().getAttribute("href");
@@ -560,7 +561,8 @@ test("add to bag highlights the item in the drawer", async ({ page }) => {
 test.describe("Cart drawer actions", () => {
   for (const { locale, open, cont, remove, empty } of [
     { locale: "en", open: "Cart", cont: "CONTINUE SHOPPING", remove: "REMOVE", empty: "Your bag is empty." },
-    { locale: "el", open: "Cart", cont: "ΣΥΝΕΧΕΙΑ ΣΤΙΣ ΑΓΟΡΕΣ", remove: "ΑΦΑΙΡΕΣΗ", empty: "Το καλάθι σου είναι άδειο." },
+    // open: the cart icon's screen-reader label (a11y.cart), translated since #67.
+    { locale: "el", open: "Καλάθι", cont: "ΣΥΝΕΧΕΙΑ ΣΤΙΣ ΑΓΟΡΕΣ", remove: "ΑΦΑΙΡΕΣΗ", empty: "Το καλάθι σου είναι άδειο." },
   ]) {
     test(`continue shopping and remove on /${locale}`, async ({ page }) => {
       await page.addInitScript(() => {
@@ -783,5 +785,71 @@ test.describe("SEO", () => {
     for (const icon of manifest.icons) {
       expect((await request.get(icon.src)).status(), icon.src).toBe(200);
     }
+  });
+});
+
+test.describe("Structured data", () => {
+  const PROD = "https://www.spotteq.com";
+  const jsonLd = (html) =>
+    [...html.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/gs)].map((m) => JSON.parse(m[1]));
+  const firstSitemapUrl = async (request, pattern) => {
+    const xml = await (await request.get("/sitemap.xml")).text();
+    return xml.match(pattern)[1].replace(PROD, "");
+  };
+  const expectOffer = (offers) => {
+    expect(offers["@type"]).toBe("Offer");
+    expect(offers.price).toBeGreaterThan(0);
+    expect(offers.priceCurrency).toBe("EUR");
+    expect(offers.availability).toMatch(/^https:\/\/schema\.org\/(InStock|OutOfStock)$/);
+    expect(offers.url).toMatch(/^https:\/\/www\.spotteq\.com\/(el|en)\/shop\//);
+  };
+
+  test("home page has WebSite and OnlineStore with return and shipping policy", async ({ request }) => {
+    const graph = jsonLd(await (await request.get("/el")).text()).flatMap((b) => b["@graph"] ?? [b]);
+    const site = graph.find((n) => n["@type"] === "WebSite");
+    const store = graph.find((n) => n["@type"] === "OnlineStore");
+    expect(site.name).toBe("SPOTTEQ");
+    expect(site.url).toBe(`${PROD}/`);
+    expect(store.vatID).toBe("EL801739838");
+    expect(store.logo).toMatch(/^https:\/\/www\.spotteq\.com\//);
+    expect(store.hasMerchantReturnPolicy.applicableCountry).toBe("GR");
+    expect(store.hasShippingService).toBeTruthy();
+    expect((await request.get(store.logo.replace(PROD, ""))).status()).toBe(200);
+  });
+
+  test("product page has a priced offer and a breadcrumb", async ({ request }) => {
+    const path = await firstSitemapUrl(request, /<loc>(https:\/\/www\.spotteq\.com\/el\/shop\/product\/[^<]+)<\/loc>/);
+    const blocks = jsonLd(await (await request.get(path)).text());
+    const product = blocks.find((b) => b["@type"] === "Product" || b["@type"] === "ProductGroup");
+    const variant = product["@type"] === "ProductGroup" ? product.hasVariant[0] : product;
+    if (product["@type"] === "ProductGroup") expect(product.productGroupID).toBeTruthy();
+    expect(variant.name).toBeTruthy();
+    expect(variant.brand.name).toBe("SPOTTEQ");
+    expect(variant.image.length).toBe(3);
+    expectOffer(variant.offers);
+    expect(variant.offers.url).toBe(`${PROD}${path}`);
+    const crumbs = blocks.find((b) => b["@type"] === "BreadcrumbList").itemListElement;
+    expect(crumbs.length).toBeGreaterThanOrEqual(2);
+    expect(crumbs[0].item).toBe(`${PROD}/el`);
+  });
+
+  test("flavour pages share one product group", async ({ request }) => {
+    const html = await (await request.get("/el/shop/product/hyperfuel-geysi-portokali")).text();
+    const group = jsonLd(html).find((b) => b["@type"] === "ProductGroup");
+    expect(group.hasVariant.length).toBeGreaterThan(1);
+    const sibling = group.hasVariant[1].url.replace(PROD, "");
+    const other = jsonLd(await (await request.get(sibling)).text()).find((b) => b["@type"] === "ProductGroup");
+    expect(other.productGroupID).toBe(group.productGroupID);
+  });
+
+  test("bundle page has a priced offer", async ({ request }) => {
+    const path = await firstSitemapUrl(request, /<loc>(https:\/\/www\.spotteq\.com\/el\/shop\/bundle\/[^<]+)<\/loc>/);
+    const product = jsonLd(await (await request.get(path)).text()).find((b) => b["@type"] === "Product");
+    expectOffer(product.offers);
+  });
+
+  test("unknown product slug has no product markup", async ({ request }) => {
+    const html = await (await request.get("/el/shop/product/this-product-does-not-exist-xyz")).text();
+    expect(jsonLd(html).some((b) => b["@type"] === "Product" || b["@type"] === "ProductGroup")).toBe(false);
   });
 });

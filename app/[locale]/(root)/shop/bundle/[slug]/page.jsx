@@ -10,6 +10,9 @@ import FeaturedProducts from "@/components/home/featured-products";
 import KeyFeatures from "@/components/product/key-features";
 import { getBundleBySlug } from "@/sanity/getData/getBundleBySlug";
 import { NO_INDEX, seoMetadata, slugPaths } from "@/lib/seo";
+import { HOME_CRUMB, breadcrumbJsonLd, bundleJsonLd } from "@/lib/jsonld";
+import JsonLd from "@/components/seo/json-ld";
+import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -49,10 +52,24 @@ export default async function BundlePage({ params }) {
 }
 
 async function BundleContent({ locale, slug }) {
-    const bundle = await getBundleBySlug(slug, locale)
+    const [bundle, t] = await Promise.all([
+        getBundleBySlug(slug, locale),
+        getTranslations({ locale, namespace: "metadata" }),
+    ])
     if (!bundle) notFound()
 
-    return <BundleInteractive bundle={bundle} />
+    // Structured data, rendered with the content so the skeleton streams first.
+    return (
+        <>
+            <JsonLd data={bundleJsonLd(bundle, locale)} />
+            <JsonLd data={breadcrumbJsonLd([
+                HOME_CRUMB(locale),
+                { name: t("bundlesTitle"), path: `/${locale}/shop/bundles` },
+                { name: bundle.title },
+            ])} />
+            <BundleInteractive bundle={bundle} />
+        </>
+    )
 }
 
 async function KeyFeaturesForSlug({ slug, locale }) {

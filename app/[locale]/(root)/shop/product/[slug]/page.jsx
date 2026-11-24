@@ -13,6 +13,8 @@ import FeaturedProducts from "@/components/home/featured-products"
 import FeaturedProductsSlider from "@/components/home/featured-products-slider"
 import KeyFeatures from "@/components/product/key-features"
 import { NO_INDEX, seoMetadata, slugPaths } from "@/lib/seo"
+import { HOME_CRUMB, breadcrumbJsonLd, productJsonLd, productSchemaName } from "@/lib/jsonld"
+import JsonLd from "@/components/seo/json-ld"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 86400;
@@ -62,16 +64,29 @@ async function ProductPageContent({ slug, locale }) {
     const images = [product.imageUrl, ...product.galleryImageUrls].filter(Boolean)
     const subtitle = [product.subtitleLine1, product.subtitleLine2].filter(Boolean)
 
+    // Structured data from the same product data, rendered with the content so
+    // the skeleton still streams first.
     return (
-        <ProductInteractive
-            product={{
-                ...product,
-                images,
-                subtitle,
-            }}
-            relatedProducts={product.relatedProducts}
-            bundleCallouts={bundleCallouts}
-        />
+        <>
+            <JsonLd data={productJsonLd(product, locale)} />
+            <JsonLd data={breadcrumbJsonLd([
+                HOME_CRUMB(locale),
+                product.breadcrumbCategory && {
+                    name: product.breadcrumbCategory.title,
+                    path: `/${locale}/shop/category/${product.breadcrumbCategory.slug}`,
+                },
+                { name: productSchemaName(product) },
+            ])} />
+            <ProductInteractive
+                product={{
+                    ...product,
+                    images,
+                    subtitle,
+                }}
+                relatedProducts={product.relatedProducts}
+                bundleCallouts={bundleCallouts}
+            />
+        </>
     )
 }
 

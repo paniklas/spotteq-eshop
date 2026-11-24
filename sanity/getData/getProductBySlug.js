@@ -50,6 +50,14 @@ export const getProductBySlug = cache(async (slug, locale) => {
                 "slug": slugs[$locale].current,
                 "group": categoryGroup->slug.current
             },
+            // Structured data (lib/jsonld.js): every flavour reference, active or
+            // not, so the derived product-group ID stays stable when one is
+            // switched off; and the first active category for the breadcrumb.
+            "flavourIds": flavours[]._ref,
+            "breadcrumbCategory": categories[@->status == true][0]-> {
+                "title": title[language == $locale][0].value,
+                "slug": slugs[$locale].current
+            },
             keyFeatures {
                 "description": description[language == $locale][0].value,
                 "features": features[language == $locale][0].value,

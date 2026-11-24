@@ -11,6 +11,8 @@ import { getAllProducts } from "@/sanity/getData/getAllProducts";
 import { getAllCategories, getCategoryBySlug } from "@/sanity/getData/getAllcategories";
 import { getShopBundles } from "@/sanity/getData/getShopBundles";
 import { NO_INDEX, seoMetadata, slugPaths } from "@/lib/seo";
+import { HOME_CRUMB, breadcrumbJsonLd } from "@/lib/jsonld";
+import JsonLd from "@/components/seo/json-ld";
 
 export const dynamic = "force-dynamic";
 
@@ -62,6 +64,8 @@ async function CategoryContent({ locale, slug }) {
     ])
 
     return (
+        <>
+        <JsonLd data={breadcrumbJsonLd([HOME_CRUMB(locale), { name: category.title }])} />
         <ShopView
             categories={categories}
             bundles={allBundles}
@@ -79,5 +83,6 @@ async function CategoryContent({ locale, slug }) {
                 bundles={filteredBundles}
             />
         </ShopView>
+        </>
     )
 }

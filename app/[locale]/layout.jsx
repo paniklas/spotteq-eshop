@@ -21,6 +21,9 @@ import { getHomeSeo } from '@/sanity/getData/getHomeSeo';
 import { getTranslations } from 'next-intl/server';
 import { defaultMetadata } from '@/lib/seo';
 
+// Brand colour for the mobile browser bar (matches the manifest's theme_color).
+export const viewport = { themeColor: "#000000" };
+
 export function generateStaticParams() {
     return routing.locales.map((locale) => ({ locale }));
 }
