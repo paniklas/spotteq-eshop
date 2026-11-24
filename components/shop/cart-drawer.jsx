@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useRef, useEffect } from "react"
+import { motion, MotionConfig } from "framer-motion"
 import Image from "next/image"
 import { Trash2, Check, X, ArrowRight } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
@@ -10,6 +11,48 @@ import { formatPrice } from "@/utils/formatPrice"
 import { validateCoupon } from "@/app/actions/coupon"
 import { useTranslations } from "next-intl"
 
+
+// Add-to-bag animation. The drawer slides in over 500ms when an add opens it, so
+// the row starts moving once the drawer is mostly in. A new item slides in from
+// the right; an item already in the bag stays put and its quantity pops (see
+// the qty counter). Both get a highlight that fades out. The parent keys this
+// row by the add's nonce, so adding the same item again plays it again.
+const AddedRow = ({ added, children }) => {
+    const ref = useRef(null)
+    // Bring the row into view in the item list only. scrollIntoView would also
+    // scroll the page behind the drawer, which is still sliding in off-screen.
+    useEffect(() => {
+        const row = ref.current
+        const list = row?.closest("[data-cart-items]")
+        if (!added || !list) return
+        const top = row.getBoundingClientRect().top - list.getBoundingClientRect().top + list.scrollTop
+        const bottom = top + row.offsetHeight
+        if (top < list.scrollTop || bottom > list.scrollTop + list.clientHeight) {
+            list.scrollTo({ top: Math.max(0, bottom - list.clientHeight), behavior: "smooth" })
+        }
+    }, [added])
+    return (
+        <motion.div
+            ref={ref}
+            data-added={added ? (added.isNew ? "new" : "more") : undefined}
+            className="relative isolate"
+            initial={added?.isNew ? { opacity: 0, x: 48 } : false}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        >
+            {added && (
+                <motion.div
+                    aria-hidden
+                    className="absolute inset-0 -z-10 -mx-2 xl:-mx-4 rounded-2xl bg-teal-accent/15 pointer-events-none"
+                    initial={{ opacity: 1 }}
+                    animate={{ opacity: 0 }}
+                    transition={{ duration: 1.2, delay: 0.8, ease: "easeOut" }}
+                />
+            )}
+            {children}
+        </motion.div>
+    )
+}
 
 const CheckoutModal = ({ onClose, onCloseAll, onGuest }) => {
     const t = useTranslations("cart")
@@ -53,7 +96,7 @@ const CheckoutModal = ({ onClose, onCloseAll, onGuest }) => {
 
 const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
     const t = useTranslations("cart")
-    const { cartItems, cartOpen, closeCart, removeFromCart, updateQty, appliedCoupon, couponDiscount, applyCoupon, removeCoupon } = useCartStore()
+    const { cartItems, cartOpen, closeCart, removeFromCart, updateQty, appliedCoupon, couponDiscount, applyCoupon, removeCoupon, lastAdded } = useCartStore()
 
     const bundleSuggestions = useMemo(() => {
         const productIdsInCart = new Set(
@@ -169,12 +212,17 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                 )}
 
                 {/* Items */}
-                <div data-lenis-prevent className="flex-1 overflow-y-auto px-4 xl:px-8">
+                {/* reducedMotion="user": with the OS setting on, the slide and pop are
+                    skipped and only the highlight fades. */}
+                <MotionConfig reducedMotion="user">
+                <div data-lenis-prevent data-cart-items className="flex-1 overflow-y-auto overflow-x-hidden px-4 xl:px-8">
                     {cartItems.length === 0 && (
                         <p className="font-aeonik text-[14px] xl:text-[22px] text-gray-text text-center mt-12">{t("empty")}</p>
                     )}
-                    {cartItems.map((item, i) => (
-                        <div key={item.cartId}>
+                    {cartItems.map((item, i) => {
+                        const added = lastAdded?.cartId === item.cartId ? lastAdded : null
+                        return (
+                        <AddedRow key={added ? `${item.cartId}-${added.nonce}` : item.cartId} added={added}>
                             {i > 0 && <hr className="border-gray-mint" />}
                             <div className="flex gap-4 py-8 pb-4">
                                 {/* Image + name — clickable if slug is available */}
@@ -224,7 +272,14 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                                             >
                                                 −
                                             </button>
-                                            <span className="w-6 text-center font-aeonik text-[14px] text-black-custom">{item.qty}</span>
+                                            <motion.span
+                                                className="w-6 text-center font-aeonik text-[14px] text-black-custom"
+                                                initial={added && !added.isNew ? { scale: 1.7 } : false}
+                                                animate={{ scale: 1 }}
+                                                transition={{ type: "spring", stiffness: 400, damping: 12, delay: 0.4 }}
+                                            >
+                                                {item.qty}
+                                            </motion.span>
                                             <button
                                                 disabled={!!incrementingIds[item.cartId] || (item.inventory != null && item.qty >= item.inventory)}
                                                 onClick={async () => {
@@ -251,9 +306,11 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        </AddedRow>
+                        )
+                    })}
                 </div>
+                </MotionConfig>
 
                 {/* Bundle suggestions */}
                 {bundleSuggestions.length > 0 && (

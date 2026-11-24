@@ -518,3 +518,19 @@ test.describe("Cart drawer translations", () => {
     });
   }
 });
+
+// Add-to-bag animation: the drawer opens with the added row marked (it slides in
+// and is highlighted); adding the same product again marks it as a quantity bump.
+test("add to bag highlights the item in the drawer", async ({ page }) => {
+  await page.goto("/en/shop/shop-all");
+  const add = page.locator("[data-testid='product-card']").first().getByRole("button", { name: "ADD TO BAG" }).locator("visible=true").first();
+  await add.click();
+  const list = page.locator("[data-cart-items]");
+  await expect(list.locator("[data-added='new']")).toHaveCount(1);
+  await expect(list.locator("[data-added='new']")).toBeInViewport();
+
+  // The drawer's Close comes before the cookie banner's in the DOM.
+  await page.getByRole("button", { name: "Close" }).first().click();
+  await add.click();
+  await expect(list.locator("[data-added='more']")).toHaveCount(1);
+});
