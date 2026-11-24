@@ -262,8 +262,13 @@ export const bundleType = defineType({
         defineField({
           name: 'canonicalUrl',
           title: 'Canonical URL',
-          type: 'url',
-          description: 'The preferred URL for this page (if different from the default)'
+          description: 'Leave empty: each page already declares its own URL as canonical, per language. Fill in only to point a language version at a different page (full https://www.spotteq.com/… address).',
+          type: 'object',
+          options: { collapsible: true, collapsed: true },
+          fields: [
+            defineField({ name: 'el', title: 'Greek page', type: 'url' }),
+            defineField({ name: 'en', title: 'English page', type: 'url' }),
+          ],
         }),
         defineField({
           name: 'noIndex',

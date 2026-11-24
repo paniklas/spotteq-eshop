@@ -54,7 +54,17 @@ export const homePageType = defineType({
             defineField({ name: 'el', title: 'Greek', type: 'array', of: [{ type: 'string' }] }),
           ],
         }),
-        defineField({ name: 'canonicalUrl', title: 'Canonical URL', type: 'url' }),
+        defineField({
+          name: 'canonicalUrl',
+          title: 'Canonical URL',
+          description: 'Leave empty: each page already declares its own URL as canonical, per language. Fill in only to point a language version at a different page (full https://www.spotteq.com/… address).',
+          type: 'object',
+          options: { collapsible: true, collapsed: true },
+          fields: [
+            defineField({ name: 'el', title: 'Greek page', type: 'url' }),
+            defineField({ name: 'en', title: 'English page', type: 'url' }),
+          ],
+        }),
         defineField({ name: 'noIndex', title: 'No Index', type: 'boolean', initialValue: false }),
       ],
     }),

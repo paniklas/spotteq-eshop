@@ -7,6 +7,6 @@ export const seoProjection = (field) => `
         "metaDescription": metaDescription[language == $locale][0].value,
         ogImage,
         "keywords": keywords[$locale],
-        canonicalUrl,
+        "canonicalUrl": canonicalUrl[$locale],
         noIndex
     }`
