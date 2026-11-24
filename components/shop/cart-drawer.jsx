@@ -188,6 +188,17 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
     const handleGuest = () => { setShowModal(false); closeCart(); router.push("/checkout") }
     const handleDrawerClose = () => { setShowModal(false); closeCart() }
 
+    // When the last item is removed with the drawer open, hold the empty message
+    // until that row's slide-out has finished (AnimatePresence onExitComplete),
+    // so it doesn't appear while the row is still leaving. Adjusted during render
+    // (React's "storing information from previous renders" pattern).
+    const [prevItemCount, setPrevItemCount] = useState(cartItems.length)
+    const [lastRowExiting, setLastRowExiting] = useState(false)
+    if (cartItems.length !== prevItemCount) {
+        setPrevItemCount(cartItems.length)
+        setLastRowExiting(cartItems.length === 0 && prevItemCount > 0 && cartOpen)
+    }
+
     return (
         <>
             {/* Overlay */}
@@ -238,10 +249,17 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                     skipped (AddedRow also skips its fade-in); only the highlight fades. */}
                 <MotionConfig reducedMotion="user">
                 <div data-lenis-prevent data-cart-items className="flex-1 overflow-y-auto overflow-x-hidden px-4 xl:px-8">
-                    {cartItems.length === 0 && (
-                        <p className="font-aeonik text-[14px] xl:text-[22px] text-gray-text text-center mt-12">{t("empty")}</p>
+                    {cartItems.length === 0 && !lastRowExiting && (
+                        <motion.p
+                            className="font-aeonik text-[14px] xl:text-[22px] text-gray-text text-center mt-12"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            {t("empty")}
+                        </motion.p>
                     )}
-                    <AnimatePresence initial={false}>
+                    <AnimatePresence initial={false} onExitComplete={() => setLastRowExiting(false)}>
                     {cartItems.map((item, i) => {
                         const added = lastAdded?.cartId === item.cartId ? lastAdded : null
                         return (

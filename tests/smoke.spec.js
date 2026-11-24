@@ -538,9 +538,9 @@ test("add to bag highlights the item in the drawer", async ({ page }) => {
 // Drawer: CONTINUE SHOPPING closes it like the X; REMOVE slides the row out and
 // AnimatePresence then drops it from the list.
 test.describe("Cart drawer actions", () => {
-  for (const { locale, open, cont, remove } of [
-    { locale: "en", open: "Cart", cont: "CONTINUE SHOPPING", remove: "REMOVE" },
-    { locale: "el", open: "Cart", cont: "ΣΥΝΕΧΕΙΑ ΣΤΙΣ ΑΓΟΡΕΣ", remove: "ΑΦΑΙΡΕΣΗ" },
+  for (const { locale, open, cont, remove, empty } of [
+    { locale: "en", open: "Cart", cont: "CONTINUE SHOPPING", remove: "REMOVE", empty: "Your bag is empty." },
+    { locale: "el", open: "Cart", cont: "ΣΥΝΕΧΕΙΑ ΣΤΙΣ ΑΓΟΡΕΣ", remove: "ΑΦΑΙΡΕΣΗ", empty: "Το καλάθι σου είναι άδειο." },
   ]) {
     test(`continue shopping and remove on /${locale}`, async ({ page }) => {
       await page.addInitScript(() => {
@@ -562,6 +562,12 @@ test.describe("Cart drawer actions", () => {
       await list.locator("> div", { hasText: "Seed Item A" }).getByRole("button", { name: remove }).click();
       await expect(list).not.toContainText("Seed Item A");
       await expect(list).toContainText("Seed Item B");
+
+      // Removing the last item: the empty message waits for the row to slide out.
+      await list.locator("> div", { hasText: "Seed Item B" }).getByRole("button", { name: remove }).click();
+      await expect(list.getByText(empty)).toHaveCount(0);
+      await expect(list).not.toContainText("Seed Item B");
+      await expect(list.getByText(empty)).toBeVisible();
     });
   }
 });
