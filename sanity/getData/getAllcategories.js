@@ -63,10 +63,13 @@ export const getCategoriesByGroup = async (locale, groupSlug) => {
     }
 }
 
+// Inactive categories (Studio: Active off) resolve to null, like a missing slug:
+// the page shows the 404 and generateMetadata marks it noindex — the same rule
+// as products, and consistent with the sitemap and the category listings.
 export const getCategoryBySlug = async (slug, locale) => {
     if (!slug || !locale) return null
     const QUERY = defineQuery(`
-        *[_type == "category" && slugs[$locale].current == $slug][0] {
+        *[_type == "category" && slugs[$locale].current == $slug && status == true][0] {
             _id,
             "title": title[language == $locale][0].value,
             "slug": slugs[$locale].current,
