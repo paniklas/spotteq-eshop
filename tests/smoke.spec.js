@@ -539,6 +539,59 @@ test.describe("Cart drawer translations", () => {
   }
 });
 
+// Add-to-bag animation: the drawer opens with the added row marked (it slides in
+// and is highlighted); adding the same product again marks it as a quantity bump.
+test("add to bag highlights the item in the drawer", async ({ page }) => {
+  await page.goto("/en/shop/shop-all");
+  const add = page.locator("[data-testid='product-card']").first().getByRole("button", { name: "ADD TO BAG" }).locator("visible=true").first();
+  await add.click();
+  const list = page.locator("[data-cart-items]");
+  await expect(list.locator("[data-added='new']")).toHaveCount(1);
+  await expect(list.locator("[data-added='new']")).toBeInViewport();
+
+  // The drawer's Close comes before the cookie banner's in the DOM.
+  await page.getByRole("button", { name: "Close" }).first().click();
+  await add.click();
+  await expect(list.locator("[data-added='more']")).toHaveCount(1);
+});
+
+// Drawer: CONTINUE SHOPPING closes it like the X; REMOVE slides the row out and
+// AnimatePresence then drops it from the list.
+test.describe("Cart drawer actions", () => {
+  for (const { locale, open, cont, remove, empty } of [
+    { locale: "en", open: "Cart", cont: "CONTINUE SHOPPING", remove: "REMOVE", empty: "Your bag is empty." },
+    { locale: "el", open: "Cart", cont: "ΣΥΝΕΧΕΙΑ ΣΤΙΣ ΑΓΟΡΕΣ", remove: "ΑΦΑΙΡΕΣΗ", empty: "Το καλάθι σου είναι άδειο." },
+  ]) {
+    test(`continue shopping and remove on /${locale}`, async ({ page }) => {
+      await page.addInitScript(() => {
+        const cartItems = [
+          { id: "a", type: "product", cartId: "a", qty: 1, price: 10, inventory: 10, name: "Seed Item A" },
+          { id: "b", type: "product", cartId: "b", qty: 1, price: 10, inventory: 10, name: "Seed Item B" },
+        ];
+        localStorage.setItem("spotteq-cart-v2", JSON.stringify({ state: { cartItems }, version: 0 }));
+      });
+      await page.goto(`/${locale}`);
+      const list = page.locator("[data-cart-items]");
+
+      await page.locator(`[aria-label="${open}"]:visible`).first().click();
+      await expect(list).toBeInViewport();
+      await page.getByRole("button", { name: cont }).click();
+      await expect(list).not.toBeInViewport();
+
+      await page.locator(`[aria-label="${open}"]:visible`).first().click();
+      await list.locator("> div", { hasText: "Seed Item A" }).getByRole("button", { name: remove }).click();
+      await expect(list).not.toContainText("Seed Item A");
+      await expect(list).toContainText("Seed Item B");
+
+      // Removing the last item: the empty message waits for the row to slide out.
+      await list.locator("> div", { hasText: "Seed Item B" }).getByRole("button", { name: remove }).click();
+      await expect(list.getByText(empty)).toHaveCount(0);
+      await expect(list).not.toContainText("Seed Item B");
+      await expect(list.getByText(empty)).toBeVisible();
+    });
+  }
+});
+
 // Checkout copy. A seeded cart item keeps the form on screen; submitting it empty
 // shows the validation messages (from the zod schema, translated by the form).
 test.describe("Checkout translations", () => {

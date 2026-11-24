@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useRef, useEffect } from "react"
+import { motion, MotionConfig, AnimatePresence, useReducedMotion } from "framer-motion"
 import Image from "next/image"
 import { Trash2, Check, X, ArrowRight } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
@@ -10,6 +11,70 @@ import { formatPrice } from "@/utils/formatPrice"
 import { validateCoupon } from "@/app/actions/coupon"
 import { useTranslations } from "next-intl"
 
+
+// The drawer slides in over 500ms (its transition-transform duration-500) when an
+// add opens it; the add animation waits for it so it is not missed.
+const DRAWER_OPEN_S = 0.5
+
+// Cart row animations.
+// Add: a new item slides in from the right once the drawer is open; an item
+// already in the bag stays put and its quantity pops (see the qty counter).
+// Both get a highlight that fades out. The row keeps a stable key (cartId) so
+// AnimatePresence can animate its removal; the highlight and the qty pop are
+// keyed by the add's nonce instead, so adding the same item again replays them.
+// Remove: the row slides out to the right, then its height collapses so the
+// rows below move up.
+const AddedRow = ({ added, children }) => {
+    const ref = useRef(null)
+    // MotionConfig's reducedMotion="user" only drops transforms; the row's
+    // off-screen start would still hide it, so with reduced motion on the row
+    // starts in place.
+    const reduceMotion = useReducedMotion()
+    // Bring the row into view in the item list only. scrollIntoView would also
+    // scroll the page behind the drawer, which is still sliding in off-screen.
+    useEffect(() => {
+        const row = ref.current
+        const list = row?.closest("[data-cart-items]")
+        if (!added || !list) return
+        const top = row.getBoundingClientRect().top - list.getBoundingClientRect().top + list.scrollTop
+        const bottom = top + row.offsetHeight
+        if (top < list.scrollTop || bottom > list.scrollTop + list.clientHeight) {
+            list.scrollTo({ top: Math.max(0, bottom - list.clientHeight), behavior: "smooth" })
+        }
+    }, [added])
+    return (
+        <motion.div
+            ref={ref}
+            data-added={added ? (added.isNew ? "new" : "more") : undefined}
+            className="relative isolate"
+            initial={added?.isNew && !reduceMotion ? { x: "100%" } : false}
+            animate={{ x: 0 }}
+            transition={{ duration: 0.6, delay: DRAWER_OPEN_S, ease: [0.22, 1, 0.36, 1] }}
+            exit={{
+                x: "100%",
+                opacity: 0,
+                height: 0,
+                transition: {
+                    x: { duration: 0.35, ease: [0.55, 0, 1, 0.45] },
+                    opacity: { duration: 0.35 },
+                    height: { duration: 0.25, delay: 0.3 },
+                },
+            }}
+        >
+            {added && (
+                <motion.div
+                    key={added.nonce}
+                    aria-hidden
+                    className="absolute inset-0 -z-10 -mx-2 xl:-mx-4 rounded-2xl bg-teal-accent/15 pointer-events-none"
+                    initial={{ opacity: 1 }}
+                    animate={{ opacity: 0 }}
+                    transition={{ duration: 1.2, delay: DRAWER_OPEN_S + 0.9, ease: "easeOut" }}
+                />
+            )}
+            {children}
+        </motion.div>
+    )
+}
 
 const CheckoutModal = ({ onClose, onCloseAll, onGuest }) => {
     const t = useTranslations("cart")
@@ -53,7 +118,7 @@ const CheckoutModal = ({ onClose, onCloseAll, onGuest }) => {
 
 const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
     const t = useTranslations("cart")
-    const { cartItems, cartOpen, closeCart, removeFromCart, updateQty, appliedCoupon, couponDiscount, applyCoupon, removeCoupon } = useCartStore()
+    const { cartItems, cartOpen, closeCart, removeFromCart, updateQty, appliedCoupon, couponDiscount, applyCoupon, removeCoupon, lastAdded } = useCartStore()
 
     const bundleSuggestions = useMemo(() => {
         const productIdsInCart = new Set(
@@ -123,6 +188,17 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
     const handleGuest = () => { setShowModal(false); closeCart(); router.push("/checkout") }
     const handleDrawerClose = () => { setShowModal(false); closeCart() }
 
+    // When the last item is removed with the drawer open, hold the empty message
+    // until that row's slide-out has finished (AnimatePresence onExitComplete),
+    // so it doesn't appear while the row is still leaving. Adjusted during render
+    // (React's "storing information from previous renders" pattern).
+    const [prevItemCount, setPrevItemCount] = useState(cartItems.length)
+    const [lastRowExiting, setLastRowExiting] = useState(false)
+    if (cartItems.length !== prevItemCount) {
+        setPrevItemCount(cartItems.length)
+        setLastRowExiting(cartItems.length === 0 && prevItemCount > 0 && cartOpen)
+    }
+
     return (
         <>
             {/* Overlay */}
@@ -169,12 +245,25 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                 )}
 
                 {/* Items */}
-                <div data-lenis-prevent className="flex-1 overflow-y-auto px-4 xl:px-8">
-                    {cartItems.length === 0 && (
-                        <p className="font-aeonik text-[14px] xl:text-[22px] text-gray-text text-center mt-12">{t("empty")}</p>
+                {/* reducedMotion="user": with the OS setting on, the slide and pop are
+                    skipped (AddedRow also skips its fade-in); only the highlight fades. */}
+                <MotionConfig reducedMotion="user">
+                <div data-lenis-prevent data-cart-items className="flex-1 overflow-y-auto overflow-x-hidden px-4 xl:px-8">
+                    {cartItems.length === 0 && !lastRowExiting && (
+                        <motion.p
+                            className="font-aeonik text-[14px] xl:text-[22px] text-gray-text text-center mt-12"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            {t("empty")}
+                        </motion.p>
                     )}
-                    {cartItems.map((item, i) => (
-                        <div key={item.cartId}>
+                    <AnimatePresence initial={false} onExitComplete={() => setLastRowExiting(false)}>
+                    {cartItems.map((item, i) => {
+                        const added = lastAdded?.cartId === item.cartId ? lastAdded : null
+                        return (
+                        <AddedRow key={item.cartId} added={added}>
                             {i > 0 && <hr className="border-gray-mint" />}
                             <div className="flex gap-4 py-8 pb-4">
                                 {/* Image + name — clickable if slug is available */}
@@ -224,7 +313,15 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                                             >
                                                 −
                                             </button>
-                                            <span className="w-6 text-center font-aeonik text-[14px] text-black-custom">{item.qty}</span>
+                                            <motion.span
+                                                key={added?.nonce ?? "qty"}
+                                                className="w-6 text-center font-aeonik text-[14px] text-black-custom"
+                                                initial={added && !added.isNew ? { scale: 1.7 } : false}
+                                                animate={{ scale: 1 }}
+                                                transition={{ type: "spring", stiffness: 400, damping: 12, delay: DRAWER_OPEN_S }}
+                                            >
+                                                {item.qty}
+                                            </motion.span>
                                             <button
                                                 disabled={!!incrementingIds[item.cartId] || (item.inventory != null && item.qty >= item.inventory)}
                                                 onClick={async () => {
@@ -251,9 +348,12 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        </AddedRow>
+                        )
+                    })}
+                    </AnimatePresence>
                 </div>
+                </MotionConfig>
 
                 {/* Bundle suggestions */}
                 {bundleSuggestions.length > 0 && (
@@ -380,14 +480,23 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                         </div>
                     </div>
 
-                    {/* Checkout */}
-                    <button
-                        onClick={handleCheckoutClick}
-                        disabled={!userLoaded || cartItems.length === 0}
-                        className="w-full h-12 bg-black-custom font-aeonik text-[14px] xl:text-[16px] uppercase text-white-custom rounded-[18px] hover:bg-gray-text transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
-                    >
-                        {t("checkout")}
-                    </button>
+                    {/* Checkout + continue shopping. Checkout comes first in the DOM so it
+                        sits on top on phones; from md, row-reverse puts it on the right. */}
+                    <div className="flex flex-col md:flex-row-reverse gap-3">
+                        <button
+                            onClick={handleCheckoutClick}
+                            disabled={!userLoaded || cartItems.length === 0}
+                            className="w-full md:flex-1 h-12 bg-black-custom font-aeonik text-[14px] xl:text-[16px] uppercase text-white-custom rounded-[18px] hover:bg-gray-text transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+                        >
+                            {t("checkout")}
+                        </button>
+                        <button
+                            onClick={handleDrawerClose}
+                            className="w-full md:flex-1 h-12 border border-black-custom font-aeonik text-[14px] xl:text-[16px] uppercase text-black-custom rounded-[18px] hover:bg-gray-soft transition-colors duration-300 cursor-pointer flex items-center justify-center"
+                        >
+                            {t("continueShopping")}
+                        </button>
+                    </div>
                     </div>
                 </div>
             </div>

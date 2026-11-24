@@ -32,6 +32,10 @@ export const useCartStore = create(
             cartItems: [],
             cartOpen: false,
             addingIds: {},
+            // The item the last successful add touched, for the cart drawer's
+            // add animation. nonce changes on every add so a repeat add of the
+            // same item plays again. In memory only (partialize keeps cartItems).
+            lastAdded: null,
 
             // openDrawer: whether to pop the cart drawer on a successful add.
             // Quick Buy passes false so it can navigate straight to checkout.
@@ -72,14 +76,14 @@ export const useCartStore = create(
                                         ? { ...i, qty: i.qty + qty, inventory: inventory ?? i.inventory }
                                         : i
                                 ),
-                                ...(openDrawer ? { cartOpen: true } : {}),
+                                ...(openDrawer ? { cartOpen: true, lastAdded: { cartId, isNew: false, nonce: Date.now() } } : {}),
                                 addingIds: next,
                             }
                         }
 
                         return {
                             cartItems: [...state.cartItems, { ...item, qty, cartId, inventory: inventory ?? null }],
-                            ...(openDrawer ? { cartOpen: true } : {}),
+                            ...(openDrawer ? { cartOpen: true, lastAdded: { cartId, isNew: true, nonce: Date.now() } } : {}),
                             addingIds: next,
                         }
                     })
