@@ -1,4 +1,5 @@
 import { preload } from "react-dom";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { getFirstOrderPromoPercentForDisplay } from "@/sanity/getData/getFirstOrderPromo";
 import { getHeroImages } from "@/sanity/getData/getHeroImages";
@@ -21,9 +22,12 @@ const HeroSection = async ({ locale }) => {
 
     // Advertised percentage comes from the same Studio setting that grants the
     // discount at checkout, so the two can never drift apart.
-    const [firstOrderPromoPercent, sanityHeroImages] = await Promise.all([
+    // Explicit locale: the home page is force-static, so next-intl has no
+    // request to read it from (see stories-that-move).
+    const [firstOrderPromoPercent, sanityHeroImages, t] = await Promise.all([
         getFirstOrderPromoPercentForDisplay(),
         getHeroImages(locale),
+        getTranslations({ locale, namespace: "home.hero" }),
     ]);
 
     // A Studio image without alt text for this locale is treated as decorative:
@@ -108,7 +112,7 @@ const HeroSection = async ({ locale }) => {
                             locale={locale}
                             className="pointer-events-auto inline-flex items-center justify-center h-10.25 w-39.75 bg-white-custom rounded-[21px] font-aeonik text-black-custom text-[14px] tracking-wide hover:bg-black-custom hover:text-white-custom transition-colors duration-700"
                         >
-                            SHOP NOW
+                            {t("cta")}
                         </Link>
                     </div>
                 </div>

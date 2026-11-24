@@ -56,12 +56,15 @@ const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }
                             onClose={isOnClose}
                         />
                     ))}
-                    <MobileAccordion
-                        title={t("bundles")}
-                        links={navBundles.map((b) => ({ label: b.title, href: `/shop/bundle/${b.slug}` }))}
-                        isMenuOpen={isOpen}
-                        onClose={isOnClose}
-                    />
+                    {/* Bundles: a plain link to the bundles page, no per-bundle dropdown */}
+                    <Link
+                        href="/shop/bundles"
+                        onClick={isOnClose}
+                        tabIndex={isOpen ? 0 : -1}
+                        className="flex items-center py-2 border-b border-black/15 font-aeonik text-[20px] text-black-custom hover:opacity-60 transition-opacity"
+                    >
+                        {t("bundles")}
+                    </Link>
 
                     {BRAND_SUPPORT.map(({ key, href }) => (
                         <Link

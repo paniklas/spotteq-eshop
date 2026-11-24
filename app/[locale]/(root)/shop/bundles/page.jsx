@@ -32,9 +32,10 @@ export default async function ShopBundles({ params }) {
 }
 
 async function ShopBundlesContent({ locale }) {
-    const [bundles, categories] = await Promise.all([
+    const [bundles, categories, t] = await Promise.all([
         getShopBundles(locale),
         getAllCategories(locale),
+        getTranslations({ locale, namespace: "shopBundles" }),
     ])
 
     return (
@@ -43,7 +44,7 @@ async function ShopBundlesContent({ locale }) {
             bundles={bundles}
             total={bundles.length}
             heading="Shop Bundles"
-            description="Curated combinations of our best-selling products, designed to support your training, recovery and daily health. Save more when you bundle."
+            description={t("description")}
             activeBundlesPage
         >
             <ProductGrid initialProducts={[]} total={0} locale={locale} bundles={bundles} />

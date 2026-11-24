@@ -39,10 +39,10 @@ const footerLinkClass =
     "font-aeonik text-[16px] text-black uppercase hover:opacity-60 transition-opacity leading-[2.2]";
 
 const socialLinks = [
-    { icon: "/icons/social-instagram.svg", label: "Instagram", href: "#" },
-    { icon: "/icons/social-tiktok.svg", label: "TikTok", href: "#" },
-    { icon: "/icons/social-facebook.svg", label: "Facebook", href: "#" },
-    { icon: "/icons/social-youtube.svg", label: "YouTube", href: "#" },
+    { icon: "/icons/social-instagram.svg", label: "Instagram", href: "https://www.instagram.com/spotteqcom/" },
+    { icon: "/icons/social-tiktok.svg", label: "TikTok", href: "https://www.tiktok.com/@spotteqcom" },
+    { icon: "/icons/social-facebook.svg", label: "Facebook", href: "https://www.facebook.com/spotteqcom/" },
+    { icon: "/icons/social-youtube.svg", label: "YouTube", href: "https://www.youtube.com/@spotteqcom" },
 ];
 
 const paymentMethods = [
@@ -111,6 +111,8 @@ const Footer = async ({ locale }) => {
                         <a
                             key={s.label}
                             href={s.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             aria-label={s.label}
                             className="hover:opacity-60 transition-opacity"
                         >

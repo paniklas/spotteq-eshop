@@ -11,15 +11,17 @@ test.describe("Home page", () => {
     await expect(page).toHaveURL(/\/el/);
   });
 
-  test("has no broken images in viewport", async ({ page }) => {
+  test("has no broken images", async ({ page }) => {
     await page.goto("/el");
     // Use "load" not "networkidle" — SanityLive keeps an SSE connection open
     // permanently, so networkidle never fires on pages using it.
     await page.waitForLoadState("load");
 
+    // Lazy images below the fold are not requested yet (complete === false),
+    // so only count images that finished loading and still have no size.
     const brokenImages = await page.evaluate(() => {
       return Array.from(document.images)
-        .filter((img) => !img.naturalWidth)
+        .filter((img) => img.complete && !img.naturalWidth)
         .map((img) => img.src);
     });
 
@@ -230,8 +232,8 @@ test.describe("Shop sidebar translations", () => {
 // covers both the mobile and desktop layouts (one of them is always hidden).
 test.describe("Home page translations", () => {
   for (const { locale, expected, absent } of [
-    { locale: "en", expected: ["Nasos Gavelas", "Paralympic Champion, SPOTTEQ Ambassador", "Feb 6, 2026", "In elite sport"], absent: "Νάσος Γκαβέλας" },
-    { locale: "el", expected: ["Νάσος Γκαβέλας", "Παραολυμπιονίκης, Brand Ambassador της SPOTTEQ", "6 Φεβ 2026", "Στον πρωταθλητισμό"], absent: "Nasos Gavelas" },
+    { locale: "en", expected: ["Nasos Gavelas", "Two-time Gold Paralympic Champion, Brand Ambassador of SPOTTEQ", "For me, my own 'spotter'"], absent: "Νάσος Γκαβέλας" },
+    { locale: "el", expected: ["Νάσος Γκαβέλας", "Δις Χρυσός Παραολυμπιονίκης, Brand Ambassador της SPOTTEQ", "Για μένα, ο δικός μου ‘spotter’"], absent: "Nasos Gavelas" },
   ]) {
     test(`Stories that move is in ${locale}`, async ({ page }) => {
       await page.goto(`/${locale}`);
@@ -268,8 +270,8 @@ test.describe("Home page translations", () => {
   }
 
   for (const { locale, expected, absent } of [
-    { locale: "en", expected: "SPOTTEQ is a performance nutrition brand", absent: "Η SPOTTEQ είναι ένα brand αθλητικής διατροφής" },
-    { locale: "el", expected: "Η SPOTTEQ είναι ένα brand αθλητικής διατροφής", absent: "SPOTTEQ is a performance nutrition brand" },
+    { locale: "en", expected: "From the most high-intensity workout", absent: "Από την πιο έντονη προπόνηση" },
+    { locale: "el", expected: "Από την πιο έντονη προπόνηση", absent: "From the most high-intensity workout" },
   ]) {
     test(`About description is in ${locale}`, async ({ page }) => {
       await page.goto(`/${locale}`);
@@ -291,10 +293,9 @@ test.describe("Home page translations", () => {
     });
   }
 
-  // Shop All has no description of its own and falls back to the Featured Products text.
   for (const { locale, expected, absent } of [
-    { locale: "en", expected: "A focused line of science-driven formulas", absent: "Μια στοχευμένη σειρά προϊόντων" },
-    { locale: "el", expected: "Μια στοχευμένη σειρά προϊόντων", absent: "A focused line of science-driven formulas" },
+    { locale: "en", expected: "A specialized line of science-driven formulas", absent: "Μια εξειδικευμένη σειρά προϊόντων" },
+    { locale: "el", expected: "Μια εξειδικευμένη σειρά προϊόντων", absent: "A specialized line of science-driven formulas" },
   ]) {
     test(`Shop All description is in ${locale}`, async ({ page }) => {
       await page.goto(`/${locale}/shop/shop-all`);
@@ -303,6 +304,103 @@ test.describe("Home page translations", () => {
       await expect(main).not.toContainText(absent);
     });
   }
+
+  for (const { locale, expected, absent } of [
+    { locale: "en", expected: "SPOTTEQ offers curated product combinations", absent: "Η SPOTTEQ προσφέρει" },
+    { locale: "el", expected: "Η SPOTTEQ προσφέρει προσεκτικά επιλεγμένους", absent: "SPOTTEQ offers curated" },
+  ]) {
+    test(`Bundles page description is in ${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}/shop/bundles`);
+      const main = page.locator("main");
+      await expect(main).toContainText(expected);
+      await expect(main).not.toContainText(absent);
+    });
+  }
+});
+
+// Home headings and CTAs that live in code (server components, force-static).
+test.describe("Home headings and CTA translations", () => {
+  for (const { locale, sections, absent } of [
+    {
+      locale: "en",
+      sections: {
+        "#hero-section": ["SHOP NOW"],
+        "#shop-by-series-section": ["Shop by series"],
+        "#bundle-section": ["Our Bundles", "VIEW OUR BUNDLES"],
+        "#featured-products-section": ["Featured Products"],
+      },
+      absent: "ΑΓΟΡΑ",
+    },
+    {
+      locale: "el",
+      sections: {
+        "#hero-section": ["ΑΓΟΡΑ ΤΩΡΑ"],
+        "#shop-by-series-section": ["Αγορά ανά κατηγορία"],
+        "#bundle-section": ["Bundles", "ΔΕΙΤΕ ΤΑ BUNDLES"],
+        "#featured-products-section": ["Επιλεγμένα προϊόντα"],
+      },
+      absent: "SHOP NOW",
+    },
+  ]) {
+    test(`home headings and CTAs on /${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}`);
+      for (const [id, texts] of Object.entries(sections)) {
+        const section = page.locator(id);
+        for (const text of texts) await expect(section).toContainText(text);
+        await expect(section).not.toContainText(absent);
+      }
+    });
+  }
+});
+
+// Footer social icons point to the real SPOTTEQ profiles.
+test("footer social links", async ({ page }) => {
+  await page.goto("/en");
+  const footer = page.locator("footer");
+  for (const [label, href] of [
+    ["Instagram", "https://www.instagram.com/spotteqcom/"],
+    ["TikTok", "https://www.tiktok.com/@spotteqcom"],
+    ["Facebook", "https://www.facebook.com/spotteqcom/"],
+    ["YouTube", "https://www.youtube.com/@spotteqcom"],
+  ]) {
+    await expect(footer.getByRole("link", { name: label })).toHaveAttribute("href", href);
+  }
+});
+
+// Product and bundle card images open their page, on desktop and mobile.
+test.describe("Card images link to their page", () => {
+  for (const { name, path, card, expected } of [
+    { name: "shop product card", path: "/en/shop/shop-all", card: '[data-testid="product-card"] a[aria-hidden="true"]', expected: /\/shop\/product\// },
+    { name: "shop bundle card", path: "/en/shop/bundles", card: 'main a[aria-hidden="true"][href*="/shop/bundle/"]', expected: /\/shop\/bundle\// },
+    { name: "home bundle card", path: "/en", card: '#bundle-section a[aria-hidden="true"][href*="/shop/bundle/"]', expected: /\/shop\/bundle\// },
+  ]) {
+    test(name, async ({ page }) => {
+      await page.goto(path);
+      const image = page.locator(card).locator("visible=true").first();
+      await image.scrollIntoViewIfNeeded();
+      await image.click();
+      await expect(page).toHaveURL(expected);
+    });
+  }
+});
+
+// Below xl the text under the main product image is hidden there and shown in
+// the Key Features section instead, above its image.
+test("product additional info is shown in Key Features on mobile", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto("/el/shop/product/hyperfuel-geysi-portokali");
+  const text = page.locator("#key-features-section").getByText("Με ένα ρόφημα κερδίζεις ενέργεια");
+  await text.scrollIntoViewIfNeeded();
+  await expect(text).toBeVisible();
+});
+
+// Mobile menu: Bundles is a plain link to the bundles page, not a dropdown.
+test("mobile menu Bundles opens the bundles page", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto("/el");
+  await page.getByRole("button", { name: "Open menu" }).click();
+  await page.locator('[aria-label="Site navigation"] a[href="/el/shop/bundles"]').locator("visible=true").click();
+  await expect(page).toHaveURL(/\/el\/shop\/bundles$/);
 });
 
 // Product copy that lives in code (client components); titles, flavours and
@@ -310,7 +408,7 @@ test.describe("Home page translations", () => {
 test.describe("Product copy translations", () => {
   for (const { locale, expected, absent } of [
     { locale: "en", expected: ["ADD TO BAG", "VIEW DETAILS"], absent: "ΠΡΟΣΘΗΚΗ" },
-    { locale: "el", expected: ["ΠΡΟΣΘΗΚΗ", "ΔΕΣ ΛΕΠΤΟΜΕΡΕΙΕΣ"], absent: "ADD TO BAG" },
+    { locale: "el", expected: ["ΠΡΟΣΘΗΚΗ", "ΛΕΠΤΟΜΕΡΕΙΕΣ"], absent: "ADD TO BAG" },
   ]) {
     test(`home product and bundle cards on /${locale}`, async ({ page }) => {
       await page.goto(`/${locale}`);
@@ -323,8 +421,8 @@ test.describe("Product copy translations", () => {
   }
 
   for (const { locale, expected, absent } of [
-    { locale: "en", expected: ["Back", "ADD TO BAG"], absent: "ΠΡΟΣΘΗΚΗ" },
-    { locale: "el", expected: ["Πίσω", "ΠΡΟΣΘΗΚΗ"], absent: "ADD TO BAG" },
+    { locale: "en", expected: ["Back", "ADD TO BAG", "QUICK BUY"], absent: "ΠΡΟΣΘΗΚΗ" },
+    { locale: "el", expected: ["Πίσω", "ΠΡΟΣΘΗΚΗ", "ΑΓΟΡΑ ΤΩΡΑ"], absent: "ADD TO BAG" },
   ]) {
     test(`product page on /${locale}`, async ({ page }) => {
       await page.goto(`/${locale}/shop/shop-all`);

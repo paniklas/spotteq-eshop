@@ -83,14 +83,13 @@ const ProductCard = ({ product, priority = false }) => {
 
     return (
         <div data-testid="product-card" className="group/card flex flex-col gap-2 xl:gap-4 relative pb-5 xl:pb-10">
-            {/* Image area — a link to the product on mobile only; md:pointer-events-none
-                keeps desktop unchanged. Hidden from keyboard and screen readers because
-                VIEW DETAILS below is the same link. */}
+            {/* Image area — a link to the product. Hidden from keyboard and screen
+                readers because VIEW DETAILS below is the same link. */}
             <Link
                 href={`/shop/product/${productSlug}`}
                 tabIndex={-1}
                 aria-hidden="true"
-                className="relative block bg-white rounded-sm overflow-hidden md:pointer-events-none"
+                className="relative block bg-white rounded-sm overflow-hidden"
                 style={{ aspectRatio: "1/1.2" }}
             >
 
