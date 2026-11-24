@@ -433,9 +433,7 @@
             "total": "ΣΥΝΟΛΟ",
             "free": "ΔΩΡΕΑΝ",
             "paymentMethodsAlt": "Αποδεκτοί τρόποι πληρωμής",
-            "contactUs": "ΕΠΙΚΟΙΝΩΝΙΑ",
-            "paymentSecurity": "ΠΛΗΡΩΜΗ & ΑΣΦΑΛΕΙΑ",
-            "shippingReturns": "ΑΠΟΣΤΟΛΕΣ & ΕΠΙΣΤΡΟΦΕΣ"
+            "contactUs": "ΕΠΙΚΟΙΝΩΝΙΑ"
         },
         "empty": {
             "title": "Το καλάθι σου είναι άδειο",

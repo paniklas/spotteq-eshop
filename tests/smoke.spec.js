@@ -596,6 +596,23 @@ test.describe("Checkout translations", () => {
     });
   }
 
+  // Footer links under the order summary go to the existing shipping and returns pages.
+  for (const { locale, links } of [
+    { locale: "en", links: [["SHIPPING & PAYMENTS", "/en/shipping"], ["RETURNS POLICY", "/en/returns"]] },
+    { locale: "el", links: [["ΑΠΟΣΤΟΛΕΣ & ΠΛΗΡΩΜΕΣ", "/el/shipping"], ["ΠΟΛΙΤΙΚΗ ΕΠΙΣΤΡΟΦΩΝ", "/el/returns"]] },
+  ]) {
+    test(`checkout footer links on /${locale}`, async ({ page }) => {
+      await seedCart(page);
+      await page.goto(`/${locale}/checkout`);
+      for (const [label, href] of links) {
+        const link = page.getByRole("link", { name: label, exact: true }).locator("visible=true").first();
+        await expect(link).toHaveAttribute("href", href);
+        const res = await page.request.get(href);
+        expect(res.status()).toBe(200);
+      }
+    });
+  }
+
   // The API returns a code next to the English error; the payment step translates it.
   test("payment intent errors carry a code", async ({ request }) => {
     const res = await request.post("/api/create-payment-intent", { data: {} });

@@ -433,9 +433,7 @@
             "total": "Total",
             "free": "FREE",
             "paymentMethodsAlt": "Accepted payment methods",
-            "contactUs": "Contact Us",
-            "paymentSecurity": "Payment & Security",
-            "shippingReturns": "Shipping & Returns"
+            "contactUs": "Contact Us"
         },
         "empty": {
             "title": "Your bag is empty",

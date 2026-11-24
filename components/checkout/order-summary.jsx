@@ -21,6 +21,8 @@ import { effectiveShippingCost } from "@/utils/shippingCost";
 // the file on mobile, so lazy loading there saved nothing.
 export const PaymentAndLinks = () => {
     const t = useTranslations("checkout.summary")
+    // Same pages and labels as the footer's links.
+    const tFooter = useTranslations("footer.links")
     return (
     <>
         {/* Payment icons */}
@@ -41,11 +43,11 @@ export const PaymentAndLinks = () => {
             <Link href="/contact" className="font-aeonik text-[11px] xl:text-[13px] uppercase tracking-wide text-black-custom underline">
                 {t("contactUs")}
             </Link>
-            <Link href="/payment-security" className="font-aeonik text-[11px] xl:text-[13px] uppercase tracking-wide text-black-custom underline">
-                {t("paymentSecurity")}
+            <Link href="/shipping" className="font-aeonik text-[11px] xl:text-[13px] uppercase tracking-wide text-black-custom underline">
+                {tFooter("shippingPayments")}
             </Link>
-            <Link href="/shipping-returns" className="font-aeonik text-[11px] xl:text-[13px] uppercase tracking-wide text-black-custom underline">
-                {t("shippingReturns")}
+            <Link href="/returns" className="font-aeonik text-[11px] xl:text-[13px] uppercase tracking-wide text-black-custom underline">
+                {tFooter("returns")}
             </Link>
         </div>
     </>
