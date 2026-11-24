@@ -27,6 +27,9 @@ export default clerkMiddleware(async (auth, request) => {
     // Vercel BotID's first-party proxy (rewrites added by withBotId in next.config).
     // Must not be locale-redirected, or the bot check can never complete.
     if (pathname.startsWith('/149e9513-01fa-4fb0-aad4-566afd725d1b/')) return NextResponse.next();
+    // PostHog's first-party proxy (rewrites in next.config). Must not be
+    // locale-redirected, or no analytics event ever arrives.
+    if (pathname.startsWith('/sq-relay/')) return NextResponse.next();
     // API routes need clerkMiddleware() to run so auth() works inside them,
     // but must bypass next-intl's locale routing/redirects.
     if (pathname === '/api' || pathname.startsWith('/api/')) return NextResponse.next();
@@ -52,8 +55,9 @@ export const config = {
         '/',
         // Apply locale prefix to all locale-prefixed routes
         '/(el|en)/:path*',
-        // Apply to all routes except internal Next.js paths, static files, and the studio
-        // (API routes are matched here too so clerkMiddleware() runs, but are bypassed above)
-        '/((?!_next|_vercel|studio-spotteq|.*\\..*).*)',
+        // Apply to all routes except internal Next.js paths, static files, the studio
+        // and the PostHog proxy (API routes are matched here too so clerkMiddleware()
+        // runs, but are bypassed above)
+        '/((?!_next|_vercel|studio-spotteq|sq-relay/|.*\\..*).*)',
     ],
 };
