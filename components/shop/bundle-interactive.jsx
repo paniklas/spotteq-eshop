@@ -33,6 +33,7 @@ function buildOptions(item) {
 
 // One slot's flavour picker. Local open state so slots expand independently.
 const FlavourDropdown = ({ options, selectedId, onSelect }) => {
+    const t = useTranslations("product")
     const [open, setOpen] = useState(false)
     const selected = options.find((o) => o._id === selectedId) ?? options[0]
     return (
@@ -45,7 +46,7 @@ const FlavourDropdown = ({ options, selectedId, onSelect }) => {
                 onClick={() => setOpen((v) => !v)}
                 className="w-full flex items-center justify-between px-5 py-2 xl:py-3 font-aeonik text-[13px] xl:text-[15px] text-black-custom cursor-pointer"
             >
-                <span className="truncate">{selected?.flavourName || "Choose flavour"}</span>
+                <span className="truncate">{selected?.flavourName || t("chooseFlavour")}</span>
                 <ChevronDown size={16} strokeWidth={1.5} className={`shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
             </button>
             <div className={`grid transition-all duration-300 ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
@@ -62,7 +63,7 @@ const FlavourDropdown = ({ options, selectedId, onSelect }) => {
                                     onClick={() => { if (!soldOut) { onSelect(o._id); setOpen(false) } }}
                                     className={`w-full text-left px-4 py-2.5 rounded-full font-aeonik text-[13px] xl:text-[15px] flex items-center justify-between transition-colors duration-200 ${isCurrent ? "bg-gray-soft text-black-custom font-semibold" : "text-black-custom hover:bg-gray-soft cursor-pointer"} ${soldOut ? "opacity-40 cursor-not-allowed" : ""}`}
                                 >
-                                    <span className="truncate">{o.flavourName}{soldOut ? " — out of stock" : ""}</span>
+                                    <span className="truncate">{o.flavourName}{soldOut ? ` — ${t("flavourOutOfStock")}` : ""}</span>
                                     {isCurrent && <span className="w-2 h-2 rounded-full bg-black-custom shrink-0" />}
                                 </button>
                             )
@@ -92,14 +93,14 @@ const BundleInteractive = ({ bundle }) => {
     const handleToggleFavourite = async () => {
         if (!isLoaded) return
         if (!isSignedIn) {
-            toast.error("Please sign in to save favourites.")
+            toast.error(t("toasts.signInForFavourites"))
             return
         }
         const result = await toggleFavourite(bundle._id)
         if (result?.error === "unauthenticated") {
-            toast.error("Please sign in to save favourites.")
+            toast.error(t("toasts.signInForFavourites"))
         } else if (result && !result.ok) {
-            toast.error("Could not update your wishlist. Please try again.")
+            toast.error(t("toasts.wishlistFailed"))
         }
     }
 
@@ -173,7 +174,7 @@ const BundleInteractive = ({ bundle }) => {
         })
         setIsAdding(false)
         if (result?.error === "failed") {
-            toast.error("Failed to add to bag. Please try again.")
+            toast.error(t("toasts.addFailed"))
         }
     }
 
@@ -198,13 +199,13 @@ const BundleInteractive = ({ bundle }) => {
             selectedFlavours,
         }, 1, { openDrawer: false })
         if (result?.error === "out_of_stock") {
-            toast.error("This bundle is out of stock.")
+            toast.error(t("toasts.bundleOutOfStock"))
             setIsBuying(false)
         } else if (result?.error === "max_quantity") {
-            toast.error("Maximum available quantity reached.")
+            toast.error(t("toasts.maxQuantity"))
             setIsBuying(false)
         } else if (result?.error === "failed") {
-            toast.error("Failed to add to bag. Please try again.")
+            toast.error(t("toasts.addFailed"))
             setIsBuying(false)
         } else {
             router.push("/checkout")
@@ -360,7 +361,7 @@ const BundleInteractive = ({ bundle }) => {
                             <div className="flex items-center gap-2 ml-auto">
                                 <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${atMax ? "bg-red-400" : "bg-teal-accent"}`} />
                                 <span className="font-aeonik text-[12px] uppercase tracking-wide text-black-custom">
-                                    {atMax ? "Out of Stock" : "In Stock"}
+                                    {atMax ? t("outOfStock") : t("inStock")}
                                 </span>
                             </div>
 
@@ -386,7 +387,7 @@ const BundleInteractive = ({ bundle }) => {
                                 disabled={isAdding || atMax}
                                 className="flex-1 flex items-center justify-center px-6 py-4 md:h-12 md:px-0 md:py-0 bg-black-custom rounded-full font-aeonik text-[16px] uppercase text-white-custom hover:bg-gray-text transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                             >
-                                {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : t("addToBag")}
+                                {atMax ? t("maxQtyReached") : isAdding ? t("adding") : t("addToBag")}
                             </button>
                             <button
                                 onClick={handleQuickBuy}

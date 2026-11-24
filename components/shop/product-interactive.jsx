@@ -62,14 +62,14 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
     const handleToggleFavourite = async () => {
         if (!isLoaded) return
         if (!isSignedIn) {
-            toast.error("Please sign in to save favourites.")
+            toast.error(t("toasts.signInForFavourites"))
             return
         }
         const result = await toggleFavourite(product._id)
         if (result?.error === "unauthenticated") {
-            toast.error("Please sign in to save favourites.")
+            toast.error(t("toasts.signInForFavourites"))
         } else if (result && !result.ok) {
-            toast.error("Could not update your wishlist. Please try again.")
+            toast.error(t("toasts.wishlistFailed"))
         }
     }
 
@@ -104,13 +104,13 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
             flavour: product.flavourName ?? "",
         }, quantity, { openDrawer: false })
         if (result?.error === "out_of_stock") {
-            toast.error("This product is out of stock.")
+            toast.error(t("toasts.productOutOfStock"))
             setIsBuying(false)
         } else if (result?.error === "max_quantity") {
-            toast.error(`Maximum available quantity reached (${product.inventory}).`)
+            toast.error(t("toasts.maxQuantityCount", { count: product.inventory }))
             setIsBuying(false)
         } else if (result?.error === "failed") {
-            toast.error("Failed to add to bag. Please try again.")
+            toast.error(t("toasts.addFailed"))
             setIsBuying(false)
         } else {
             // Success — navigate to checkout (leave isBuying set; the page unmounts).
@@ -362,7 +362,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                             <div className="flex items-center gap-2 ml-auto">
                                 <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${atMax ? "bg-red-400" : "bg-teal-accent"}`} />
                                 <span className="font-aeonik text-[12px] uppercase tracking-wide text-black-custom">
-                                    {atMax ? "Out of Stock" : "In Stock"}
+                                    {atMax ? t("outOfStock") : t("inStock")}
                                 </span>
                             </div>
 
@@ -400,18 +400,18 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                                     }, quantity)
                                     setIsAdding(false)
                                     if (result?.error === "out_of_stock") {
-                                        toast.error("This product is out of stock.")
+                                        toast.error(t("toasts.productOutOfStock"))
                                     } else if (result?.error === "max_quantity") {
-                                        toast.error(`Maximum available quantity reached (${product.inventory}).`)
+                                        toast.error(t("toasts.maxQuantityCount", { count: product.inventory }))
                                     } else if (result?.error === "failed") {
-                                        toast.error("Failed to add to bag. Please try again.")
+                                        toast.error(t("toasts.addFailed"))
                                     } else {
                                         setQuantity(1)
                                     }
                                 }}
                                 className="flex-1 flex items-center justify-center px-6 py-4 md:h-12 md:px-0 md:py-0 bg-black-custom rounded-full font-aeonik text-[16px] uppercase text-white-custom hover:bg-gray-text transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                             >
-                                {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : t("addToBag")}
+                                {atMax ? t("maxQtyReached") : isAdding ? t("adding") : t("addToBag")}
                             </button>
                             <button
                                 onClick={handleQuickBuy}

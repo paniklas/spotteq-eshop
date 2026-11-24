@@ -276,7 +276,22 @@
         "completeYourRoutine": "Complete Your Routine",
         "ingredients": "Ingredients",
         "directionsForUse": "Direction for Use",
-        "keyFeatures": "Key Features"
+        "keyFeatures": "Key Features",
+        "inStock": "IN STOCK",
+        "outOfStock": "OUT OF STOCK",
+        "maxQtyReached": "MAX QTY REACHED",
+        "adding": "ADDING...",
+        "chooseFlavour": "Choose flavour",
+        "flavourOutOfStock": "out of stock",
+        "toasts": {
+            "signInForFavourites": "Please sign in to save favourites.",
+            "wishlistFailed": "Could not update your wishlist. Please try again.",
+            "productOutOfStock": "This product is out of stock.",
+            "bundleOutOfStock": "This bundle is out of stock.",
+            "maxQuantity": "Maximum available quantity reached.",
+            "maxQuantityCount": "Maximum available quantity reached ({count}).",
+            "addFailed": "Failed to add to bag. Please try again."
+        }
     },
     "cart": {
         "title": "Your bag",

@@ -433,6 +433,26 @@ test.describe("Product copy translations", () => {
       await expect(main).not.toContainText(absent);
     });
   }
+
+  // Stock labels depend on inventory, so either state counts.
+  for (const { locale, stock, toast } of [
+    { locale: "en", stock: /IN STOCK|OUT OF STOCK/, toast: "Please sign in to save favourites." },
+    { locale: "el", stock: /ΣΕ ΑΠΟΘΕΜΑ|ΕΞΑΝΤΛΗΘΗΚΕ/, toast: "Συνδέσου για να αποθηκεύσεις τα αγαπημένα σου." },
+  ]) {
+    test(`stock label and wishlist toast on /${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}/shop/shop-all`);
+      const card = page.locator("[data-testid='product-card']").first();
+      await expect(card).toContainText(stock);
+      // The wishlist button ignores clicks until Clerk has loaded.
+      await page.waitForFunction(() => window.Clerk?.loaded);
+      await card.getByRole("button", { name: "Add to wishlist" }).click();
+      await expect(page.getByText(toast)).toBeVisible();
+
+      const href = await page.locator(`main a[href*="/shop/product/"]`).first().getAttribute("href");
+      await page.goto(href);
+      await expect(page.locator("main")).toContainText(stock);
+    });
+  }
 });
 
 // The cart drawer is always in the DOM (off-screen when closed). A seeded item

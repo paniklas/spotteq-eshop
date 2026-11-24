@@ -26,14 +26,14 @@ const BundleShopCard = ({ bundle }) => {
     const handleToggleFavourite = async () => {
         if (!isLoaded) return
         if (!isSignedIn) {
-            toast.error("Please sign in to save favourites.")
+            toast.error(t("toasts.signInForFavourites"))
             return
         }
         const result = await toggleFavourite(bundle._id)
         if (result?.error === "unauthenticated") {
-            toast.error("Please sign in to save favourites.")
+            toast.error(t("toasts.signInForFavourites"))
         } else if (result && !result.ok) {
-            toast.error("Could not update your wishlist. Please try again.")
+            toast.error(t("toasts.wishlistFailed"))
         }
     }
 
@@ -65,9 +65,9 @@ const BundleShopCard = ({ bundle }) => {
         })
         setIsAdding(false)
         if (result?.error === "out_of_stock" || result?.error === "max_quantity") {
-            toast.error("Maximum available quantity reached.")
+            toast.error(t("toasts.maxQuantity"))
         } else if (result?.error === "failed") {
-            toast.error("Failed to add to bag. Please try again.")
+            toast.error(t("toasts.addFailed"))
         }
     }
 
@@ -104,7 +104,7 @@ const BundleShopCard = ({ bundle }) => {
                 )}
                 <div className="flex items-center gap-2">
                     <span className={`w-3 h-3 rounded-full shrink-0 ${atMax ? "bg-red-400" : "bg-teal-accent"}`} />
-                    <span className="font-aeonik text-[13px] text-black">{atMax ? "OUT OF STOCK" : "IN STOCK"}</span>
+                    <span className="font-aeonik text-[13px] text-black">{atMax ? t("outOfStock") : t("inStock")}</span>
                 </div>
                 <button
                     type="button"
@@ -151,7 +151,7 @@ const BundleShopCard = ({ bundle }) => {
                         disabled={isAdding || atMax}
                         className="flex-1 h-7 xl:h-11 bg-black-custom rounded-[20px] font-aeonik text-white-custom text-[16px] cursor-pointer hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 ease-in-out disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                        {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : t("addToBag")}
+                        {atMax ? t("maxQtyReached") : isAdding ? t("adding") : t("addToBag")}
                     </button>
                     <Link
                         href={`/shop/bundle/${bundle.slug}`}

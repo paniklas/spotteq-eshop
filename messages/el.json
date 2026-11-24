@@ -276,7 +276,22 @@
         "completeYourRoutine": "Ολοκλήρωσε τη ρουτίνα σου",
         "ingredients": "Συστατικά",
         "directionsForUse": "Οδηγίες χρήσης",
-        "keyFeatures": "Ποιότητα υψηλών προδιαγραφών"
+        "keyFeatures": "Ποιότητα υψηλών προδιαγραφών",
+        "inStock": "ΣΕ ΑΠΟΘΕΜΑ",
+        "outOfStock": "ΕΞΑΝΤΛΗΘΗΚΕ",
+        "maxQtyReached": "ΜΕΓΙΣΤΗ ΠΟΣΟΤΗΤΑ",
+        "adding": "ΠΡΟΣΘΗΚΗ...",
+        "chooseFlavour": "Επίλεξε γεύση",
+        "flavourOutOfStock": "εξαντλήθηκε",
+        "toasts": {
+            "signInForFavourites": "Συνδέσου για να αποθηκεύσεις τα αγαπημένα σου.",
+            "wishlistFailed": "Δεν ήταν δυνατή η ενημέρωση των αγαπημένων σου. Δοκίμασε ξανά.",
+            "productOutOfStock": "Αυτό το προϊόν έχει εξαντληθεί.",
+            "bundleOutOfStock": "Αυτό το bundle έχει εξαντληθεί.",
+            "maxQuantity": "Έφτασες τη μέγιστη διαθέσιμη ποσότητα.",
+            "maxQuantityCount": "Έφτασες τη μέγιστη διαθέσιμη ποσότητα ({count}).",
+            "addFailed": "Η προσθήκη στο καλάθι απέτυχε. Δοκίμασε ξανά."
+        }
     },
     "cart": {
         "title": "Το καλάθι σου",

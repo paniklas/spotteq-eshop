@@ -36,14 +36,14 @@ const BundleCard = ({
     const handleToggleFavourite = async () => {
         if (!isLoaded) return
         if (!isSignedIn) {
-            toast.error("Please sign in to save favourites.")
+            toast.error(t("toasts.signInForFavourites"))
             return
         }
         const result = await toggleFavourite(_id)
         if (result?.error === "unauthenticated") {
-            toast.error("Please sign in to save favourites.")
+            toast.error(t("toasts.signInForFavourites"))
         } else if (result && !result.ok) {
-            toast.error("Could not update your wishlist. Please try again.")
+            toast.error(t("toasts.wishlistFailed"))
         }
     }
 
@@ -94,9 +94,9 @@ const BundleCard = ({
         })
         setIsAdding(false)
         if (result?.error === "out_of_stock" || result?.error === "max_quantity") {
-            toast.error("Maximum available quantity reached.")
+            toast.error(t("toasts.maxQuantity"))
         } else if (result?.error === "failed") {
-            toast.error("Failed to add to bag. Please try again.")
+            toast.error(t("toasts.addFailed"))
         }
     }
 
@@ -173,7 +173,7 @@ const BundleCard = ({
                     </span>
                     <div className="flex items-center gap-2 mb-2">
                         <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${atMax ? "bg-red-400" : "bg-teal-accent"}`} />
-                        <span className="font-aeonik text-[13px] text-black-custom">{atMax ? "OUT OF STOCK" : "IN STOCK"}</span>
+                        <span className="font-aeonik text-[13px] text-black-custom">{atMax ? t("outOfStock") : t("inStock")}</span>
                         {favouriteButton}
                     </div>
                 </div>
@@ -184,7 +184,7 @@ const BundleCard = ({
                         disabled={isAdding || atMax}
                         className="flex-1 h-7 xl:h-11 bg-black-custom rounded-[21px] font-aeonik text-white-custom cursor-pointer text-[13px] hover:bg-white-custom hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                        {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : t("addToBag")}
+                        {atMax ? t("maxQtyReached") : isAdding ? t("adding") : t("addToBag")}
                     </button>
                     <Link
                         href={`/shop/bundle/${slug}`}
@@ -221,7 +221,7 @@ const BundleCard = ({
                         {priceBlock}
                         <div className="flex items-center gap-2">
                             <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${atMax ? "bg-red-400" : "bg-teal-accent"}`} />
-                            <span className="font-aeonik text-[13px] text-black-custom">{atMax ? "OUT OF STOCK" : "IN STOCK"}</span>
+                            <span className="font-aeonik text-[13px] text-black-custom">{atMax ? t("outOfStock") : t("inStock")}</span>
                         </div>
                     </div>
 
@@ -231,7 +231,7 @@ const BundleCard = ({
                             disabled={isAdding || atMax}
                             className="flex-1 h-10 bg-black-custom rounded-[21px] font-aeonik text-white-custom cursor-pointer text-[14px] hover:bg-gray-mint hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                            {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : t("addToBag")}
+                            {atMax ? t("maxQtyReached") : isAdding ? t("adding") : t("addToBag")}
                         </button>
                         <Link
                             href={`/shop/bundle/${slug}`}
@@ -271,7 +271,7 @@ const BundleCard = ({
                         {priceBlock}
                         <div className="flex items-center gap-2">
                             <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${atMax ? "bg-red-400" : "bg-teal-accent"}`} />
-                            <span className="font-aeonik text-[13px] text-black-custom">{atMax ? "OUT OF STOCK" : "IN STOCK"}</span>
+                            <span className="font-aeonik text-[13px] text-black-custom">{atMax ? t("outOfStock") : t("inStock")}</span>
                         </div>
                     </div>
 
@@ -281,7 +281,7 @@ const BundleCard = ({
                             disabled={isAdding || atMax}
                             className="w-full h-11.25 bg-black-custom rounded-[20px] font-aeonik text-white-custom cursor-pointer text-[14px] hover:bg-gray-mint hover:text-black-custom hover:border hover:border-black-custom transition-colors duration-500 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                            {atMax ? "MAX QTY REACHED" : isAdding ? "ADDING..." : t("addToBag")}
+                            {atMax ? t("maxQtyReached") : isAdding ? t("adding") : t("addToBag")}
                         </button>
                         <Link
                             href={`/shop/bundle/${slug}`}
