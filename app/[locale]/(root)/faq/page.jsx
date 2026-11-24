@@ -17,7 +17,7 @@ export async function generateMetadata({ params }, parent) {
     const { locale } = await params
     const page = await getFaqPage(locale)
     if (!page) return {}
-    return seoMetadata(page.seo, locale, { title: page.heading }, parent)
+    return seoMetadata(page.seo, locale, { title: page.heading }, parent, "/faq")
 }
 
 // Below the questions, the same sections as the contact page.

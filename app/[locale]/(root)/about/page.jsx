@@ -22,7 +22,7 @@ export async function generateMetadata({ params }, parent) {
     return seoMetadata(about.seo, locale, {
         title: about.heading?.replace(/\s+/g, " ").trim(),
         image: about.heroImage,
-    }, parent)
+    }, parent, "/about")
 }
 
 export default async function AboutUs({ params }) {

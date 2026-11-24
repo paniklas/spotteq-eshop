@@ -12,7 +12,7 @@ import SpotteqImage from "@/components/home/spotteq-image"
 import FeaturedProducts from "@/components/home/featured-products"
 import FeaturedProductsSlider from "@/components/home/featured-products-slider"
 import KeyFeatures from "@/components/product/key-features"
-import { seoMetadata } from "@/lib/seo"
+import { NO_INDEX, seoMetadata, slugPaths } from "@/lib/seo"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 86400;
@@ -23,12 +23,14 @@ export async function generateMetadata({ params }, parent) {
     const { slug: rawSlug, locale } = await params
     const { slug } = normalizeSlug(rawSlug)
     const product = await getProductBySlug(slug, locale)
-    if (!product) return {}
+    // notFound() runs inside the Suspense boundary, after the shell has streamed,
+    // so a missing product answers 200; noindex keeps it out of search instead.
+    if (!product) return { robots: NO_INDEX }
     return seoMetadata(product.seo, locale, {
         title: product.title,
         description: product.tagline,
         image: product.image,
-    }, parent)
+    }, parent, slugPaths("/shop/product", product.slugsByLocale))
 }
 
 export default async function ProductPage({ params }) {

@@ -13,7 +13,7 @@ export async function generateMetadata({ params }, parent) {
     const { locale } = await params
     const page = await getLegalPage("cookiesPage", locale)
     if (!page) return {}
-    return seoMetadata(page.seo, locale, { title: page.heading }, parent)
+    return seoMetadata(page.seo, locale, { title: page.heading }, parent, "/cookies")
 }
 
 export default async function CookiesPage({ params }) {

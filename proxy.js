@@ -6,6 +6,10 @@ import { NextResponse } from 'next/server';
 const routing = defineRouting({
     locales: ['en', 'el'],
     defaultLocale: 'el',
+    // next-intl's automatic hreflang `Link` header only swaps the locale prefix,
+    // so for shop pages (different el/en slugs) it pointed at URLs that don't
+    // exist. Pages emit correct alternates from generateMetadata (lib/seo.js).
+    alternateLinks: false,
 });
 
 const handleI18nRouting = createMiddleware(routing);

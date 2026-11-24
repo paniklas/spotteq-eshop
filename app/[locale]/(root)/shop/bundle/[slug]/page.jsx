@@ -9,7 +9,7 @@ import SpotteqImage from "@/components/home/spotteq-image";
 import FeaturedProducts from "@/components/home/featured-products";
 import KeyFeatures from "@/components/product/key-features";
 import { getBundleBySlug } from "@/sanity/getData/getBundleBySlug";
-import { seoMetadata } from "@/lib/seo";
+import { NO_INDEX, seoMetadata, slugPaths } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -19,12 +19,13 @@ export async function generateMetadata({ params }, parent) {
     const { locale, slug: rawSlug } = await params;
     const { slug } = normalizeSlug(rawSlug);
     const bundle = await getBundleBySlug(slug, locale);
-    if (!bundle) return {};
+    // A missing bundle answers 200 (notFound() runs inside Suspense); noindex it.
+    if (!bundle) return { robots: NO_INDEX };
     return seoMetadata(bundle.seo, locale, {
         title: bundle.title,
         description: bundle.description,
         image: bundle.image,
-    }, parent);
+    }, parent, slugPaths("/shop/bundle", bundle.slugsByLocale));
 }
 
 export default async function BundlePage({ params }) {

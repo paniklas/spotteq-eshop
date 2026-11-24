@@ -4,9 +4,12 @@ import { catalogFetch } from '../lib/catalogFetch'
 import { urlFor } from '../lib/image'
 import { seoProjection } from '../lib/seoProjection'
 
+// Inactive products (Studio: Active off) resolve to null, like a missing slug:
+// the page shows the 404 and generateMetadata marks it noindex. Flavour and
+// related links skip inactive products for the same reason.
 export const getProductBySlug = cache(async (slug, locale) => {
     const QUERY = defineQuery(`
-        *[_type == "product" && slugs[$locale].current == $slug][0] {
+        *[_type == "product" && slugs[$locale].current == $slug && status == true][0] {
             _id,
             sku,
             "title": title[language == $locale][0].value,
@@ -19,19 +22,20 @@ export const getProductBySlug = cache(async (slug, locale) => {
             badge,
             "flavourName": flavourName[language == $locale][0].value,
             "slug": slugs[$locale].current,
+            "slugsByLocale": { "el": slugs.el.current, "en": slugs.en.current },
             image,
             galleryImages,
             price,
             salePrice,
             inventory,
             status,
-            flavours[]-> {
+            flavours[@->status == true]-> {
                 _id,
                 "flavourName": flavourName[language == $locale][0].value,
                 "slug": slugs[$locale].current,
                 image
             },
-            relatedProducts[]-> {
+            relatedProducts[@->status == true]-> {
                 _id,
                 "title": title[language == $locale][0].value,
                 "flavourName": flavourName[language == $locale][0].value,

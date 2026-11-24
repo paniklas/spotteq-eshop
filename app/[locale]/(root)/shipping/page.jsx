@@ -13,7 +13,7 @@ export async function generateMetadata({ params }, parent) {
     const { locale } = await params
     const page = await getLegalPage("shippingPage", locale)
     if (!page) return {}
-    return seoMetadata(page.seo, locale, { title: page.heading }, parent)
+    return seoMetadata(page.seo, locale, { title: page.heading }, parent, "/shipping")
 }
 
 export default async function ShippingPage({ params }) {
