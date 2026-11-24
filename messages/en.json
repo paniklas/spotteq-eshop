@@ -506,5 +506,38 @@
             "notFoundText": "We could not find this order. If you believe this is an error, please <link>contact support</link>.",
             "backToShop": "Back to Shop"
         }
+    },
+    "a11y": {
+        "previous": "Previous",
+        "next": "Next",
+        "previousImage": "Previous image",
+        "nextImage": "Next image",
+        "previousBundle": "Previous bundle",
+        "nextBundle": "Next bundle",
+        "goToSlide": "Go to slide {n}",
+        "goToBundle": "Go to bundle {n}",
+        "goToProduct": "Go to product {n}",
+        "close": "Close",
+        "backToTop": "Back to top",
+        "home": "SPOTTEQ home",
+        "myAccount": "My account",
+        "signIn": "Sign in",
+        "search": "Search",
+        "cart": "Cart",
+        "openMenu": "Open menu",
+        "closeMenu": "Close menu",
+        "siteNavigation": "Site navigation",
+        "addToWishlist": "Add to wishlist",
+        "removeFromWishlist": "Remove from wishlist",
+        "decreaseQuantity": "Decrease quantity",
+        "increaseQuantity": "Increase quantity",
+        "shopFilters": "Shop filters"
+    },
+    "imageAlts": {
+        "athlete": "SPOTTEQ athlete",
+        "packs": "SPOTTEQ Whey Protein packs",
+        "gmp": "GMP Certified",
+        "haccp": "HACCP Certified",
+        "isoqar": "ISOQAR Certified"
     }
 }

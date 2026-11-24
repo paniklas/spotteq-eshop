@@ -673,3 +673,19 @@ test.describe("Checkout translations", () => {
     expect(await res.json()).toMatchObject({ code: "invalidRequest" });
   });
 });
+
+test.describe("Screen-reader label translations", () => {
+  for (const { locale, labels, absent } of [
+    { locale: "en", labels: ["SPOTTEQ home", "Sign in", "Search", "Cart", "Open menu"], absent: "Άνοιγμα μενού" },
+    { locale: "el", labels: ["Αρχική σελίδα SPOTTEQ", "Σύνδεση", "Αναζήτηση", "Καλάθι", "Άνοιγμα μενού"], absent: "Open menu" },
+  ]) {
+    test(`navbar labels on /${locale}`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(`/${locale}`);
+      for (const label of labels) {
+        await expect(page.locator(`[aria-label="${label}"]`).first()).toBeAttached();
+      }
+      await expect(page.locator(`[aria-label="${absent}"]`)).toHaveCount(0);
+    });
+  }
+});

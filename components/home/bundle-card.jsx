@@ -24,6 +24,7 @@ const BundleCard = ({
     variant = "horizontal",
 }) => {
     const t = useTranslations("product")
+    const tA = useTranslations("a11y")
     const [isAdding, setIsAdding] = useState(false)
     const { addToCart, cartItems } = useCartStore()
 
@@ -51,7 +52,7 @@ const BundleCard = ({
         <button
             type="button"
             onClick={handleToggleFavourite}
-            aria-label={favourited ? "Remove from wishlist" : "Add to wishlist"}
+            aria-label={favourited ? tA("removeFromWishlist") : tA("addToWishlist")}
             aria-pressed={favourited}
             className="ml-1 w-7 h-7 rounded-full border border-black-custom/25 flex items-center justify-center shrink-0 cursor-pointer transition-transform duration-300 hover:scale-110"
         >

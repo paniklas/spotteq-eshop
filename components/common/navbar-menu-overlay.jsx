@@ -24,6 +24,7 @@ const BRAND_SUPPORT = [
 const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }) => {
     const t = useTranslations("navMenu");
     const tFooter = useTranslations("footer");
+    const tA = useTranslations("a11y");
     const fade = (delay) => ({
         opacity: isOpen ? 1 : 0,
         transition: `opacity 380ms ease ${isOpen ? delay : 0}ms`,
@@ -32,7 +33,7 @@ const MenuOverlay = ({ isOpen, isOnClose, categoryGroups = [], navBundles = [] }
     return (
         <div
             role="dialog"
-            aria-label="Site navigation"
+            aria-label={tA("siteNavigation")}
             aria-modal="true"
             aria-hidden={!isOpen}
             data-lenis-prevent

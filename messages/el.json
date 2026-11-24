@@ -506,5 +506,38 @@
             "notFoundText": "Δεν βρήκαμε αυτή την παραγγελία. Αν πιστεύεις ότι πρόκειται για λάθος, <link>επικοινώνησε μαζί μας</link>.",
             "backToShop": "ΕΠΙΣΤΡΟΦΗ ΣΤΟ ΚΑΤΑΣΤΗΜΑ"
         }
+    },
+    "a11y": {
+        "previous": "Προηγούμενο",
+        "next": "Επόμενο",
+        "previousImage": "Προηγούμενη εικόνα",
+        "nextImage": "Επόμενη εικόνα",
+        "previousBundle": "Προηγούμενο bundle",
+        "nextBundle": "Επόμενο bundle",
+        "goToSlide": "Μετάβαση στη διαφάνεια {n}",
+        "goToBundle": "Μετάβαση στο bundle {n}",
+        "goToProduct": "Μετάβαση στο προϊόν {n}",
+        "close": "Κλείσιμο",
+        "backToTop": "Επιστροφή στην κορυφή",
+        "home": "Αρχική σελίδα SPOTTEQ",
+        "myAccount": "Ο λογαριασμός μου",
+        "signIn": "Σύνδεση",
+        "search": "Αναζήτηση",
+        "cart": "Καλάθι",
+        "openMenu": "Άνοιγμα μενού",
+        "closeMenu": "Κλείσιμο μενού",
+        "siteNavigation": "Πλοήγηση ιστότοπου",
+        "addToWishlist": "Προσθήκη στα αγαπημένα",
+        "removeFromWishlist": "Αφαίρεση από τα αγαπημένα",
+        "decreaseQuantity": "Μείωση ποσότητας",
+        "increaseQuantity": "Αύξηση ποσότητας",
+        "shopFilters": "Φίλτρα καταστήματος"
+    },
+    "imageAlts": {
+        "athlete": "Αθλήτρια SPOTTEQ",
+        "packs": "Συσκευασίες SPOTTEQ Whey Protein",
+        "gmp": "Πιστοποίηση GMP",
+        "haccp": "Πιστοποίηση HACCP",
+        "isoqar": "Πιστοποίηση ISOQAR"
     }
 }

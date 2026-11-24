@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 
 const PrevArrow = () => (
@@ -18,6 +19,7 @@ const NextArrow = () => (
 // Hero product images with prev/next arrows. `variant` picks the mobile layout
 // (arrows flanking the product) or the desktop one (arrows at its bottom-right).
 const HeroProductSlider = ({ images, variant = "mobile" }) => {
+    const tA = useTranslations("a11y");
     const [index, setIndex] = useState(0);
     const count = images.length;
 
@@ -58,7 +60,7 @@ const HeroProductSlider = ({ images, variant = "mobile" }) => {
             <div className="relative z-20 -mt-42.5 flex items-center justify-center">
                 {hasArrows && (
                     <button
-                        aria-label="Previous"
+                        aria-label={tA("previous")}
                         onClick={prev}
                         className="absolute left-8 top-1/2 -translate-y-1/2 z-10 text-white-custom cursor-pointer"
                     >
@@ -70,7 +72,7 @@ const HeroProductSlider = ({ images, variant = "mobile" }) => {
 
                 {hasArrows && (
                     <button
-                        aria-label="Next"
+                        aria-label={tA("next")}
                         onClick={next}
                         className="absolute right-8 top-1/2 -translate-y-1/2 z-10 text-white-custom cursor-pointer"
                     >
@@ -98,10 +100,10 @@ const HeroProductSlider = ({ images, variant = "mobile" }) => {
                     className="absolute right-0 z-10 flex items-center gap-1.5"
                     style={{ bottom: `max(${productBottom.toFixed(2)}%, 140px)` }}
                 >
-                    <button aria-label="Previous" onClick={prev} className="text-white-custom cursor-pointer">
+                    <button aria-label={tA("previous")} onClick={prev} className="text-white-custom cursor-pointer">
                         <PrevArrow />
                     </button>
-                    <button aria-label="Next" onClick={next} className="text-white-custom cursor-pointer">
+                    <button aria-label={tA("next")} onClick={next} className="text-white-custom cursor-pointer">
                         <NextArrow />
                     </button>
                 </div>

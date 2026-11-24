@@ -14,6 +14,7 @@ import { useTranslations } from "next-intl";
 
 const BundleShopCard = ({ bundle }) => {
     const t = useTranslations("product")
+    const tA = useTranslations("a11y")
     const [isAdding, setIsAdding] = useState(false)
     const { addToCart, cartItems } = useCartStore()
 
@@ -109,7 +110,7 @@ const BundleShopCard = ({ bundle }) => {
                 <button
                     type="button"
                     onClick={handleToggleFavourite}
-                    aria-label={favourited ? "Remove from wishlist" : "Add to wishlist"}
+                    aria-label={favourited ? tA("removeFromWishlist") : tA("addToWishlist")}
                     aria-pressed={favourited}
                     className="cursor-pointer transition-transform duration-300 hover:scale-110"
                 >

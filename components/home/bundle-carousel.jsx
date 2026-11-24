@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import { useTranslations } from "next-intl"
 import { motion } from "framer-motion"
 import BundleCard from "./bundle-card"
 
@@ -11,6 +12,7 @@ const Arrow = () => (
 )
 
 const BundleCarousel = ({ bundles = [] }) => {
+    const tA = useTranslations("a11y")
     const [index, setIndex] = useState(0)
     const [trackHeight, setTrackHeight] = useState()
     const slideRefs = useRef([])
@@ -61,14 +63,14 @@ const BundleCarousel = ({ bundles = [] }) => {
                 <>
                     <button
                         onClick={prev}
-                        aria-label="Previous bundle"
+                        aria-label={tA("previousBundle")}
                         className="absolute left-0 top-[38%] -translate-y-1/2 z-10 rotate-180 text-black-custom cursor-pointer"
                     >
                         <Arrow />
                     </button>
                     <button
                         onClick={next}
-                        aria-label="Next bundle"
+                        aria-label={tA("nextBundle")}
                         className="absolute right-0 top-[38%] -translate-y-1/2 z-10 text-black-custom cursor-pointer"
                     >
                         <Arrow />
@@ -83,7 +85,7 @@ const BundleCarousel = ({ bundles = [] }) => {
                         <button
                             key={i}
                             onClick={() => setIndex(i)}
-                            aria-label={`Go to bundle ${i + 1}`}
+                            aria-label={tA("goToBundle", { n: i + 1 })}
                             className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${i === index ? "w-6 bg-black-custom" : "w-2 bg-black-custom/25"}`}
                         />
                     ))}

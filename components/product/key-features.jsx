@@ -23,7 +23,7 @@ const KeyFeatures = async ({ keyFeatures, additionalInfo, locale }) => {
                 <div className="hidden xl:block absolute inset-y-0 left-[53%] top-24 h-full z-30 w-175">
                     <Image
                         src={imageUrl}
-                        alt="Key features product"
+                        alt=""
                         unoptimized={true}
                         fill
                         className="object-cover object-center"
@@ -46,7 +46,7 @@ const KeyFeatures = async ({ keyFeatures, additionalInfo, locale }) => {
                             <div className="xl:hidden relative w-full aspect-3/4">
                                 <Image
                                     src={imageUrl}
-                                    alt="Key features product"
+                                    alt=""
                                     unoptimized={true}
                                     fill
                                     className="object-cover object-center"

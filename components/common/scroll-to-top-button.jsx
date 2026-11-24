@@ -1,6 +1,10 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 const ScrollToTopButton = () => {
+    const tA = useTranslations("a11y");
+
     function scrollToTop() {
         window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -8,7 +12,7 @@ const ScrollToTopButton = () => {
     return (
         <button
             onClick={scrollToTop}
-            aria-label="Back to top"
+            aria-label={tA("backToTop")}
             className="absolute top-16 xl:top-20 right-10 xl:right-[160px] flex items-center justify-center w-10 h-10"
         >
             <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 flex items-center justify-center shrink-0 text-black-custom rounded-full cursor-pointer hover:bg-gray-mint transition-colors duration-300">
