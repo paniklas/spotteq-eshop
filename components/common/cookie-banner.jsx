@@ -4,12 +4,15 @@ import { useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Cookie, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import posthog from "posthog-js";
 import { Link } from "@/i18n/navigation";
+import { CONSENT_KEY } from "@/lib/cookie-consent";
 
-// The stored choice is informational for now: the site only uses essential
-// storage (cart, auth, payments) plus UserWay, which loads regardless.
-// Accept/decline persist in localStorage; closing hides it for the session.
-const CONSENT_KEY = "spotteq_cookie_consent";
+// The stored choice gates PostHog analytics: Accept opts in, Decline opts out,
+// and closing (X) leaves the visitor opted out (the default set in
+// instrumentation-client.js). Essential storage (cart, auth, payments) and
+// UserWay load regardless. Accept/decline persist in localStorage; closing
+// hides it for the session.
 
 // useSyncExternalStore rather than a useEffect-set flag (see use-cart-hydrated):
 // the server snapshot keeps the banner out of the hydration render, and it
@@ -35,9 +38,15 @@ export default function CookieBanner() {
     const t = useTranslations("cookieBanner");
     const visible = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
-    const accept = () => saveChoice(localStorage, "accepted");
+    const accept = () => {
+        saveChoice(localStorage, "accepted");
+        posthog.opt_in_capturing();
+    };
     const dismiss = () => saveChoice(sessionStorage, "dismissed");
-    const decline = () => saveChoice(localStorage, "declined");
+    const decline = () => {
+        saveChoice(localStorage, "declined");
+        posthog.opt_out_capturing();
+    };
 
     return (
         <AnimatePresence>
