@@ -1,16 +1,16 @@
 "use client";
 
-import { useTransition, useState, useEffect, useRef, useCallback } from "react";
+import { useTransition, useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useCartStore } from "@/store/cart-store";
 import { useCustomerStore } from "@/store/customer-store";
 import { validateCartInventory } from "@/app/actions/cart";
 import { updateUserShippingInfo } from "@/app/actions/updateUserShippingInfo";
-import { checkoutSchema } from "@/lib/checkoutSchema";
+import { createCheckoutSchema } from "@/lib/checkoutSchema";
 import { isGreekMobile } from "@/utils/isGreekMobile";
 import { formatPrice } from "@/utils/formatPrice";
 import { effectiveShippingCost } from "@/utils/shippingCost";
@@ -30,7 +30,7 @@ import BoxNowLockerPicker from "./boxnow-locker-picker";
 // Design primitives — kept from original spotteq design
 // ---------------------------------------------------------------------------
 
-const FloatingInput = ({ id, label, type = "text", optional = false, className = "", ref, ...props }) => (
+const FloatingInput = ({ id, label, type = "text", optional = false, optionalLabel = "Optional", className = "", ref, ...props }) => (
   <div className={`relative ${className}`}>
     <input
       ref={ref}
@@ -48,7 +48,7 @@ const FloatingInput = ({ id, label, type = "text", optional = false, className =
     </label>
     {optional && (
       <span className="absolute right-3 top-0 -translate-y-1/2 bg-white-custom px-1 font-aeonik text-[10px] text-black-custom/40 pointer-events-none">
-        Optional
+        {optionalLabel}
       </span>
     )}
   </div>
@@ -101,6 +101,9 @@ const BILLING_FIELDS = [
 
 const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrderDiscountPercent = 0 }) => {
   const locale = useLocale();
+  const t = useTranslations("checkout");
+  const tErrors = useTranslations("checkout.errors");
+  const schema = useMemo(() => createCheckoutSchema(tErrors), [tErrors]);
 
   const {
     cartItems,
@@ -141,7 +144,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
   const total = discountedSubTotal + shippingCost;
 
   const form = useForm({
-    resolver: zodResolver(checkoutSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       email: "",
       emailMarketing: false,
@@ -256,7 +259,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
     // Checked before the locker so the customer sees the phone field first: the
     // shipping details sit above the locker picker.
     if (isBoxNow && !isGreekMobile(data.phone)) {
-      form.setError("phone", { message: "BoxNow needs a Greek mobile number (69XXXXXXXX) to send your locker code." }, { shouldFocus: true });
+      form.setError("phone", { message: t("boxNowPhone") }, { shouldFocus: true });
       return;
     }
 
@@ -341,11 +344,11 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
             });
             if (!result?.ok) {
               console.error("[checkout] Failed to save shipping info to profile:", result?.error);
-              toast.error("Could not save your address for next time, but your order will still go through.");
+              toast.error(t("saveInfoFailed"));
             }
           } catch (err) {
             console.error("[checkout] Failed to save shipping info to profile:", err);
-            toast.error("Could not save your address for next time, but your order will still go through.");
+            toast.error(t("saveInfoFailed"));
           }
         } else {
           saveCustomerInfo({
@@ -407,7 +410,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
         <fieldset disabled={isPending || showPayment}>
 
           {/* ── Contact ─────────────────────────────────────────────────── */}
-          <SectionCard title="Contact">
+          <SectionCard title={t("contact")}>
             <div className="flex flex-col gap-4">
               <FormField
                 control={form.control}
@@ -419,7 +422,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                         {...field}
                         id="email"
                         type="email"
-                        label="Email"
+                        label={t("email")}
                         onChange={(e) => {
                           field.onChange(e);
                           setCheckoutEmail(e.target.value);
@@ -444,7 +447,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                       />
                     </FormControl>
                     <span className="font-aeonik text-[12px] text-black-custom leading-tight">
-                      Subscribe to receive news and offers via email.
+                      {t("emailMarketing")}
                     </span>
                   </FormItem>
                 )}
@@ -453,7 +456,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
           </SectionCard>
 
           {/* ── Delivery ────────────────────────────────────────────────── */}
-          <SectionCard title="Delivery">
+          <SectionCard title={t("delivery")}>
             <div className="flex flex-col gap-4">
               <FormField
                 control={form.control}
@@ -461,8 +464,8 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <FloatingSelect {...field} id="country" label="Country / Region" disabled>
-                        <option value="GR">Greece</option>
+                      <FloatingSelect {...field} id="country" label={t("country")} disabled>
+                        <option value="GR">{t("greece")}</option>
                       </FloatingSelect>
                     </FormControl>
                     <FormMessage className="font-aeonik text-[12px] text-red-500 mt-1" />
@@ -477,7 +480,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <FloatingInput {...field} id="firstName" label="First name" />
+                        <FloatingInput {...field} id="firstName" label={t("firstName")} />
                       </FormControl>
                       <FormMessage className="font-aeonik text-[12px] text-red-500 mt-1" />
                     </FormItem>
@@ -489,7 +492,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <FloatingInput {...field} id="lastName" label="Last name" />
+                        <FloatingInput {...field} id="lastName" label={t("lastName")} />
                       </FormControl>
                       <FormMessage className="font-aeonik text-[12px] text-red-500 mt-1" />
                     </FormItem>
@@ -503,7 +506,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <FloatingInput {...field} id="company" label="Company" optional />
+                      <FloatingInput {...field} id="company" label={t("company")} optional optionalLabel={t("optional")} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -515,7 +518,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <FloatingInput {...field} id="address" label="Address" />
+                      <FloatingInput {...field} id="address" label={t("address")} />
                     </FormControl>
                     <FormMessage className="font-aeonik text-[12px] text-red-500 mt-1" />
                   </FormItem>
@@ -528,7 +531,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <FloatingInput {...field} id="apartment" label="Apartment, suite, etc." optional />
+                      <FloatingInput {...field} id="apartment" label={t("apartment")} optional optionalLabel={t("optional")} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -541,7 +544,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <FloatingInput {...field} id="postalCode" label="Postal code" />
+                        <FloatingInput {...field} id="postalCode" label={t("postalCode")} />
                       </FormControl>
                       <FormMessage className="font-aeonik text-[12px] text-red-500 mt-1" />
                     </FormItem>
@@ -553,7 +556,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <FloatingInput {...field} id="city" label="City" />
+                        <FloatingInput {...field} id="city" label={t("city")} />
                       </FormControl>
                       <FormMessage className="font-aeonik text-[12px] text-red-500 mt-1" />
                     </FormItem>
@@ -567,7 +570,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <FloatingInput {...field} id="phone" type="tel" label="Phone" />
+                      <FloatingInput {...field} id="phone" type="tel" label={t("phone")} />
                     </FormControl>
                     <FormMessage className="font-aeonik text-[12px] text-red-500 mt-1" />
                   </FormItem>
@@ -590,7 +593,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                       />
                     </FormControl>
                     <span className="font-aeonik text-[12px] text-black-custom">
-                      Save this information for next time
+                      {t("saveInfo")}
                     </span>
                   </FormItem>
                 )}
@@ -618,7 +621,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                       />
                     </FormControl>
                     <span className="font-aeonik text-[12px] text-black-custom">
-                      Use shipping address as billing address
+                      {t("useShippingAsBilling")}
                     </span>
                   </FormItem>
                 )}
@@ -627,7 +630,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
               {/* ── Billing address (conditional) ────────────────────────── */}
               {!useShippingAsBilling && (
                 <div className="flex flex-col gap-4 pt-4 border-t border-gray-mint">
-                  <p className="font-aeonik text-[15px] text-black-custom">Billing address</p>
+                  <p className="font-aeonik text-[15px] text-black-custom">{t("billingAddress")}</p>
 
                   <FormField
                     control={form.control}
@@ -635,8 +638,8 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <FloatingSelect {...field} id="billingCountry" label="Country / Region" disabled>
-                            <option value="GR">Greece</option>
+                          <FloatingSelect {...field} id="billingCountry" label={t("country")} disabled>
+                            <option value="GR">{t("greece")}</option>
                           </FloatingSelect>
                         </FormControl>
                         <FormMessage className="font-aeonik text-[12px] text-red-500 mt-1" />
@@ -651,7 +654,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <FloatingInput {...field} id="billingFirstName" label="First name" />
+                            <FloatingInput {...field} id="billingFirstName" label={t("firstName")} />
                           </FormControl>
                           <FormMessage className="font-aeonik text-[12px] text-red-500 mt-1" />
                         </FormItem>
@@ -663,7 +666,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <FloatingInput {...field} id="billingLastName" label="Last name" />
+                            <FloatingInput {...field} id="billingLastName" label={t("lastName")} />
                           </FormControl>
                           <FormMessage className="font-aeonik text-[12px] text-red-500 mt-1" />
                         </FormItem>
@@ -677,7 +680,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <FloatingInput {...field} id="billingCompany" label="Company" optional />
+                          <FloatingInput {...field} id="billingCompany" label={t("company")} optional optionalLabel={t("optional")} />
                         </FormControl>
                       </FormItem>
                     )}
@@ -689,7 +692,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <FloatingInput {...field} id="billingAddress" label="Address" />
+                          <FloatingInput {...field} id="billingAddress" label={t("address")} />
                         </FormControl>
                         <FormMessage className="font-aeonik text-[12px] text-red-500 mt-1" />
                       </FormItem>
@@ -702,7 +705,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <FloatingInput {...field} id="billingApartment" label="Apartment, suite, etc." optional />
+                          <FloatingInput {...field} id="billingApartment" label={t("apartment")} optional optionalLabel={t("optional")} />
                         </FormControl>
                       </FormItem>
                     )}
@@ -715,7 +718,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <FloatingInput {...field} id="billingPostalCode" label="Postal code" />
+                            <FloatingInput {...field} id="billingPostalCode" label={t("postalCode")} />
                           </FormControl>
                           <FormMessage className="font-aeonik text-[12px] text-red-500 mt-1" />
                         </FormItem>
@@ -727,7 +730,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <FloatingInput {...field} id="billingCity" label="City" />
+                            <FloatingInput {...field} id="billingCity" label={t("city")} />
                           </FormControl>
                           <FormMessage className="font-aeonik text-[12px] text-red-500 mt-1" />
                         </FormItem>
@@ -741,7 +744,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <FloatingInput {...field} id="billingPhone" type="tel" label="Phone" />
+                          <FloatingInput {...field} id="billingPhone" type="tel" label={t("phone")} />
                         </FormControl>
                         <FormMessage className="font-aeonik text-[12px] text-red-500 mt-1" />
                       </FormItem>
@@ -753,10 +756,10 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
           </SectionCard>
 
           {/* ── Shipping Method ─────────────────────────────────────────── */}
-          <SectionCard title="Shipping Method">
+          <SectionCard title={t("shippingMethod")}>
             {shippingMethods.length === 0 ? (
               <p className="font-aeonik text-[14px] text-gray-text">
-                No shipping methods available. Please add them in the CMS.
+                {t("noShippingMethods")}
               </p>
             ) : (
               <FormField
@@ -800,7 +803,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                             </div>
                             <span className="font-aeonik text-[14px] text-black-custom shrink-0 ml-4">
                               {effectiveShippingCost(method, subTotal) === 0
-                                ? "FREE"
+                                ? t("free")
                                 : `${formatPrice(method.price)}€`}
                             </span>
                           </button>
@@ -817,7 +820,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
           {/* ── BoxNow Locker Picker ────────────────────────────────────── */}
           {isBoxNow && (
             <div ref={boxNowSectionRef}>
-              <SectionCard title="Select BoxNow Locker">
+              <SectionCard title={t("selectLocker")}>
                 <BoxNowLockerPicker
                   partnerId={process.env.NEXT_PUBLIC_BOXNOW_PARTNER_ID}
                   postalCode={watchedPostalCode}
@@ -826,7 +829,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                 />
                 {boxNowLockerError && (
                   <p className="font-aeonik text-[12px] text-red-500 mt-2">
-                    Please select a BoxNow locker before continuing.
+                    {t("lockerRequired")}
                   </p>
                 )}
               </SectionCard>
@@ -836,8 +839,9 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
           {/* ── Terms + Submit ───────────────────────────────────────────── */}
           <SectionCard>
             <p className="font-aeonik text-[12px] text-black-custom leading-relaxed">
-              Your personal data will be used to process your order as described in our{" "}
-              <Link href="/privacy" className="underline">Privacy Policy</Link>.
+              {t.rich("privacyNotice", {
+                privacy: (chunks) => <Link href="/privacy" className="underline">{chunks}</Link>,
+              })}
             </p>
 
             <FormField
@@ -854,10 +858,10 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                       />
                     </FormControl>
                     <span className="font-aeonik text-[12px] text-black-custom leading-snug">
-                      I have read and agree to the SPOTTEQ{" "}
-                      <Link href="/terms" className="underline">Terms and Conditions</Link>
-                      {" "}and{" "}
-                      <Link href="/privacy" className="underline">Privacy Policy</Link>.
+                      {t.rich("agreeTerms", {
+                        terms: (chunks) => <Link href="/terms" className="underline">{chunks}</Link>,
+                        privacy: (chunks) => <Link href="/privacy" className="underline">{chunks}</Link>,
+                      })}
                     </span>
                   </div>
                   <FormMessage className="font-aeonik text-[12px] text-red-500 mt-2" />
@@ -869,23 +873,23 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
             {inventoryError && (
               <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4">
                 <p className="font-aeonik text-[13px] text-red-700 font-semibold">
-                  Unable to verify stock. Please try again.
+                  {t("stockCheckFailed")}
                 </p>
               </div>
             )}
             {inventoryIssues.length > 0 && (
               <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 flex flex-col gap-2">
                 <p className="font-aeonik text-[13px] text-red-700 font-semibold">
-                  Some items are no longer available in the requested quantity:
+                  {t("stockIssuesTitle")}
                 </p>
                 {inventoryIssues.map((issue) => (
                   <p key={issue.productId} className="font-aeonik text-[12px] text-red-600">
                     <span className="font-semibold">{issue.title}</span>
-                    {" — "}requested {issue.requested}, only {issue.available} available
+                    {" — "}{t("stockIssue", { requested: issue.requested, available: issue.available })}
                   </p>
                 ))}
                 <p className="font-aeonik text-[12px] text-red-500">
-                  Please update your cart before proceeding.
+                  {t("updateCart")}
                 </p>
               </div>
             )}
@@ -897,7 +901,7 @@ const CheckoutForm = ({ shippingMethods = [], accountDefaults = null, firstOrder
                   disabled={isPending}
                   className="h-11 xl:h-14 w-full bg-black-custom font-aeonik text-[16px] uppercase text-white-custom rounded-xl hover:bg-gray-text cursor-pointer transition-colors duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {isPending ? "Checking…" : `Continue to Payment - ${formatPrice(total)}€`}
+                  {isPending ? t("checking") : t("continueToPayment", { total: formatPrice(total) })}
                 </button>
               </div>
             )}

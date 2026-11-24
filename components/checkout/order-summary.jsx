@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Check, X, ChevronDown } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useCartStore } from "@/store/cart-store";
 import { useCartHydrated } from "@/hooks/use-cart-hydrated";
@@ -18,13 +19,17 @@ import { effectiveShippingCost } from "@/utils/shippingCost";
 // tracks images by src, so a lazy mobile copy rendered after it made the LCP
 // check report the desktop icons as lazy. The hidden eager copy already fetches
 // the file on mobile, so lazy loading there saved nothing.
-export const PaymentAndLinks = () => (
+export const PaymentAndLinks = () => {
+    const t = useTranslations("checkout.summary")
+    // Same pages and labels as the footer's links.
+    const tFooter = useTranslations("footer.links")
+    return (
     <>
         {/* Payment icons */}
         <div className="flex justify-end xl:mt-28">
             <Image
                 src="/images/payment-icons.png"
-                alt="Accepted payment methods"
+                alt={t("paymentMethodsAlt")}
                 width={240}
                 height={32}
                 unoptimized
@@ -36,19 +41,22 @@ export const PaymentAndLinks = () => (
         {/* Footer links */}
         <div className="flex items-center justify-end gap-6 mt-6 flex-wrap">
             <Link href="/contact" className="font-aeonik text-[11px] xl:text-[13px] uppercase tracking-wide text-black-custom underline">
-                Contact Us
+                {t("contactUs")}
             </Link>
-            <Link href="/payment-security" className="font-aeonik text-[11px] xl:text-[13px] uppercase tracking-wide text-black-custom underline">
-                Payment &amp; Security
+            <Link href="/shipping" className="font-aeonik text-[11px] xl:text-[13px] uppercase tracking-wide text-black-custom underline">
+                {tFooter("shippingPayments")}
             </Link>
-            <Link href="/shipping-returns" className="font-aeonik text-[11px] xl:text-[13px] uppercase tracking-wide text-black-custom underline">
-                Shipping &amp; Returns
+            <Link href="/returns" className="font-aeonik text-[11px] xl:text-[13px] uppercase tracking-wide text-black-custom underline">
+                {tFooter("returns")}
             </Link>
         </div>
     </>
-)
+    )
+}
 
 const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLinks = true, firstOrderDiscountPercent = 0 }) => {
+    const t = useTranslations("checkout.summary")
+    const tCart = useTranslations("cart")
     const [open, setOpen] = useState(false)
     const cartHydrated = useCartHydrated()
     const { cartItems, appliedCoupon, couponDiscount, couponEmailVerified, applyCoupon, removeCoupon, checkoutEmail, selectedShippingMethod, paymentLocked } = useCartStore()
@@ -76,24 +84,24 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
         validateCouponWithEmail(appliedCoupon.couponCode, checkoutEmail).then((result) => {
             if (!result.valid) {
                 removeCoupon()
-                setCouponError(result.error)
+                setCouponError(result.code ? tCart(`couponErrors.${result.code}`) : result.error)
             } else {
                 applyCoupon(result.coupon, true)
             }
         })
-    }, [checkoutEmail, appliedCoupon, couponEmailVerified, applyCoupon, removeCoupon])
+    }, [checkoutEmail, appliedCoupon, couponEmailVerified, applyCoupon, removeCoupon, tCart])
 
     const handleApplyCoupon = async () => {
         setCouponError("")
         if (!checkoutEmail.trim()) {
-            setCouponError("Please enter your email address first.")
+            setCouponError(tCart("couponErrors.emailRequired"))
             return
         }
         setCouponApplying(true)
         const result = await validateCouponWithEmail(couponInput, checkoutEmail)
         setCouponApplying(false)
         if (!result.valid) {
-            setCouponError(result.error)
+            setCouponError(result.code ? tCart(`couponErrors.${result.code}`) : result.error)
             return
         }
         applyCoupon(result.coupon, true)
@@ -120,7 +128,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
                     className="w-full flex items-center justify-between cursor-pointer"
                 >
                     <span className="flex items-center gap-2">
-                        <span className="font-aeonik text-[16px] xl:text-[22px] text-black-custom">Order Summary</span>
+                        <span className="font-aeonik text-[16px] xl:text-[22px] text-black-custom">{t("title")}</span>
                         <ChevronDown
                             size={18}
                             strokeWidth={1.5}
@@ -130,7 +138,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
                     <span className="font-aeonik text-[22px] font-bold text-black-custom">{formatPrice(total)}€</span>
                 </button>
             ) : (
-                <h2 className="font-aeonik text-[22px] xl:text-[35px] text-black-custom mb-4">Order Summary</h2>
+                <h2 className="font-aeonik text-[22px] xl:text-[35px] text-black-custom mb-4">{t("title")}</h2>
             )}
 
             <div className={`grid transition-all duration-300 ease-out ${(!collapsible || open) ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
@@ -139,7 +147,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
             {/* Items */}
             <div className="flex flex-col">
                 {cartItems.length === 0 && (
-                    <p className="font-aeonik text-[14px] text-gray-text text-center py-6">Your bag is empty.</p>
+                    <p className="font-aeonik text-[14px] text-gray-text text-center py-6">{tCart("empty")}</p>
                 )}
                 <hr className="border-black-custom mb-5" />
 
@@ -148,8 +156,8 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
                     <div className="mb-10">
                         <p className="font-aeonik text-[13px] xl:text-[22px] text-black-custom">
                             {remaining > 0
-                                ? `You are ${formatPrice(remaining)}€ away from FREE SHIPPING!`
-                                : "You've unlocked FREE SHIPPING!"}
+                                ? tCart("freeShippingRemaining", { amount: formatPrice(remaining) })
+                                : tCart("freeShippingUnlocked")}
                         </p>
                     </div>
                 )}
@@ -183,7 +191,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
                                 {item.flavour && (
                                     <p className="font-aeonik text-[12px] xl:text-[16px] text-gray-text">{item.flavour}</p>
                                 )}
-                                <p className="font-aeonik text-[12px] xl:text-[16px] text-gray-text mt-1">Qty: {item.qty}</p>
+                                <p className="font-aeonik text-[12px] xl:text-[16px] text-gray-text mt-1">{t("qty", { qty: item.qty })}</p>
                             </div>
 
                             {/* Price */}
@@ -201,7 +209,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
                     <div className="flex items-center justify-between px-3 py-2.5 bg-teal-accent/10 border border-teal-accent rounded-xl">
                         <span className="font-aeonik text-[13px] text-black-custom">
                             <span className="font-semibold">{appliedCoupon.couponCode}</span>
-                            {" — "}{appliedCoupon.discountAmount}% off applied
+                            {" — "}{t("couponApplied", { percent: appliedCoupon.discountAmount })}
                         </span>
                         <button
                             onClick={handleRemoveCoupon}
@@ -215,7 +223,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
                     <div>
                         <div className="flex items-center gap-4">
                             <span className="font-aeonik text-[11px] xl:text-[14px] uppercase text-black-custom leading-tight shrink-0">
-                                COUPON CODE /<br />GIFT CARD
+                                {tCart("couponCode")}<br />{tCart("giftCard")}
                             </span>
                             <div className="flex-1 flex items-center border border-gray-mint rounded-sm">
                                 <input
@@ -223,7 +231,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
                                     onChange={(e) => { setCouponInput(e.target.value); setCouponError("") }}
                                     onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
                                     disabled={paymentLocked}
-                                    placeholder="Enter code"
+                                    placeholder={tCart("enterCode")}
                                     className="flex-1 px-4 py-3 font-tt text-[16px] md:text-[13px] text-black-custom outline-none bg-transparent placeholder:text-gray-text/50 disabled:cursor-not-allowed"
                                 />
                                 <button
@@ -232,7 +240,7 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
                                     className="px-4 py-3 font-aeonik text-[12px] uppercase text-black-custom hover:opacity-60 transition-opacity cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 shrink-0"
                                 >
                                     <Check size={13} strokeWidth={1.5} />
-                                    {couponApplying ? "..." : "Apply"}
+                                    {couponApplying ? "..." : tCart("apply")}
                                 </button>
                             </div>
                         </div>
@@ -243,12 +251,12 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
                 )}
                 {appliedCoupon && firstOrderDiscountPercent > 0 && (
                     <p className="mt-2 font-aeonik text-[12px] text-gray-text">
-                        This coupon replaces your {firstOrderDiscountPercent}% first order discount — remove it to use that instead.
+                        {t("couponReplacesFirstOrder", { percent: firstOrderDiscountPercent })}
                     </p>
                 )}
                 {paymentLocked && (
                     <p className="mt-2 font-aeonik text-[12px] text-gray-text">
-                        Return to delivery details to change your coupon.
+                        {t("couponLocked")}
                     </p>
                 )}
             </div>
@@ -258,30 +266,30 @@ const OrderSummary = ({ shippingMethods = [], collapsible = false, showFooterLin
                 <hr className="border-gray-mint" />
 
                 <div className="flex justify-between items-center">
-                    <span className="font-aeonik text-[13px] xl:text-[14px] uppercase tracking-wide text-black-custom">Subtotal</span>
+                    <span className="font-aeonik text-[13px] xl:text-[14px] uppercase tracking-wide text-black-custom">{t("subtotal")}</span>
                     <span className="font-tt text-[16px] text-black-custom">{formatPrice(subTotal)}€</span>
                 </div>
 
                 {discountAmount > 0 && (
                     <div className="flex justify-between items-center">
                         <span className="font-aeonik text-[13px] xl:text-[14px] uppercase tracking-wide text-teal-accent">
-                            {appliedCoupon ? "Discount" : "First order discount"} ({activeDiscountPercent}%)
+                            {appliedCoupon ? t("discount") : t("firstOrderDiscount")} ({activeDiscountPercent}%)
                         </span>
                         <span className="font-tt text-[16px] text-teal-accent">-{formatPrice(discountAmount)}€</span>
                     </div>
                 )}
 
                 <div className="flex justify-between items-center">
-                    <span className="font-aeonik text-[13px] xl:text-[14px] uppercase tracking-wide text-black-custom">Shipping</span>
+                    <span className="font-aeonik text-[13px] xl:text-[14px] uppercase tracking-wide text-black-custom">{t("shipping")}</span>
                     <span className="font-tt text-[16px] text-black-custom">
-                        {shipping === 0 ? "FREE" : `${formatPrice(shippingPrice)}€`}
+                        {shipping === 0 ? t("free") : `${formatPrice(shippingPrice)}€`}
                     </span>
                 </div>
 
                 <hr className="border-gray-mint" />
 
                 <div className="flex justify-between items-center">
-                    <span className="font-aeonik text-[16px] uppercase tracking-wide text-black-custom">Total</span>
+                    <span className="font-aeonik text-[16px] uppercase tracking-wide text-black-custom">{t("total")}</span>
                     <span className="font-aeonik text-[22px] xl:text-[30px] font-bold text-black-custom">{formatPrice(total)}€</span>
                 </div>
             </div>

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { CheckCircle, Clock, XCircle, PackageSearch, MapPin, Loader2 } from "lucide-react";
 import { useCartStore } from "@/store/cart-store";
@@ -11,6 +12,7 @@ import { useCartStore } from "@/store/cart-store";
 // ---------------------------------------------------------------------------
 
 const OrderPaid = ({ order, orderNumber, locale }) => {
+  const t = useTranslations("checkout");
   const addr = order.shippingAddress;
   const fmt  = (n) => Number(n).toFixed(2).replace(".", ",");
 
@@ -21,14 +23,16 @@ const OrderPaid = ({ order, orderNumber, locale }) => {
       <div className="flex flex-col items-center gap-4 text-center">
         <CheckCircle className="w-16 h-16 text-teal-accent" strokeWidth={1.5} />
         <h1 className="font-aeonik text-[28px] xl:text-[35px] text-black-custom">
-          Thank you for your order!
+          {t("success.thankYou")}
         </h1>
         <p className="font-aeonik text-[14px] text-gray-text">
-          A confirmation email has been sent to{" "}
-          <span className="text-black-custom">{order.email}</span>.
+          {t.rich("success.confirmationSent", {
+            email: order.email,
+            b: (chunks) => <span className="text-black-custom">{chunks}</span>,
+          })}
         </p>
         <p className="font-aeonik text-[13px] text-gray-text bg-white-custom rounded-xl px-4 py-2">
-          Order number:{" "}
+          {t("success.orderNumber")}{" "}
           <span className="font-semibold text-black-custom">{orderNumber}</span>
         </p>
       </div>
@@ -37,7 +41,7 @@ const OrderPaid = ({ order, orderNumber, locale }) => {
       {(order.products?.length > 0 || order.bundles?.length > 0) && (
         <div className="bg-white-custom rounded-2xl p-6">
           <h2 className="font-aeonik text-[15px] uppercase text-black-custom mb-5">
-            Items ordered
+            {t("success.itemsOrdered")}
           </h2>
           <div className="flex flex-col divide-y divide-gray-mint">
             {order.products?.map((line) => (
@@ -47,7 +51,7 @@ const OrderPaid = ({ order, orderNumber, locale }) => {
                     <div className="absolute inset-0 bg-gray-soft rounded-full z-0" />
                     <Image
                       src={line.product.imageUrl}
-                      alt={line.product.name ?? "Product"}
+                      alt={line.product.name ?? t("success.productAlt")}
                       width={48}
                       height={60}
                       unoptimized
@@ -60,7 +64,7 @@ const OrderPaid = ({ order, orderNumber, locale }) => {
                   {line.selectedFlavour && (
                     <p className="font-aeonik text-[12px] text-gray-text">{line.selectedFlavour}</p>
                   )}
-                  <p className="font-aeonik text-[12px] text-gray-text">Qty: {line.quantity}</p>
+                  <p className="font-aeonik text-[12px] text-gray-text">{t("success.qty", { qty: line.quantity })}</p>
                 </div>
                 <span className="font-tt text-[15px] text-black-custom shrink-0">
                   {fmt(line.price * line.quantity)}€
@@ -74,7 +78,7 @@ const OrderPaid = ({ order, orderNumber, locale }) => {
                     <div className="absolute inset-0 bg-gray-soft rounded-full z-0" />
                     <Image
                       src={line.bundle.imageUrl}
-                      alt={line.bundle.name ?? "Bundle"}
+                      alt={line.bundle.name ?? t("success.bundleAlt")}
                       width={48}
                       height={60}
                       unoptimized
@@ -89,7 +93,7 @@ const OrderPaid = ({ order, orderNumber, locale }) => {
                       {f.variantName}{f.flavourName ? ` – ${f.flavourName}` : ""}
                     </p>
                   ))}
-                  <p className="font-aeonik text-[12px] text-gray-text">Bundle · Qty: {line.quantity}</p>
+                  <p className="font-aeonik text-[12px] text-gray-text">{t("success.bundleQty", { qty: line.quantity })}</p>
                 </div>
                 <span className="font-tt text-[15px] text-black-custom shrink-0">
                   {fmt(line.price * line.quantity)}€
@@ -102,11 +106,11 @@ const OrderPaid = ({ order, orderNumber, locale }) => {
 
       {/* Totals */}
       <div className="bg-white-custom rounded-2xl p-6">
-        <h2 className="font-aeonik text-[15px] uppercase text-black-custom mb-5">Order total</h2>
+        <h2 className="font-aeonik text-[15px] uppercase text-black-custom mb-5">{t("success.orderTotal")}</h2>
         <div className="flex flex-col gap-3">
           {order.amountDiscount > 0 && (
             <div className="flex justify-between">
-              <span className="font-aeonik text-[13px] text-gray-text">Discount</span>
+              <span className="font-aeonik text-[13px] text-gray-text">{t("success.discount")}</span>
               <span className="font-tt text-[14px] text-teal-accent">
                 -{fmt(order.amountDiscount)}€
               </span>
@@ -118,13 +122,13 @@ const OrderPaid = ({ order, orderNumber, locale }) => {
                 {order.shippingMethod.name}
               </span>
               <span className="font-tt text-[14px] text-black-custom">
-                {order.shippingMethod.price === 0 ? "FREE" : `${fmt(order.shippingMethod.price)}€`}
+                {order.shippingMethod.price === 0 ? t("success.free") : `${fmt(order.shippingMethod.price)}€`}
               </span>
             </div>
           )}
           <hr className="border-gray-mint" />
           <div className="flex justify-between">
-            <span className="font-aeonik text-[16px] uppercase text-black-custom">Total</span>
+            <span className="font-aeonik text-[16px] uppercase text-black-custom">{t("success.total")}</span>
             <span className="font-aeonik text-[24px] font-bold text-black-custom">
               {fmt(order.totalPrice)}€
             </span>
@@ -136,13 +140,13 @@ const OrderPaid = ({ order, orderNumber, locale }) => {
       {addr && (
         <div className="bg-white-custom rounded-2xl p-6">
           <h2 className="font-aeonik text-[15px] uppercase text-black-custom mb-4">
-            Shipping address
+            {t("success.shippingAddress")}
           </h2>
           <div className="font-aeonik text-[14px] text-black-custom space-y-1">
             <p>{addr.firstName} {addr.lastName}</p>
             <p>{addr.address}{addr.apartment ? `, ${addr.apartment}` : ""}</p>
             <p>{addr.postalCode} {addr.city}</p>
-            <p>{addr.country}</p>
+            <p>{addr.country === "GR" ? t("greece") : addr.country}</p>
             {addr.phone && <p>{addr.phone}</p>}
           </div>
         </div>
@@ -154,7 +158,7 @@ const OrderPaid = ({ order, orderNumber, locale }) => {
           <div className="flex items-center gap-2 mb-4">
             <MapPin className="w-5 h-5 text-teal-accent shrink-0" strokeWidth={1.5} />
             <h2 className="font-aeonik text-[15px] uppercase text-black-custom">
-              BoxNow Delivery Locker
+              {t("success.boxNowLocker")}
             </h2>
           </div>
           <div className="font-aeonik text-[14px] text-black-custom space-y-1 mb-4">
@@ -163,19 +167,19 @@ const OrderPaid = ({ order, orderNumber, locale }) => {
           </div>
           {order.boxNowParcelId ? (
             <div className="rounded-lg bg-gray-light px-4 py-3">
-              <p className="font-aeonik text-[12px] text-gray-text uppercase mb-1">Tracking / Parcel ID</p>
+              <p className="font-aeonik text-[12px] text-gray-text uppercase mb-1">{t("success.parcelId")}</p>
               <p className="font-tt text-[15px] text-black-custom">{order.boxNowParcelId}</p>
             </div>
           ) : (
             <div className="rounded-lg bg-gray-light px-4 py-3 flex items-center gap-2">
               <Loader2 className="w-4 h-4 text-gray-text animate-spin shrink-0" strokeWidth={1.5} />
               <p className="font-aeonik text-[13px] text-gray-text">
-                Awaiting BoxNow parcel ID — this can take a few seconds. Refresh this page to check again in a minute.
+                {t("success.awaitingParcel")}
               </p>
             </div>
           )}
           <p className="mt-4 font-aeonik text-[13px] text-gray-text">
-            BoxNow will send you an SMS when your parcel is ready for pickup at the locker.
+            {t("success.boxNowSms")}
           </p>
         </div>
       )}
@@ -186,57 +190,67 @@ const OrderPaid = ({ order, orderNumber, locale }) => {
           href="/"
           className="h-14 px-12 bg-black-custom font-aeonik text-[15px] uppercase text-white-custom rounded-xl hover:bg-gray-text transition-colors duration-300 flex items-center"
         >
-          Continue Shopping
+          {t("success.continueShopping")}
         </Link>
       </div>
     </div>
   );
 };
 
-const OrderPending = ({ orderNumber }) => (
-  <div className="flex flex-col items-center gap-6 text-center py-12">
-    <Clock className="w-16 h-16 text-orange-accent" strokeWidth={1.5} />
-    <h1 className="font-aeonik text-[28px] text-black-custom">Payment processing</h1>
-    <p className="font-aeonik text-[14px] text-gray-text max-w-md">
-      Your order <span className="font-semibold text-black-custom">{orderNumber}</span> has been
-      placed and your payment is being confirmed. You will receive an email once it is complete.
-    </p>
-  </div>
-);
+const bold = (chunks) => <span className="font-semibold text-black-custom">{chunks}</span>;
 
-const OrderFailed = ({ orderNumber }) => (
-  <div className="flex flex-col items-center gap-6 text-center py-12">
-    <XCircle className="w-16 h-16 text-red-400" strokeWidth={1.5} />
-    <h1 className="font-aeonik text-[28px] text-black-custom">Payment failed</h1>
-    <p className="font-aeonik text-[14px] text-gray-text max-w-md">
-      We could not process your payment for order{" "}
-      <span className="font-semibold text-black-custom">{orderNumber}</span>. No charge was made.
-    </p>
-    <Link
-      href="/checkout"
-      className="h-14 px-12 bg-black-custom font-aeonik text-[15px] uppercase text-white-custom rounded-xl hover:bg-gray-text transition-colors duration-300 flex items-center"
-    >
-      Try Again
-    </Link>
-  </div>
-);
+const OrderPending = ({ orderNumber }) => {
+  const t = useTranslations("checkout.success");
+  return (
+    <div className="flex flex-col items-center gap-6 text-center py-12">
+      <Clock className="w-16 h-16 text-orange-accent" strokeWidth={1.5} />
+      <h1 className="font-aeonik text-[28px] text-black-custom">{t("pendingTitle")}</h1>
+      <p className="font-aeonik text-[14px] text-gray-text max-w-md">
+        {t.rich("pendingText", { orderNumber, b: bold })}
+      </p>
+    </div>
+  );
+};
 
-const OrderNotFound = () => (
-  <div className="flex flex-col items-center gap-6 text-center py-12">
-    <PackageSearch className="w-16 h-16 text-gray-text" strokeWidth={1.5} />
-    <h1 className="font-aeonik text-[28px] text-black-custom">Order not found</h1>
-    <p className="font-aeonik text-[14px] text-gray-text max-w-md">
-      We could not find this order. If you believe this is an error, please{" "}
-      <Link href="/contact" className="underline">contact support</Link>.
-    </p>
-    <Link
-      href="/shop/shop-all"
-      className="h-14 px-12 bg-black-custom font-aeonik text-[15px] uppercase text-white-custom rounded-xl hover:bg-gray-text transition-colors duration-300 flex items-center"
-    >
-      Back to Shop
-    </Link>
-  </div>
-);
+const OrderFailed = ({ orderNumber }) => {
+  const t = useTranslations("checkout.success");
+  return (
+    <div className="flex flex-col items-center gap-6 text-center py-12">
+      <XCircle className="w-16 h-16 text-red-400" strokeWidth={1.5} />
+      <h1 className="font-aeonik text-[28px] text-black-custom">{t("failedTitle")}</h1>
+      <p className="font-aeonik text-[14px] text-gray-text max-w-md">
+        {t.rich("failedText", { orderNumber, b: bold })}
+      </p>
+      <Link
+        href="/checkout"
+        className="h-14 px-12 bg-black-custom font-aeonik text-[15px] uppercase text-white-custom rounded-xl hover:bg-gray-text transition-colors duration-300 flex items-center"
+      >
+        {t("tryAgain")}
+      </Link>
+    </div>
+  );
+};
+
+const OrderNotFound = () => {
+  const t = useTranslations("checkout.success");
+  return (
+    <div className="flex flex-col items-center gap-6 text-center py-12">
+      <PackageSearch className="w-16 h-16 text-gray-text" strokeWidth={1.5} />
+      <h1 className="font-aeonik text-[28px] text-black-custom">{t("notFoundTitle")}</h1>
+      <p className="font-aeonik text-[14px] text-gray-text max-w-md">
+        {t.rich("notFoundText", {
+          link: (chunks) => <Link href="/contact" className="underline">{chunks}</Link>,
+        })}
+      </p>
+      <Link
+        href="/shop/shop-all"
+        className="h-14 px-12 bg-black-custom font-aeonik text-[15px] uppercase text-white-custom rounded-xl hover:bg-gray-text transition-colors duration-300 flex items-center"
+      >
+        {t("backToShop")}
+      </Link>
+    </div>
+  );
+};
 
 // ---------------------------------------------------------------------------
 // Root client component — clears cart, then delegates to a status view
