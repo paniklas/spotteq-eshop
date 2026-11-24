@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import PaymentForm from "./payment-form";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
@@ -19,6 +20,7 @@ const StripePaymentWrapper = ({
   locale,
   onBack,
 }) => {
+  const t = useTranslations("checkout");
   const [clientSecret, setClientSecret]   = useState("");
   const [orderNumber, setOrderNumber]     = useState("");
   const [loading, setLoading]             = useState(true);
@@ -57,7 +59,12 @@ const StripePaymentWrapper = ({
 
         const data = await res.json();
 
-        if (!res.ok) throw new Error(data.error || "Failed to initialise payment.");
+        // The API returns a `code` next to its English `error`; show the code's
+        // translation, falling back to the English text for an unknown code.
+        if (!res.ok) {
+          const key = `serverErrors.${data.code}`;
+          throw new Error(data.code && t.has(key) ? t(key) : data.error || t("payment.initFailed"));
+        }
 
         setClientSecret(data.clientSecret);
         setOrderNumber(data.orderNumber);
@@ -117,7 +124,7 @@ const StripePaymentWrapper = ({
           onClick={onBack}
           className="font-aeonik text-[13px] underline text-black-custom"
         >
-          Go back and try again
+          {t("payment.goBack")}
         </button>
       </div>
     );
@@ -127,13 +134,13 @@ const StripePaymentWrapper = ({
     return (
       <div className="bg-white-custom rounded-2xl p-6 flex flex-col items-center justify-center gap-3 py-12">
         <Loader2 className="w-6 h-6 animate-spin text-black-custom" />
-        <p className="font-aeonik text-[14px] text-gray-text">Preparing payment…</p>
+        <p className="font-aeonik text-[14px] text-gray-text">{t("payment.preparing")}</p>
       </div>
     );
   }
 
   return (
-    <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
+    <Elements stripe={stripePromise} options={{ clientSecret, appearance, locale }}>
       <PaymentForm
         orderNumber={orderNumber}
         locale={locale}

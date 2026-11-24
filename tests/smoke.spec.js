@@ -433,6 +433,26 @@ test.describe("Product copy translations", () => {
       await expect(main).not.toContainText(absent);
     });
   }
+
+  // Stock labels depend on inventory, so either state counts.
+  for (const { locale, stock, toast } of [
+    { locale: "en", stock: /IN STOCK|OUT OF STOCK/, toast: "Please sign in to save favourites." },
+    { locale: "el", stock: /ΣΕ ΑΠΟΘΕΜΑ|ΕΞΑΝΤΛΗΘΗΚΕ/, toast: "Συνδέσου για να αποθηκεύσεις τα αγαπημένα σου." },
+  ]) {
+    test(`stock label and wishlist toast on /${locale}`, async ({ page }) => {
+      await page.goto(`/${locale}/shop/shop-all`);
+      const card = page.locator("[data-testid='product-card']").first();
+      await expect(card).toContainText(stock);
+      // The wishlist button ignores clicks until Clerk has loaded.
+      await page.waitForFunction(() => window.Clerk?.loaded);
+      await card.getByRole("button", { name: "Add to wishlist" }).click();
+      await expect(page.getByText(toast)).toBeVisible();
+
+      const href = await page.locator(`main a[href*="/shop/product/"]`).first().getAttribute("href");
+      await page.goto(href);
+      await expect(page.locator("main")).toContainText(stock);
+    });
+  }
 });
 
 // The cart drawer is always in the DOM (off-screen when closed). A seeded item
@@ -517,4 +537,86 @@ test.describe("Cart drawer translations", () => {
       await expect(page.getByText(copy.couponErrors[1])).toBeVisible();
     });
   }
+});
+
+// Checkout copy. A seeded cart item keeps the form on screen; submitting it empty
+// shows the validation messages (from the zod schema, translated by the form).
+test.describe("Checkout translations", () => {
+  const seedCart = (page) => page.addInitScript(() => {
+    const cartItems = [{ id: "test-product-id", type: "product", cartId: "test-cart-id", qty: 1, price: 10, inventory: 10, name: "Test Product" }];
+    localStorage.setItem("spotteq-cart-v2", JSON.stringify({ state: { cartItems }, version: 0 }));
+  });
+
+  for (const { locale, copy, absent } of [
+    {
+      locale: "en",
+      absent: "Σύνοψη παραγγελίας",
+      copy: {
+        form: ["Contact", "Delivery", "Shipping Method", "Subscribe to receive news and offers via email.", "Save this information for next time", "Use shipping address as billing address", "Terms and Conditions", "Order Summary", "Subtotal"],
+        labels: ["Email", "First name", "Last name", "Address", "Postal code", "City", "Phone"],
+        submit: /Continue to Payment - \d+,\d{2}€/,
+        errors: ["Email is required", "First name is required", "You must agree to the terms and conditions"],
+        empty: ["Your bag is empty", "Add something to your bag to continue to checkout.", "Continue Shopping"],
+        notFound: ["Order not found", "contact support", "Back to Shop"],
+      },
+    },
+    {
+      locale: "el",
+      absent: "Order Summary",
+      copy: {
+        form: ["ΣΤΟΙΧΕΙΑ ΕΠΙΚΟΙΝΩΝΙΑΣ", "ΠΑΡΑΔΟΣΗ", "ΤΡΟΠΟΣ ΑΠΟΣΤΟΛΗΣ", "Θέλω να λαμβάνω νέα και προσφορές μέσω email.", "Αποθήκευση των στοιχείων για την επόμενη φορά", "Χρήση της διεύθυνσης αποστολής και για τη χρέωση", "Όρους Χρήσης", "Σύνοψη παραγγελίας", "ΥΠΟΣΥΝΟΛΟ"],
+        labels: ["Email", "Όνομα", "Επώνυμο", "Διεύθυνση", "Ταχυδρομικός κώδικας", "Πόλη", "Τηλέφωνο"],
+        submit: /ΣΥΝΕΧΕΙΑ ΣΤΗΝ ΠΛΗΡΩΜΗ - \d+,\d{2}€/,
+        errors: ["Συμπλήρωσε το email σου.", "Συμπλήρωσε το όνομά σου.", "Πρέπει να αποδεχτείς τους Όρους Χρήσης και την Πολιτική Απορρήτου."],
+        empty: ["Το καλάθι σου είναι άδειο", "Πρόσθεσε κάτι στο καλάθι σου", "ΣΥΝΕΧΕΙΑ ΑΓΟΡΩΝ"],
+        notFound: ["Η παραγγελία δεν βρέθηκε", "επικοινώνησε μαζί μας", "ΕΠΙΣΤΡΟΦΗ ΣΤΟ ΚΑΤΑΣΤΗΜΑ"],
+      },
+    },
+  ]) {
+    test(`checkout form and validation on /${locale}`, async ({ page }) => {
+      await seedCart(page);
+      await page.goto(`/${locale}/checkout`);
+      const main = page.locator("main");
+      for (const text of copy.form) await expect(main).toContainText(text);
+      for (const label of copy.labels) await expect(page.getByLabel(label, { exact: true }).first()).toBeAttached();
+      await expect(main).not.toContainText(absent);
+
+      await page.getByRole("button", { name: copy.submit }).click();
+      for (const text of copy.errors) await expect(page.getByText(text, { exact: true }).first()).toBeVisible();
+    });
+
+    test(`empty bag on /${locale}/checkout`, async ({ page }) => {
+      await page.goto(`/${locale}/checkout`);
+      for (const text of copy.empty) await expect(page.locator("main")).toContainText(text);
+    });
+
+    test(`order not found on /${locale}/checkout/success`, async ({ page }) => {
+      await page.goto(`/${locale}/checkout/success?order_number=NOT-A-REAL-ORDER`);
+      for (const text of copy.notFound) await expect(page.locator("main")).toContainText(text);
+    });
+  }
+
+  // Footer links under the order summary go to the existing shipping and returns pages.
+  for (const { locale, links } of [
+    { locale: "en", links: [["SHIPPING & PAYMENTS", "/en/shipping"], ["RETURNS POLICY", "/en/returns"]] },
+    { locale: "el", links: [["ΑΠΟΣΤΟΛΕΣ & ΠΛΗΡΩΜΕΣ", "/el/shipping"], ["ΠΟΛΙΤΙΚΗ ΕΠΙΣΤΡΟΦΩΝ", "/el/returns"]] },
+  ]) {
+    test(`checkout footer links on /${locale}`, async ({ page }) => {
+      await seedCart(page);
+      await page.goto(`/${locale}/checkout`);
+      for (const [label, href] of links) {
+        const link = page.getByRole("link", { name: label, exact: true }).locator("visible=true").first();
+        await expect(link).toHaveAttribute("href", href);
+        const res = await page.request.get(href);
+        expect(res.status()).toBe(200);
+      }
+    });
+  }
+
+  // The API returns a code next to the English error; the payment step translates it.
+  test("payment intent errors carry a code", async ({ request }) => {
+    const res = await request.post("/api/create-payment-intent", { data: {} });
+    expect(res.status()).toBe(400);
+    expect(await res.json()).toMatchObject({ code: "invalidRequest" });
+  });
 });

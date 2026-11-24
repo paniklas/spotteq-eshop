@@ -325,7 +325,7 @@ export async function POST(req) {
     const rawBody = await req.json();
     const parsed = bodySchema.safeParse(rawBody);
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid checkout request." }, { status: 400 });
+      return NextResponse.json({ error: "Invalid checkout request.", code: "invalidRequest" }, { status: 400 });
     }
 
     const {
@@ -388,15 +388,15 @@ export async function POST(req) {
     ]);
 
     if (!shippingMethod) {
-      return NextResponse.json({ error: "Invalid shipping method." }, { status: 400 });
+      return NextResponse.json({ error: "Invalid shipping method.", code: "invalidShippingMethod" }, { status: 400 });
     }
     if (shippingMethod.provider === "boxnow" && !boxNowLockerId) {
-      return NextResponse.json({ error: "Please select a BoxNow locker." }, { status: 400 });
+      return NextResponse.json({ error: "Please select a BoxNow locker.", code: "lockerRequired" }, { status: 400 });
     }
     // Enforced here too: a number BoxNow rejects only surfaces after payment, when
     // the Stripe webhook tries to create the delivery request.
     if (shippingMethod.provider === "boxnow" && !isGreekMobile(customerInfo.phone)) {
-      return NextResponse.json({ error: "BoxNow needs a Greek mobile number (69XXXXXXXX) to send your locker code." }, { status: 400 });
+      return NextResponse.json({ error: "BoxNow needs a Greek mobile number (69XXXXXXXX) to send your locker code.", code: "boxNowPhone" }, { status: 400 });
     }
 
     // --- Build order line items and compute subtotal ---
@@ -422,7 +422,7 @@ export async function POST(req) {
     for (const [i, item] of productItems.entries()) {
       const price = productPriceMap[item.id];
       if (!price) {
-        return NextResponse.json({ error: "One or more products are no longer available." }, { status: 400 });
+        return NextResponse.json({ error: "One or more products are no longer available.", code: "productsUnavailable" }, { status: 400 });
       }
       subtotal += price * item.qty;
       addDemand(item.id, item.qty);
@@ -438,7 +438,7 @@ export async function POST(req) {
     for (const [i, item] of bundleItems.entries()) {
       const price = bundlePriceMap[item.id];
       if (!price) {
-        return NextResponse.json({ error: "One or more bundles are no longer available." }, { status: 400 });
+        return NextResponse.json({ error: "One or more bundles are no longer available.", code: "bundlesUnavailable" }, { status: 400 });
       }
       subtotal += price * item.qty;
 
@@ -452,14 +452,14 @@ export async function POST(req) {
 
       if (clientSel.length) {
         if (clientSel.length !== slots.length) {
-          return NextResponse.json({ error: "Invalid bundle flavour selection." }, { status: 400 });
+          return NextResponse.json({ error: "Invalid bundle flavour selection.", code: "invalidFlavour" }, { status: 400 });
         }
         selectedFlavours = [];
         for (let s = 0; s < slots.length; s++) {
           const slot = slots[s];
           const entry = clientSel[s];
           if (!slot?.defaultId || entry.slotProductId !== slot.defaultId) {
-            return NextResponse.json({ error: "Invalid bundle flavour selection." }, { status: 400 });
+            return NextResponse.json({ error: "Invalid bundle flavour selection.", code: "invalidFlavour" }, { status: 400 });
           }
           const activeVariantIds = (slot.variants ?? [])
             .filter((v) => v?.active !== false)
@@ -468,7 +468,7 @@ export async function POST(req) {
             ? new Set([slot.defaultId, ...activeVariantIds])
             : new Set([slot.defaultId]);
           if (!allowed.has(entry.variantId)) {
-            return NextResponse.json({ error: "Invalid bundle flavour selection." }, { status: 400 });
+            return NextResponse.json({ error: "Invalid bundle flavour selection.", code: "invalidFlavour" }, { status: 400 });
           }
           addDemand(entry.variantId, item.qty * (slot.quantity ?? 1));
           selectedFlavours.push({
@@ -513,7 +513,7 @@ export async function POST(req) {
       });
       if (outOfStock) {
         return NextResponse.json(
-          { error: "Some items just went out of stock. Please review your bag and try again." },
+          { error: "Some items just went out of stock. Please review your bag and try again.", code: "outOfStock" },
           { status: 409 }
         );
       }
@@ -557,7 +557,7 @@ export async function POST(req) {
     // this message with a "go back and try again" link.
     if (couponId && !coupon) {
       return NextResponse.json(
-        { error: "That coupon is no longer valid. Please go back and review your order." },
+        { error: "That coupon is no longer valid. Please go back and review your order.", code: "couponInvalid" },
         { status: 400 }
       );
     }
@@ -579,6 +579,7 @@ export async function POST(req) {
             error: usedByThisEmail
               ? "This coupon has already been used with this email address."
               : "That coupon is no longer valid. Please go back and review your order.",
+            code: usedByThisEmail ? "couponUsed" : "couponInvalid",
           },
           { status: 400 }
         );
@@ -624,7 +625,7 @@ export async function POST(req) {
     const amountInCents = Math.round(total * 100);
 
     if (amountInCents < 50) {
-      return NextResponse.json({ error: "Order total is below the minimum for payment processing." }, { status: 400 });
+      return NextResponse.json({ error: "Order total is below the minimum for payment processing.", code: "belowMinimum" }, { status: 400 });
     }
 
     // --- Create or find Stripe customer ---
@@ -797,6 +798,7 @@ export async function POST(req) {
           {
             error:
               "This coupon is already being used by another checkout with this email address. Complete that one, or wait for the hold to expire and try again.",
+            code: "couponHeld",
           },
           { status: 409 }
         );
@@ -823,7 +825,7 @@ export async function POST(req) {
             .catch((e) => console.warn("[create-payment-intent] could not discard order:", e?.message ?? e));
         }
         return NextResponse.json(
-          { error: "You have already used this coupon with this email address." },
+          { error: "You have already used this coupon with this email address.", code: "couponUsed" },
           { status: 409 }
         );
       }
@@ -854,6 +856,7 @@ export async function POST(req) {
           {
             error:
               "Your first order discount is currently held by another checkout in progress. Complete that one, or wait for the hold to expire and try again.",
+            code: "firstOrderHeld",
           },
           { status: 409 }
         );
@@ -907,7 +910,7 @@ export async function POST(req) {
         await retireIntent(paymentIntent.id);
         await releaseCouponClaim(claimedCouponSaleId, claimedCouponEmail, claimedCouponClaim);
         return NextResponse.json(
-          { error: "Could not reserve your coupon. Please try again." },
+          { error: "Could not reserve your coupon. Please try again.", code: "couponReserveFailed" },
           { status: 500 }
         );
       }
@@ -959,6 +962,6 @@ export async function POST(req) {
       await releaseFirstOrderClaim(claimedProfileId, claimedClaim);
       await releaseCouponClaim(claimedCouponSaleId, claimedCouponEmail, claimedCouponClaim);
     }
-    return NextResponse.json({ error: "Failed to initialise payment." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to initialise payment.", code: "failed" }, { status: 500 });
   }
 }

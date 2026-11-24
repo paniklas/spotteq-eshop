@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { useStripe, useElements, PaymentElement, ExpressCheckoutElement } from "@stripe/react-stripe-js";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const PaymentForm = ({ orderNumber, locale, customerInfo, onBack }) => {
+  const t        = useTranslations("checkout.payment");
   const stripe   = useStripe();
   const elements = useElements();
 
@@ -92,7 +94,7 @@ const PaymentForm = ({ orderNumber, locale, customerInfo, onBack }) => {
   return (
     <div className="bg-white-custom rounded-2xl p-6 flex flex-col gap-6">
       <h2 className="font-aeonik text-[16px] xl:text-[18px] uppercase text-black-custom">
-        Payment Details
+        {t("title")}
       </h2>
 
       {/* Apple Pay / Google Pay as their own buttons above the card form, rather
@@ -113,7 +115,7 @@ const PaymentForm = ({ orderNumber, locale, customerInfo, onBack }) => {
       {hasWallet && (
         <div className="flex items-center gap-3 font-aeonik text-[12px] uppercase text-gray-text">
           <span className="flex-1 border-t border-gray-mint" />
-          or pay with card
+          {t("orPayWithCard")}
           <span className="flex-1 border-t border-gray-mint" />
         </div>
       )}
@@ -135,7 +137,7 @@ const PaymentForm = ({ orderNumber, locale, customerInfo, onBack }) => {
         className="h-14 w-full bg-black-custom font-aeonik text-[16px] uppercase cursor-pointer text-white-custom rounded-xl hover:bg-gray-text transition-colors duration-300 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {processing && <Loader2 className="w-4 h-4 animate-spin" />}
-        {processing ? "Processing…" : "Pay Now"}
+        {processing ? t("processing") : t("payNow")}
       </button>
 
       <button
@@ -144,7 +146,7 @@ const PaymentForm = ({ orderNumber, locale, customerInfo, onBack }) => {
         disabled={processing}
         className="font-aeonik text-[13px] text-gray-text underline text-center cursor-pointer hover:text-black-custom transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        Return to delivery details
+        {t("back")}
       </button>
     </div>
   );
