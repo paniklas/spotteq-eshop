@@ -539,5 +539,13 @@
         "gmp": "GMP Certified",
         "haccp": "HACCP Certified",
         "isoqar": "ISOQAR Certified"
+    },
+    "firstOrder": {
+        "title": "{percent}% Off Your First Order",
+        "subtitle": "Create an account and get a discount on your first order",
+        "google": "Continue with Google",
+        "or": "or",
+        "create": "Create account",
+        "promoBar": "{percent}% Off Your First Order"
     }
 }
