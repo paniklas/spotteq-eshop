@@ -720,3 +720,77 @@ test.describe("Screen-reader label translations", () => {
     });
   }
 });
+
+test.describe("SEO", () => {
+  const PROD = "https://www.spotteq.com";
+  const toPath = (url) => url.replace(PROD, "");
+  const tag = (html, re) => html.match(re)?.[1];
+  const alternates = (html) =>
+    Object.fromEntries([...html.matchAll(/<link rel="alternate" hrefLang="([^"]+)" href="([^"]+)"/g)].map((m) => [m[1], m[2]]));
+
+  test("robots.txt allows crawling and points at the sitemap", async ({ request }) => {
+    const body = await (await request.get("/robots.txt")).text();
+    expect(body).toContain("Allow: /");
+    expect(body).toContain("Disallow: /api/");
+    expect(body).toContain(`Sitemap: ${PROD}/sitemap.xml`);
+  });
+
+  test("sitemap lists both locales and leaves out placeholder pages", async ({ request }) => {
+    const xml = await (await request.get("/sitemap.xml")).text();
+    const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+    expect(locs).toContain(`${PROD}/el`);
+    expect(locs).toContain(`${PROD}/en`);
+    expect(locs).toContain(`${PROD}/el/ambassador`);
+    expect(locs).not.toContain(`${PROD}/en/ambassador`);
+    expect(locs.some((l) => l.startsWith(`${PROD}/el/shop/product/`))).toBe(true);
+    expect(locs.some((l) => l.startsWith(`${PROD}/en/shop/product/`))).toBe(true);
+  });
+
+  test("product page has a self canonical and reciprocal hreflang to the English slug", async ({ request }) => {
+    const xml = await (await request.get("/sitemap.xml")).text();
+    const elUrl = xml.match(/<loc>(https:\/\/www\.spotteq\.com\/el\/shop\/product\/[^<]+)<\/loc>/)[1];
+
+    const res = await request.get(toPath(elUrl));
+    // next-intl's automatic Link header kept the Greek slug for /en; it must stay off.
+    expect(res.headers()["link"] ?? "").not.toContain("hreflang");
+    const html = await res.text();
+    expect(tag(html, /<link rel="canonical" href="([^"]+)"/)).toBe(elUrl);
+    const alts = alternates(html);
+    expect(alts["x-default"]).toBe(elUrl);
+    expect(alts.en).toMatch(/\/en\/shop\/product\//);
+
+    const enRes = await request.get(toPath(alts.en));
+    expect(enRes.status()).toBe(200);
+    const enHtml = await enRes.text();
+    expect(tag(enHtml, /<link rel="canonical" href="([^"]+)"/)).toBe(alts.en);
+    expect(alternates(enHtml).el).toBe(elUrl);
+  });
+
+  test("unknown product slug is noindex", async ({ request }) => {
+    const html = await (await request.get("/el/shop/product/this-product-does-not-exist-xyz")).text();
+    expect(html).toMatch(/<meta name="robots" content="noindex/);
+  });
+
+  test("placeholder English ambassador page is noindex", async ({ request }) => {
+    const html = await (await request.get("/en/ambassador")).text();
+    expect(html).toMatch(/<meta name="robots" content="noindex/);
+    expect(alternates(html).en).toBeUndefined();
+  });
+
+  // The home page is pre-rendered (force-static); <html lang> used to come from
+  // the request in the root layout and fell back to Greek on /en.
+  test("html lang matches the locale on the pre-rendered home page", async ({ request }) => {
+    for (const locale of ["el", "en"]) {
+      const html = await (await request.get(`/${locale}`)).text();
+      expect(html, locale).toMatch(new RegExp(`<html lang="${locale}"`));
+    }
+  });
+
+  test("web app manifest is served with icons", async ({ request }) => {
+    const manifest = await (await request.get("/manifest.webmanifest")).json();
+    expect(manifest.name).toBe("SPOTTEQ");
+    for (const icon of manifest.icons) {
+      expect((await request.get(icon.src)).status(), icon.src).toBe(200);
+    }
+  });
+});
