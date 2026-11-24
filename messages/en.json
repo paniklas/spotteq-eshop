@@ -546,6 +546,7 @@
         "google": "Continue with Google",
         "or": "or",
         "create": "Create account",
-        "promoBar": "{percent}% Off Your First Order"
+        "promoBar": "{percent}% Off Your First Order",
+        "heroTab": "{percent}% OFF FIRST ORDER"
     }
 }

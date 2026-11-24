@@ -674,6 +674,26 @@ test.describe("Checkout translations", () => {
   });
 });
 
+// Desktop hero tab — the percentage comes from Studio, so only the wording is checked.
+test.describe("Hero first-order tab", () => {
+  for (const { locale, tabName, title, absent } of [
+    { locale: "en", tabName: /^\d+% OFF FIRST ORDER$/, title: /\d+% Off Your First Order/, absent: "Έκπτωση" },
+    { locale: "el", tabName: /^\d+% ΕΚΠΤΩΣΗ ΣΤΗΝ ΠΡΩΤΗ ΠΑΡΑΓΓΕΛΙΑ$/, title: /\d+% Έκπτωση στην Πρώτη σας Παραγγελία/, absent: "Off Your First Order" },
+  ]) {
+    test(`opens the first-order modal on /${locale}`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(`/${locale}`);
+      const tab = page.locator("#hero-section").getByRole("button", { name: tabName });
+      await expect(tab).toBeVisible();
+      await tab.click();
+      const dialog = page.getByRole("dialog");
+      await expect(dialog.getByRole("heading", { name: title })).toBeVisible();
+      await expect(dialog).not.toContainText(absent);
+    });
+  }
+
+});
+
 test.describe("Screen-reader label translations", () => {
   for (const { locale, labels, absent } of [
     { locale: "en", labels: ["SPOTTEQ home", "Sign in", "Search", "Cart", "Open menu"], absent: "Άνοιγμα μενού" },
