@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useCartStore } from "@/store/cart-store";
 import { useCartHydrated } from "@/hooks/use-cart-hydrated";
@@ -9,6 +10,7 @@ import OrderSummary, { PaymentAndLinks } from "./order-summary";
 // Owns the empty-cart decision because it covers both the form and the summary —
 // a guard inside CheckoutForm cannot hide its sibling OrderSummary.
 const CheckoutContent = ({ shippingMethods = [], accountDefaults = null, firstOrderDiscountPercent = 0 }) => {
+  const t = useTranslations("checkout");
   const cartHydrated = useCartHydrated();
   const cartItems = useCartStore((state) => state.cartItems);
 
@@ -19,16 +21,16 @@ const CheckoutContent = ({ shippingMethods = [], accountDefaults = null, firstOr
     return (
       <div className="flex flex-col items-center justify-center gap-6 py-24">
         <h1 className="font-aeonik text-[28px] xl:text-[35px] text-black-custom text-center">
-          Your bag is empty
+          {t("empty.title")}
         </h1>
         <p className="font-aeonik text-[14px] text-gray-text text-center max-w-sm">
-          Add something to your bag to continue to checkout.
+          {t("empty.description")}
         </p>
         <Link
           href="/"
           className="h-14 px-12 bg-black-custom font-aeonik text-[15px] uppercase text-white-custom rounded-xl hover:bg-gray-text transition-colors duration-300 flex items-center"
         >
-          Continue Shopping
+          {t("empty.continueShopping")}
         </Link>
       </div>
     );
@@ -43,7 +45,7 @@ const CheckoutContent = ({ shippingMethods = [], accountDefaults = null, firstOr
 
       {/* Checkout Form — left on desktop */}
       <div className="order-2 lg:order-1 flex flex-col">
-        <h1 className="hidden xl:block font-aeonik text-[28px] xl:text-[35px] text-black-custom mb-2">Checkout</h1>
+        <h1 className="hidden xl:block font-aeonik text-[28px] xl:text-[35px] text-black-custom mb-2">{t("title")}</h1>
         <CheckoutForm
           shippingMethods={shippingMethods}
           accountDefaults={accountDefaults}

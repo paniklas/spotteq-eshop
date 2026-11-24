@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef, memo } from "react";
+import { useTranslations } from "next-intl";
 
 const WIDGET_HOSTNAME = "widget-v5.boxnow.gr";
 
 function BoxNowLockerPicker({ partnerId, postalCode, city, onSelect }) {
+  const t = useTranslations("checkout.locker");
   const [selected, setSelected] = useState(null);
 
   // onSelect is stable (useCallback in parent) so no sync effect needed —
@@ -80,7 +82,7 @@ function BoxNowLockerPicker({ partnerId, postalCode, city, onSelect }) {
               onSelectRef.current({ lockerId: "", lockerName: "", lockerAddress: "" });
             }}
           >
-            Change locker
+            {t("change")}
           </button>
         </div>
       )}
@@ -89,7 +91,7 @@ function BoxNowLockerPicker({ partnerId, postalCode, city, onSelect }) {
       <iframe
         src={iframeSrc}
         className={`w-full rounded-md border border-gray-200 ${selected ? "hidden" : "min-h-125"}`}
-        title="BoxNow locker selector"
+        title={t("iframeTitle")}
         allow="geolocation"
       />
     </div>
