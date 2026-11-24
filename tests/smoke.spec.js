@@ -11,15 +11,17 @@ test.describe("Home page", () => {
     await expect(page).toHaveURL(/\/el/);
   });
 
-  test("has no broken images in viewport", async ({ page }) => {
+  test("has no broken images", async ({ page }) => {
     await page.goto("/el");
     // Use "load" not "networkidle" — SanityLive keeps an SSE connection open
     // permanently, so networkidle never fires on pages using it.
     await page.waitForLoadState("load");
 
+    // Lazy images below the fold are not requested yet (complete === false),
+    // so only count images that finished loading and still have no size.
     const brokenImages = await page.evaluate(() => {
       return Array.from(document.images)
-        .filter((img) => !img.naturalWidth)
+        .filter((img) => img.complete && !img.naturalWidth)
         .map((img) => img.src);
     });
 
