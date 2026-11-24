@@ -5,16 +5,18 @@ import { getTranslations } from "next-intl/server"
 // additionalInfo is shown under the main product image only from xl; below xl
 // it is shown here instead, above the in-flow image.
 const KeyFeatures = async ({ keyFeatures, additionalInfo, locale }) => {
-    if (!keyFeatures) return null
+    if (!keyFeatures && !additionalInfo?.length) return null
 
     const t = await getTranslations({ locale, namespace: "product" })
 
-    const { description, features, imageUrl } = keyFeatures
+    const { description, features, imageUrl } = keyFeatures ?? {}
 
+    // Without keyFeatures only the below-xl additionalInfo renders, so hide
+    // the otherwise empty section from xl.
     return (
         <section
             id="key-features-section"
-            className="w-full bg-gray-light py-16 xl:py-24 relative"
+            className={`w-full bg-gray-light py-16 xl:py-24 relative ${keyFeatures ? "" : "xl:hidden"}`}
         >
             {/* Product image — absolutely positioned, full section height, right half */}
             {imageUrl && (
