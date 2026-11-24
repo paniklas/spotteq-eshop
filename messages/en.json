@@ -153,6 +153,12 @@
             "title": "{percent}% off your first order",
             "desc": "Applied automatically at checkout — no code needed.",
             "cta": "Shop now"
+        },
+        "addressSaveErrors": {
+            "unauthenticated": "Please sign in again to save your address.",
+            "invalid": "Please check the address fields.",
+            "notFound": "Profile not found.",
+            "saveFailed": "Could not save your address. Please try again."
         }
     },
     "notFound": {

@@ -9,18 +9,18 @@ import { addressSchema } from "@/lib/addressSchema";
 // document. Resolved from the Clerk session userId — never a client-supplied id.
 export async function updateUserBillingInfo(formData) {
     const { userId } = await auth();
-    if (!userId) return { ok: false, error: "Not authenticated." };
+    if (!userId) return { ok: false, error: "Not authenticated.", code: "unauthenticated" };
 
     const parsed = addressSchema.safeParse(formData);
     if (!parsed.success) {
-        return { ok: false, error: "Please check the address fields." };
+        return { ok: false, error: "Please check the address fields.", code: "invalid" };
     }
 
     const userInfo = await backendClient.fetch(
         `*[_type == "userInfo" && userId == $userId][0]{ _id }`,
         { userId }
     );
-    if (!userInfo?._id) return { ok: false, error: "Profile not found." };
+    if (!userInfo?._id) return { ok: false, error: "Profile not found.", code: "notFound" };
 
     try {
         await backendClient
@@ -29,7 +29,7 @@ export async function updateUserBillingInfo(formData) {
             .commit();
     } catch (err) {
         console.error("[updateUserBillingInfo]", err);
-        return { ok: false, error: "Could not save your address. Please try again." };
+        return { ok: false, error: "Could not save your address. Please try again.", code: "saveFailed" };
     }
 
     revalidatePath("/account/billing");

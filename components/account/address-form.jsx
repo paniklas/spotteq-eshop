@@ -1,11 +1,11 @@
 "use client";
 
-import { useTransition } from "react";
+import { useMemo, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { addressSchema } from "@/lib/addressSchema";
+import { createAddressSchema } from "@/lib/addressSchema";
 
 const FloatingInput = ({ id, label, optional = false, error, className = "", register }) => (
     <div className={`relative ${className}`}>
@@ -58,6 +58,8 @@ const CountrySelect = ({ label, optionLabel, register }) => (
 
 const AddressForm = ({ defaultValues, action }) => {
     const t = useTranslations("account");
+    const tErrors = useTranslations("checkout.errors");
+    const schema = useMemo(() => createAddressSchema(tErrors), [tErrors]);
     const [isPending, startTransition] = useTransition();
 
     const {
@@ -65,7 +67,7 @@ const AddressForm = ({ defaultValues, action }) => {
         handleSubmit,
         formState: { errors },
     } = useForm({
-        resolver: zodResolver(addressSchema),
+        resolver: zodResolver(schema),
         defaultValues: {
             firstName: "", lastName: "", company: "", address: "", apartment: "",
             city: "", postalCode: "", phone: "",
@@ -79,7 +81,7 @@ const AddressForm = ({ defaultValues, action }) => {
         startTransition(async () => {
             const res = await action(data);
             if (res?.ok) toast.success(t("addressSaved"));
-            else toast.error(res?.error ?? t("addressError"));
+            else toast.error(res?.code ? t(`addressSaveErrors.${res.code}`) : t("addressError"));
         });
     };
 
