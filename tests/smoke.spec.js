@@ -675,10 +675,11 @@ test.describe("Checkout translations", () => {
 });
 
 // Desktop hero tab — the percentage comes from Studio, so only the wording is checked.
+// Studio allows decimals (e.g. 12.5), so the number may have a decimal part.
 test.describe("Hero first-order tab", () => {
   for (const { locale, tabName, title, absent } of [
-    { locale: "en", tabName: /^\d+% OFF FIRST ORDER$/, title: /\d+% Off Your First Order/, absent: "Έκπτωση" },
-    { locale: "el", tabName: /^\d+% ΕΚΠΤΩΣΗ ΣΤΗΝ ΠΡΩΤΗ ΠΑΡΑΓΓΕΛΙΑ$/, title: /\d+% Έκπτωση στην Πρώτη σας Παραγγελία/, absent: "Off Your First Order" },
+    { locale: "en", tabName: /^\d+(?:\.\d+)?% OFF FIRST ORDER$/, title: /\d+(?:\.\d+)?% Off Your First Order/, absent: "Έκπτωση" },
+    { locale: "el", tabName: /^\d+(?:\.\d+)?% ΕΚΠΤΩΣΗ ΣΤΗΝ ΠΡΩΤΗ ΠΑΡΑΓΓΕΛΙΑ$/, title: /\d+(?:\.\d+)?% Έκπτωση στην Πρώτη σας Παραγγελία/, absent: "Off Your First Order" },
   ]) {
     test(`opens the first-order modal on /${locale}`, async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
