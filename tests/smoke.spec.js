@@ -692,6 +692,16 @@ test.describe("Hero first-order tab", () => {
     });
   }
 
+  // The marquee below the video is plain text now (unless Studio gives it a link).
+  test("announcement marquee does not open the modal", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/el");
+    const bar = page.locator("#announcement-bar-section");
+    test.skip(await bar.count() === 0, "No announcement text in Studio");
+    test.skip(await bar.evaluate((el) => el.tagName === "A"), "Announcement has a link in Studio");
+    await bar.click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+  });
 });
 
 test.describe("Screen-reader label translations", () => {

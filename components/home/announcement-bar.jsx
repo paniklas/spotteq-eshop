@@ -1,16 +1,10 @@
 import { getAnnouncement } from "@/sanity/getData/getAnnouncement";
-import { getFirstOrderPromoPercentForDisplay } from "@/sanity/getData/getFirstOrderPromo";
-import AnnouncementPromoTrigger from "./announcement-promo-trigger";
 
 // Marquee for whatever the editor writes in Studio (Site Settings →
-// Announcement Bar). Without a CTA link, clicking it opens the first-order
-// modal, like the mobile HeroPromoBar. The discount itself is still applied at
-// checkout from the customer's account, not from anything clicked here.
+// Announcement Bar). With a CTA link the whole bar is the link; otherwise it is
+// plain text (the first-order modal opens from the hero tab instead).
 const AnnouncementBar = async ({ locale }) => {
-    const [announcement, firstOrderPromoPercent] = await Promise.all([
-        getAnnouncement(locale),
-        getFirstOrderPromoPercentForDisplay(),
-    ]);
+    const announcement = await getAnnouncement(locale);
     const text = announcement?.text?.trim();
 
     // Nothing to say (inactive, or no text for this locale) — render no bar at all.
@@ -52,16 +46,6 @@ const AnnouncementBar = async ({ locale }) => {
             >
                 {marquee}
             </a>
-        );
-    }
-
-    // Only while the promo is on in Studio — never open a modal for a discount
-    // checkout would refuse to give.
-    if (firstOrderPromoPercent > 0) {
-        return (
-            <AnnouncementPromoTrigger percent={firstOrderPromoPercent} className={barClass} label={text}>
-                {marquee}
-            </AnnouncementPromoTrigger>
         );
     }
 
