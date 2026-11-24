@@ -2,26 +2,9 @@
 
 import { useState } from "react";
 import { useSignUp } from "@clerk/nextjs/legacy";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-
-const COPY = {
-    el: {
-        title: (percent) => `${percent}% Έκπτωση στην Πρώτη σας Παραγγελία`,
-        subtitle: "Δημιουργήστε λογαριασμό και κερδίστε έκπτωση στην πρώτη παραγγελία",
-        google: "Συνέχεια με Google",
-        or: "ή",
-        create: "Δημιουργία λογαριασμού",
-    },
-    en: {
-        title: (percent) => `${percent}% Off Your First Order`,
-        subtitle: "Create an account and get a discount on your first order",
-        google: "Continue with Google",
-        or: "or",
-        create: "Create account",
-    },
-};
 
 function GoogleIcon() {
     return (
@@ -36,7 +19,8 @@ function GoogleIcon() {
 
 const FirstOrderAuthModal = ({ isOpen, onClose, percent = 0 }) => {
     const locale = useLocale();
-    const copy = COPY[locale] ?? COPY.en;
+    const t = useTranslations("firstOrder");
+    const tA = useTranslations("a11y");
     const { isLoaded, signUp } = useSignUp();
     const [googleLoading, setGoogleLoading] = useState(false);
 
@@ -63,22 +47,22 @@ const FirstOrderAuthModal = ({ isOpen, onClose, percent = 0 }) => {
             >
                 <button
                     onClick={onClose}
-                    aria-label="Close"
+                    aria-label={tA("close")}
                     className="absolute right-6 top-6 cursor-pointer outline-none"
                 >
                     <svg width="22" height="23" viewBox="0 0 22 23" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <line y1="-0.5" x2="30" y2="-0.5" transform="matrix(-0.707107 0.707107 0.707107 0.707107 21.9204 0.707092)" stroke="black" />
                         <line y1="-0.5" x2="30" y2="-0.5" transform="matrix(0.707107 0.707107 0.707107 -0.707107 0.707275 0.707092)" stroke="black" />
                     </svg>
-                    <span className="sr-only">Close</span>
+                    <span className="sr-only">{tA("close")}</span>
                 </button>
 
                 <DialogHeader className="mt-2">
                     <DialogTitle className="text-[26px] xl:text-[30px] font-normal text-center">
-                        {copy.title(percent)}
+                        {t("title", { percent })}
                     </DialogTitle>
                     <DialogDescription className="text-center text-[15px] xl:text-[16px] text-black-custom mt-2 px-2">
-                        {copy.subtitle}
+                        {t("subtitle")}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -90,13 +74,13 @@ const FirstOrderAuthModal = ({ isOpen, onClose, percent = 0 }) => {
                         className="w-full h-12 flex items-center justify-center gap-3 border border-black-custom/20 rounded-[15px] font-aeonik text-[15px] text-black-custom cursor-pointer hover:bg-gray-light transition-colors disabled:opacity-50"
                     >
                         <GoogleIcon />
-                        {copy.google}
+                        {t("google")}
                     </button>
 
                     {/* Divider */}
                     <div className="flex items-center gap-4">
                         <div className="flex-1 h-px bg-black-custom/15" />
-                        <span className="text-[13px] text-gray-text">{copy.or}</span>
+                        <span className="text-[13px] text-gray-text">{t("or")}</span>
                         <div className="flex-1 h-px bg-black-custom/15" />
                     </div>
 
@@ -106,7 +90,7 @@ const FirstOrderAuthModal = ({ isOpen, onClose, percent = 0 }) => {
                         onClick={onClose}
                         className="w-full h-12 flex items-center justify-center bg-black-custom text-white-custom rounded-[15px] font-aeonik text-[15px] hover:opacity-90 transition-opacity"
                     >
-                        {copy.create}
+                        {t("create")}
                     </Link>
 
                     {/* Clerk mounts its bot-protection (Smart CAPTCHA) widget here */}

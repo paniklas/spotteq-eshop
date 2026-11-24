@@ -96,6 +96,7 @@ const FilterNav = ({
 
 const ShopFilters = ({ total, sortedGroups = [], bundles = [], activeSlug, activeBundleSlug, activeBundlesPage = false }) => {
     const t = useTranslations("shopFilters")
+    const tA = useTranslations("a11y")
     const [open, setOpen] = useState(false)
 
     useEffect(() => {
@@ -160,7 +161,7 @@ const ShopFilters = ({ total, sortedGroups = [], bundles = [], activeSlug, activ
                 <div
                     role="dialog"
                     aria-modal="true"
-                    aria-label="Shop filters"
+                    aria-label={tA("shopFilters")}
                     aria-hidden={!open}
                     data-lenis-prevent
                     className={`fixed top-24 bottom-0 left-0 z-40 w-[60%] max-w-sm bg-white-custom overflow-y-auto overscroll-contain transition-transform duration-500 ease-in-out ${

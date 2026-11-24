@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { getFirstOrderPromoPercentForDisplay } from "@/sanity/getData/getFirstOrderPromo";
 import { getHeroImages } from "@/sanity/getData/getHeroImages";
 import HeroPromoBar from "./hero-promo-bar";
+import HeroFirstOrderTab from "./hero-first-order-tab";
 import HeroProductSlider from "./hero-product-slider";
 import HeroVideo from "./hero-video";
 
@@ -80,6 +81,12 @@ const HeroSection = async ({ locale }) => {
                     </Link>
                 </div>
             </div>
+
+            {/* First-order tab — desktop only (mobile has the promo bar), on the viewport's right edge */}
+            <HeroFirstOrderTab
+                percent={firstOrderPromoPercent}
+                className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-40"
+            />
 
             {/* ---------------- Desktop layout (md and up) — unchanged ---------------- */}
             {/* Constrained content wrapper — video bleeds full-width, this stays at 1920px */}

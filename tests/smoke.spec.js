@@ -673,3 +673,50 @@ test.describe("Checkout translations", () => {
     expect(await res.json()).toMatchObject({ code: "invalidRequest" });
   });
 });
+
+// Desktop hero tab — the percentage comes from Studio, so only the wording is checked.
+// Studio allows decimals (e.g. 12.5), so the number may have a decimal part.
+test.describe("Hero first-order tab", () => {
+  for (const { locale, tabName, title, absent } of [
+    { locale: "en", tabName: /^\d+(?:\.\d+)?% OFF FIRST ORDER$/, title: /\d+(?:\.\d+)?% Off Your First Order/, absent: "Έκπτωση" },
+    { locale: "el", tabName: /^\d+(?:\.\d+)?% ΕΚΠΤΩΣΗ ΣΤΗΝ ΠΡΩΤΗ ΠΑΡΑΓΓΕΛΙΑ$/, title: /\d+(?:\.\d+)?% Έκπτωση στην Πρώτη σας Παραγγελία/, absent: "Off Your First Order" },
+  ]) {
+    test(`opens the first-order modal on /${locale}`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(`/${locale}`);
+      const tab = page.locator("#hero-section").getByRole("button", { name: tabName });
+      await expect(tab).toBeVisible();
+      await tab.click();
+      const dialog = page.getByRole("dialog");
+      await expect(dialog.getByRole("heading", { name: title })).toBeVisible();
+      await expect(dialog).not.toContainText(absent);
+    });
+  }
+
+  // The marquee below the video is plain text now (unless Studio gives it a link).
+  test("announcement marquee does not open the modal", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/el");
+    const bar = page.locator("#announcement-bar-section");
+    test.skip(await bar.count() === 0, "No announcement text in Studio");
+    test.skip(await bar.evaluate((el) => el.tagName === "A"), "Announcement has a link in Studio");
+    await bar.click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+  });
+});
+
+test.describe("Screen-reader label translations", () => {
+  for (const { locale, labels, absent } of [
+    { locale: "en", labels: ["SPOTTEQ home", "Sign in", "Search", "Cart", "Open menu"], absent: "Άνοιγμα μενού" },
+    { locale: "el", labels: ["Αρχική σελίδα SPOTTEQ", "Σύνδεση", "Αναζήτηση", "Καλάθι", "Άνοιγμα μενού"], absent: "Open menu" },
+  ]) {
+    test(`navbar labels on /${locale}`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(`/${locale}`);
+      for (const label of labels) {
+        await expect(page.locator(`[aria-label="${label}"]`).first()).toBeAttached();
+      }
+      await expect(page.locator(`[aria-label="${absent}"]`)).toHaveCount(0);
+    });
+  }
+});

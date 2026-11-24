@@ -3,7 +3,7 @@
 import { Link } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import MenuOverlay from "./navbar-menu-overlay";
@@ -25,6 +25,7 @@ const AccountIcon = () => (
 
 
 const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
+    const tA = useTranslations("a11y");
     const locale = useLocale();
     const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -84,7 +85,7 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
                 <div className={`max-w-480 mx-auto h-full flex items-center justify-between page-x ${isMenuOpen ? "pt-0 md:pb-0" : (isHome ? "pt-10 xl:pb-0" : "")}`}>
 
                     {/* Logo — crossfade between black and white versions */}
-                    <Link href="/" className="relative flex items-center pointer-events-auto" aria-label="SPOTTEQ home">
+                    <Link href="/" className="relative flex items-center pointer-events-auto" aria-label={tA("home")}>
                         <div className="relative w-35 h-7.75 md:w-50 md:h-11">
                             <motion.div
                                 animate={{ opacity: isLightIcons ? 0 : 1 }}
@@ -134,7 +135,7 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
                             {/* User account — first name + green check when signed in, sign-in otherwise */}
                             <Link
                                 href={isSignedIn ? "/account" : "/sign-in"}
-                                aria-label={isSignedIn ? "My account" : "Sign in"}
+                                aria-label={isSignedIn ? tA("myAccount") : tA("signIn")}
                                 className={`${isSignedIn ? "flex" : "hidden md:flex"} items-center gap-2 cursor-pointer`}
                             >
                                 <span className="relative flex items-center">
@@ -153,7 +154,7 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
                             </Link>
 
                             {/* Search */}
-                            <button aria-label="Search" className="hidden md:flex items-center cursor-pointer">
+                            <button aria-label={tA("search")} className="hidden md:flex items-center cursor-pointer">
                                 <svg width="25" height="25" viewBox="0 0 25 25" fill="none">
                                     <circle
                                         cx="12.0208"
@@ -169,7 +170,7 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
                             {/* Cart — hidden on the checkout flow */}
                             {!isCheckout && (
                                 <button
-                                    aria-label="Cart"
+                                    aria-label={tA("cart")}
                                     onClick={openCart}
                                     className="relative flex items-center cursor-pointer"
                                 >
@@ -217,7 +218,7 @@ const Navbar = ({ categoryGroups = [], navBundles = [] }) => {
                             line transforms keep tweening cleanly through open/close. */}
                         <div className="scale-75 md:scale-100 origin-right">
                         <button
-                            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+                            aria-label={isMenuOpen ? tA("closeMenu") : tA("openMenu")}
                             aria-expanded={isMenuOpen}
                             onClick={() => { setIsMenuOpen((prev) => !prev); setBurgerHovered(false); }}
                             onMouseEnter={() => !isMenuOpen && setBurgerHovered(true)}

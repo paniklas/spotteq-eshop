@@ -3,8 +3,10 @@
 import { useRef } from "react";
 import { useScroll, useTransform, motion } from "framer-motion";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 const SpotteqImage = () => {
+    const t = useTranslations("imageAlts");
     const containerRef = useRef(null);
     const { scrollYProgress } = useScroll({
         target: containerRef,
@@ -22,7 +24,7 @@ const SpotteqImage = () => {
             <motion.div style={{ y }} className="absolute inset-x-0 -inset-y-[15%]">
                 <Image
                     src="/images/packs.webp"
-                    alt="SPOTTEQ athlete"
+                    alt={t("packs")}
                     fill
                     unoptimized={true}
                     quality={100}

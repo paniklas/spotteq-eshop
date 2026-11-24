@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
+import { useTranslations } from "next-intl"
 import { motion } from "framer-motion"
 import ProductCard from "./product-card"
 
@@ -9,6 +10,7 @@ const SWIPE_DISTANCE = 50 // px of pointer travel that counts as a swipe
 const SWIPE_VELOCITY = 500 // px/s — a short, fast flick also counts
 
 const Carousel = ({ products, visible, pagination = "bars" }) => {
+    const tA = useTranslations("a11y")
     const [index, setIndex] = useState(0)
     const maxIndex = Math.max(0, products.length - visible)
     const viewportRef = useRef(null)
@@ -89,7 +91,7 @@ const Carousel = ({ products, visible, pagination = "bars" }) => {
                             <button
                                 key={i}
                                 onClick={() => setIndex(i)}
-                                aria-label={`Go to slide ${i + 1}`}
+                                aria-label={tA("goToSlide", { n: i + 1 })}
                                 className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${i === index ? "w-6 bg-black-custom" : "w-2 bg-black-custom/25"}`}
                             />
                         ))}
@@ -99,7 +101,7 @@ const Carousel = ({ products, visible, pagination = "bars" }) => {
                         <button
                             onClick={prev}
                             disabled={index === 0}
-                            aria-label="Previous"
+                            aria-label={tA("previous")}
                             className="w-10 h-10 flex items-center justify-center shrink-0 rotate-180 rounded-full hover:bg-gray-mint transition-colors duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
                         >
                             <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -109,7 +111,7 @@ const Carousel = ({ products, visible, pagination = "bars" }) => {
                         <button
                             onClick={next}
                             disabled={index === maxIndex}
-                            aria-label="Next"
+                            aria-label={tA("next")}
                             className="w-10 h-10 flex items-center justify-center shrink-0 rounded-full hover:bg-gray-mint transition-colors duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
                         >
                             <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">

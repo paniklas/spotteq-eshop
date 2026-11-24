@@ -45,6 +45,8 @@ const AccordionItem = ({ label, children }) => {
 
 const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = [] }) => {
     const t = useTranslations("product")
+    const tA = useTranslations("a11y")
+    const tAlt = useTranslations("imageAlts")
     const router = useRouter()
     const [quantity, setQuantity] = useState(1)
     const [flavourOpen, setFlavourOpen] = useState(false)
@@ -153,7 +155,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                             {displayImages.length > 1 && (
                                 <button
                                     onClick={prevImage}
-                                    aria-label="Previous image"
+                                    aria-label={tA("previousImage")}
                                     className="absolute left-0 z-10 p-2 text-black-custom cursor-pointer hover:opacity-60 transition-opacity duration-200"
                                 >
                                     <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -181,7 +183,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                             {displayImages.length > 1 && (
                                 <button
                                     onClick={nextImage}
-                                    aria-label="Next image"
+                                    aria-label={tA("nextImage")}
                                     className="absolute right-0 z-10 p-2 text-black-custom cursor-pointer hover:opacity-60 transition-opacity duration-200"
                                 >
                                     <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -195,7 +197,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                         <div className="hidden md:flex items-center gap-4">
                             <Image
                                 src="/images/certification-badges.png"
-                                alt="GMP Certified"
+                                alt={tAlt("gmp")}
                                 width={56}
                                 height={56}
                                 unoptimized={true}
@@ -231,7 +233,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                                 <button
                                     type="button"
                                     onClick={handleToggleFavourite}
-                                    aria-label={favourited ? "Remove from wishlist" : "Add to wishlist"}
+                                    aria-label={favourited ? tA("removeFromWishlist") : tA("addToWishlist")}
                                     aria-pressed={favourited}
                                     className="md:hidden w-9 h-9 shrink-0 flex items-center justify-center rounded-full border border-gray-mint hover:border-black-custom transition-colors duration-300 cursor-pointer"
                                 >
@@ -273,7 +275,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                         <div className="flex md:hidden items-center gap-4">
                             <Image
                                 src="/images/certification-badges.png"
-                                alt="GMP Certified"
+                                alt={tAlt("gmp")}
                                 width={56}
                                 height={56}
                                 unoptimized={true}
@@ -340,7 +342,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                             <div className="flex items-center border border-black-custom rounded-full px-2">
                                 <button
                                     onClick={decrement}
-                                    aria-label="Decrease quantity"
+                                    aria-label={tA("decreaseQuantity")}
                                     className="w-9 h-9 flex items-center justify-center text-black-custom hover:opacity-60 transition-opacity duration-200 cursor-pointer"
                                 >
                                     <Minus size={14} strokeWidth={1.5} />
@@ -351,7 +353,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                                 <button
                                     onClick={increment}
                                     disabled={incrementDisabled}
-                                    aria-label="Increase quantity"
+                                    aria-label={tA("increaseQuantity")}
                                     className="w-9 h-9 flex items-center justify-center text-black-custom hover:opacity-60 transition-opacity duration-200 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                                 >
                                     <Plus size={14} strokeWidth={1.5} />
@@ -370,7 +372,7 @@ const ProductInteractive = ({ product, relatedProducts = [], bundleCallouts = []
                             <button
                                 type="button"
                                 onClick={handleToggleFavourite}
-                                aria-label={favourited ? "Remove from wishlist" : "Add to wishlist"}
+                                aria-label={favourited ? tA("removeFromWishlist") : tA("addToWishlist")}
                                 aria-pressed={favourited}
                                 className="hidden md:flex w-9 h-9 items-center justify-center rounded-full border border-gray-mint hover:border-black-custom transition-colors duration-300 cursor-pointer"
                             >

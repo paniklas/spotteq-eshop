@@ -7,7 +7,10 @@ const ATHLETE_IMG = "/images/certified-quality.webp";
 // Explicit locale: on the force-static home page next-intl has no request to
 // read it from (see stories-that-move). Every page using this section passes it.
 const QualitySection = async ({ locale }) => {
-    const t = await getTranslations({ locale, namespace: "home.quality" });
+    const [t, tAlt] = await Promise.all([
+        getTranslations({ locale, namespace: "home.quality" }),
+        getTranslations({ locale, namespace: "imageAlts" }),
+    ]);
 
     return (
         <section
@@ -28,11 +31,11 @@ const QualitySection = async ({ locale }) => {
                     {/* Certification logos */}
                     <div className="flex items-center gap-4 xl:gap-6 mt-4 xl:mt-20">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/images/gmp-logo.png" alt="GMP Certified" className="h-14 xl:h-20 w-auto" />
+                        <img src="/images/gmp-logo.png" alt={tAlt("gmp")} className="h-14 xl:h-20 w-auto" />
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/images/haccp-logo.png" alt="HACCP Certified" className="h-13.5 xl:h-19.5 w-auto" />
+                        <img src="/images/haccp-logo.png" alt={tAlt("haccp")} className="h-13.5 xl:h-19.5 w-auto" />
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/images/isoqar-logo.png" alt="ISOQAR Certified" className="h-13.75 xl:h-19.75 w-auto object-contain" />
+                        <img src="/images/isoqar-logo.png" alt={tAlt("isoqar")} className="h-13.75 xl:h-19.75 w-auto object-contain" />
                     </div>
                 </div>
 
@@ -40,7 +43,7 @@ const QualitySection = async ({ locale }) => {
                 <div className="order-1 xl:order-2 relative h-[340px] xl:h-[606px] -mx-4 xl:mx-0">
                     <Image
                         src={ATHLETE_IMG}
-                        alt="SPOTTEQ athlete"
+                        alt={tAlt("athlete")}
                         fill
                         sizes="(max-width: 1280px) 100vw, 50vw"
                         className="object-cover"

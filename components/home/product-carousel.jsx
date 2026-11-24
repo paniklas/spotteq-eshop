@@ -1,10 +1,12 @@
 "use client"
 
 import { useRef, useState } from "react"
+import { useTranslations } from "next-intl"
 import { motion } from "framer-motion"
 import ProductCard from "./product-card"
 
 const ProductCarousel = ({ products = [] }) => {
+    const tA = useTranslations("a11y")
     const [index, setIndex] = useState(0)
     const count = products.length
     // Set once a drag actually starts, so releasing a swipe over a card link/button doesn't click it.
@@ -52,7 +54,7 @@ const ProductCarousel = ({ products = [] }) => {
                         <button
                             key={i}
                             onClick={() => goTo(i)}
-                            aria-label={`Go to product ${i + 1}`}
+                            aria-label={tA("goToProduct", { n: i + 1 })}
                             className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${i === index ? "w-6 bg-black-custom" : "w-2 bg-black-custom/25"}`}
                         />
                     ))}
