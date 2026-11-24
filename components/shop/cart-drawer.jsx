@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useRef, useEffect } from "react"
-import { motion, MotionConfig, useReducedMotion } from "framer-motion"
+import { motion, MotionConfig, AnimatePresence, useReducedMotion } from "framer-motion"
 import Image from "next/image"
 import { Trash2, Check, X, ArrowRight } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
@@ -12,15 +12,23 @@ import { validateCoupon } from "@/app/actions/coupon"
 import { useTranslations } from "next-intl"
 
 
-// Add-to-bag animation. The drawer slides in over 500ms when an add opens it, so
-// the row starts moving once the drawer is mostly in. A new item slides in from
-// the right; an item already in the bag stays put and its quantity pops (see
-// the qty counter). Both get a highlight that fades out. The parent keys this
-// row by the add's nonce, so adding the same item again plays it again.
+// The drawer slides in over 500ms (its transition-transform duration-500) when an
+// add opens it; the add animation waits for it so it is not missed.
+const DRAWER_OPEN_S = 0.5
+
+// Cart row animations.
+// Add: a new item slides in from the right once the drawer is open; an item
+// already in the bag stays put and its quantity pops (see the qty counter).
+// Both get a highlight that fades out. The row keeps a stable key (cartId) so
+// AnimatePresence can animate its removal; the highlight and the qty pop are
+// keyed by the add's nonce instead, so adding the same item again replays them.
+// Remove: the row slides out to the right, then its height collapses so the
+// rows below move up.
 const AddedRow = ({ added, children }) => {
     const ref = useRef(null)
-    // MotionConfig's reducedMotion="user" only drops transforms; the row's fade-in
-    // would still play, so with reduced motion on the row starts fully shown.
+    // MotionConfig's reducedMotion="user" only drops transforms; the row's
+    // off-screen start would still hide it, so with reduced motion on the row
+    // starts in place.
     const reduceMotion = useReducedMotion()
     // Bring the row into view in the item list only. scrollIntoView would also
     // scroll the page behind the drawer, which is still sliding in off-screen.
@@ -39,17 +47,28 @@ const AddedRow = ({ added, children }) => {
             ref={ref}
             data-added={added ? (added.isNew ? "new" : "more") : undefined}
             className="relative isolate"
-            initial={added?.isNew && !reduceMotion ? { opacity: 0, x: 48 } : false}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            initial={added?.isNew && !reduceMotion ? { x: "100%" } : false}
+            animate={{ x: 0 }}
+            transition={{ duration: 0.6, delay: DRAWER_OPEN_S, ease: [0.22, 1, 0.36, 1] }}
+            exit={{
+                x: "100%",
+                opacity: 0,
+                height: 0,
+                transition: {
+                    x: { duration: 0.35, ease: [0.55, 0, 1, 0.45] },
+                    opacity: { duration: 0.35 },
+                    height: { duration: 0.25, delay: 0.3 },
+                },
+            }}
         >
             {added && (
                 <motion.div
+                    key={added.nonce}
                     aria-hidden
                     className="absolute inset-0 -z-10 -mx-2 xl:-mx-4 rounded-2xl bg-teal-accent/15 pointer-events-none"
                     initial={{ opacity: 1 }}
                     animate={{ opacity: 0 }}
-                    transition={{ duration: 1.2, delay: 0.8, ease: "easeOut" }}
+                    transition={{ duration: 1.2, delay: DRAWER_OPEN_S + 0.9, ease: "easeOut" }}
                 />
             )}
             {children}
@@ -222,10 +241,11 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                     {cartItems.length === 0 && (
                         <p className="font-aeonik text-[14px] xl:text-[22px] text-gray-text text-center mt-12">{t("empty")}</p>
                     )}
+                    <AnimatePresence initial={false}>
                     {cartItems.map((item, i) => {
                         const added = lastAdded?.cartId === item.cartId ? lastAdded : null
                         return (
-                        <AddedRow key={added ? `${item.cartId}-${added.nonce}` : item.cartId} added={added}>
+                        <AddedRow key={item.cartId} added={added}>
                             {i > 0 && <hr className="border-gray-mint" />}
                             <div className="flex gap-4 py-8 pb-4">
                                 {/* Image + name — clickable if slug is available */}
@@ -276,10 +296,11 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                                                 −
                                             </button>
                                             <motion.span
+                                                key={added?.nonce ?? "qty"}
                                                 className="w-6 text-center font-aeonik text-[14px] text-black-custom"
                                                 initial={added && !added.isNew ? { scale: 1.7 } : false}
                                                 animate={{ scale: 1 }}
-                                                transition={{ type: "spring", stiffness: 400, damping: 12, delay: 0.4 }}
+                                                transition={{ type: "spring", stiffness: 400, damping: 12, delay: DRAWER_OPEN_S }}
                                             >
                                                 {item.qty}
                                             </motion.span>
@@ -312,6 +333,7 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                         </AddedRow>
                         )
                     })}
+                    </AnimatePresence>
                 </div>
                 </MotionConfig>
 
@@ -440,14 +462,23 @@ const CartDrawer = ({ allBundles = [], freeShippingThreshold = 0 }) => {
                         </div>
                     </div>
 
-                    {/* Checkout */}
-                    <button
-                        onClick={handleCheckoutClick}
-                        disabled={!userLoaded || cartItems.length === 0}
-                        className="w-full h-12 bg-black-custom font-aeonik text-[14px] xl:text-[16px] uppercase text-white-custom rounded-[18px] hover:bg-gray-text transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
-                    >
-                        {t("checkout")}
-                    </button>
+                    {/* Checkout + continue shopping. Checkout comes first in the DOM so it
+                        sits on top on phones; from md, row-reverse puts it on the right. */}
+                    <div className="flex flex-col md:flex-row-reverse gap-3">
+                        <button
+                            onClick={handleCheckoutClick}
+                            disabled={!userLoaded || cartItems.length === 0}
+                            className="w-full md:flex-1 h-12 bg-black-custom font-aeonik text-[14px] xl:text-[16px] uppercase text-white-custom rounded-[18px] hover:bg-gray-text transition-colors duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+                        >
+                            {t("checkout")}
+                        </button>
+                        <button
+                            onClick={handleDrawerClose}
+                            className="w-full md:flex-1 h-12 border border-black-custom font-aeonik text-[14px] xl:text-[16px] uppercase text-black-custom rounded-[18px] hover:bg-gray-soft transition-colors duration-300 cursor-pointer flex items-center justify-center"
+                        >
+                            {t("continueShopping")}
+                        </button>
+                    </div>
                     </div>
                 </div>
             </div>
