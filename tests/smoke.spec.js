@@ -90,7 +90,7 @@ test.describe("404 handling", () => {
 });
 
 test.describe("Cookie banner", () => {
-  const CONSENT_KEY = "spotteq_cookie_consent";
+  const CONSENT_KEY = "spotteq_cookie_consent_v2";
 
   test("shows translated copy on a first visit", async ({ page }) => {
     await page.goto("/en");
@@ -121,6 +121,49 @@ test.describe("Cookie banner", () => {
     await expect(page.getByTestId("cookie-banner")).toBeHidden();
     expect(await page.evaluate((key) => localStorage.getItem(key), CONSENT_KEY)).toBeNull();
     expect(await page.evaluate((key) => sessionStorage.getItem(key), CONSENT_KEY)).toBe("dismissed");
+  });
+
+  // PostHog capture requests (events /e/, /i/, replay /s/) through the
+  // /sq-relay proxy. Answered locally so test runs never reach PostHog; the
+  // SDK files (static/, array/) load normally and feature flags are ignored.
+  // PostHog drops events from browsers that look automated (user agent, brand
+  // list, navigator.webdriver), which would make the Decline test pass for the
+  // wrong reason, so those are made to look like a normal visitor.
+  const recordCaptures = async (page) => {
+    await page.addInitScript(() => {
+      const ua = navigator.userAgent.replace(/Headless/g, "");
+      Object.defineProperty(Navigator.prototype, "userAgent", { get: () => ua });
+      Object.defineProperty(Navigator.prototype, "userAgentData", { get: () => undefined });
+      Object.defineProperty(Navigator.prototype, "webdriver", { get: () => false });
+    });
+    const captures = [];
+    await page.route("**/sq-relay/**", (route) => {
+      const { pathname } = new URL(route.request().url());
+      if (/^\/sq-relay\/(static|array)\//.test(pathname)) return route.continue();
+      if (/^\/sq-relay\/(e|i|s)\//.test(pathname)) captures.push(pathname);
+      return route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
+    });
+    return captures;
+  };
+
+  test("Decline sends no analytics events", async ({ page }) => {
+    const captures = await recordCaptures(page);
+    await page.goto("/en");
+    await page.getByTestId("cookie-banner").getByRole("button", { name: "Decline" }).click();
+    await page.goto("/en/contact");
+    await page.waitForLoadState("load");
+    await page.waitForTimeout(5000);
+    expect(captures).toEqual([]);
+  });
+
+  test("Accept starts sending analytics events", async ({ page }) => {
+    const captures = await recordCaptures(page);
+    await page.goto("/en");
+    await page.waitForTimeout(3000);
+    expect(captures).toEqual([]);
+    await page.getByTestId("cookie-banner").getByRole("button", { name: "Accept All" }).click();
+    await page.goto("/en/contact");
+    await expect.poll(() => captures.length, { timeout: 15000 }).toBeGreaterThan(0);
   });
 });
 
