@@ -1,10 +1,6 @@
-import "../globals.css";
 import { NextIntlClientProvider } from 'next-intl';
 import { notFound } from 'next/navigation';
 import Script from 'next/script';
-import { ClerkProvider } from '@clerk/nextjs';
-import { elGR, enUS } from '@clerk/localizations';
-import { aeonikProRegular, ttNormsProLight } from '@/fonts/fonts';
 import { Toaster } from "@/components/ui/sonner";
 // components
 import LocaleLanguageSetter from "@/components/common/locale-lng-setter";
@@ -54,19 +50,8 @@ export default async function LocaleLayout({ children, params }) {
         getFreeShippingThreshold(),
     ]);
 
-    // <html> lives here, not in app/layout.jsx, so lang comes from the [locale]
-    // param — correct on pre-rendered pages too (the force-static home).
-    return (
-        <ClerkProvider
-            localization={locale === 'el' ? elGR : enUS}
-            signInUrl={`/${locale}/sign-in`}
-            signUpUrl={`/${locale}/sign-up`}
-            afterSignOutUrl={`/${locale}`}
-            signInFallbackRedirectUrl={`/${locale}/account`}
-            signUpFallbackRedirectUrl={`/${locale}/account`}
-        >
-        <html lang={locale} data-scroll-behavior="smooth">
-        <body className={`${aeonikProRegular.variable} ${ttNormsProLight.variable} antialiased bg-black-custom`}>
+  return (
+        <>
             {(await draftMode()).isEnabled && (
                 <>
                     <DisableDraftMode />
@@ -99,8 +84,6 @@ export default async function LocaleLayout({ children, params }) {
                 data-account="f8N3POMRAT"
                 strategy="lazyOnload"
             />
-        </body>
-        </html>
-        </ClerkProvider>
+        </>
     );
 }

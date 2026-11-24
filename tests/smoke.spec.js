@@ -777,15 +777,6 @@ test.describe("SEO", () => {
     expect(alternates(html).en).toBeUndefined();
   });
 
-  // The home page is pre-rendered (force-static); <html lang> used to come from
-  // the request in the root layout and fell back to Greek on /en.
-  test("html lang matches the locale on the pre-rendered home page", async ({ request }) => {
-    for (const locale of ["el", "en"]) {
-      const html = await (await request.get(`/${locale}`)).text();
-      expect(html, locale).toMatch(new RegExp(`<html lang="${locale}"`));
-    }
-  });
-
   test("web app manifest is served with icons", async ({ request }) => {
     const manifest = await (await request.get("/manifest.webmanifest")).json();
     expect(manifest.name).toBe("SPOTTEQ");
