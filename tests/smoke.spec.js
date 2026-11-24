@@ -123,9 +123,10 @@ test.describe("Cookie banner", () => {
     expect(await page.evaluate((key) => sessionStorage.getItem(key), CONSENT_KEY)).toBe("dismissed");
   });
 
-  // PostHog capture requests (events /e/, /i/, replay /s/) through the
+  // PostHog requests that carry visitor data (events /e/, /i/, replay /s/,
+  // feature flags /flags/ or /decide/, which are disabled) through the
   // /sq-relay proxy. Answered locally so test runs never reach PostHog; the
-  // SDK files (static/, array/) load normally and feature flags are ignored.
+  // SDK files (static/, array/) load normally.
   // PostHog drops events from browsers that look automated (user agent, brand
   // list, navigator.webdriver), which would make the Decline test pass for the
   // wrong reason, so those are made to look like a normal visitor.
@@ -140,7 +141,7 @@ test.describe("Cookie banner", () => {
     await page.route("**/sq-relay/**", (route) => {
       const { pathname } = new URL(route.request().url());
       if (/^\/sq-relay\/(static|array)\//.test(pathname)) return route.continue();
-      if (/^\/sq-relay\/(e|i|s)\//.test(pathname)) captures.push(pathname);
+      if (/^\/sq-relay\/(e|i|s|flags|decide)\//.test(pathname)) captures.push(pathname);
       return route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
     });
     return captures;

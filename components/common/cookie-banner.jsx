@@ -6,13 +6,13 @@ import { Cookie, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import posthog from "posthog-js";
 import { Link } from "@/i18n/navigation";
+import { CONSENT_KEY } from "@/lib/cookie-consent";
 
 // The stored choice gates PostHog analytics: Accept opts in, Decline opts out,
 // and closing (X) leaves the visitor opted out (the default set in
 // instrumentation-client.js). Essential storage (cart, auth, payments) and
 // UserWay load regardless. Accept/decline persist in localStorage; closing
 // hides it for the session.
-const CONSENT_KEY = "spotteq_cookie_consent_v2";
 
 // useSyncExternalStore rather than a useEffect-set flag (see use-cart-hydrated):
 // the server snapshot keeps the banner out of the hydration render, and it

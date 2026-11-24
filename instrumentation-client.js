@@ -1,5 +1,6 @@
 import { initBotId } from 'botid/client/core';
 import posthog from 'posthog-js';
+import { hasAcceptedCookies } from '@/lib/cookie-consent';
 
 // Vercel BotID: attaches the bot-check headers to fetches that match these
 // paths. Every path listed here must call checkBotId() on the server, and every
@@ -21,15 +22,16 @@ if (posthogToken) {
     ui_host: 'https://eu.posthog.com',
     defaults: '2026-08-30',
     opt_out_capturing_by_default: true,
+    // Feature flags are not used. Left on, the SDK calls /flags (with the
+    // visitor's id) on every load and identify(), even before consent. Not
+    // advanced_disable_flags: that also stops remote config, which turns off
+    // session replay.
+    advanced_disable_feature_flags: true,
   });
 
   // Keeps PostHog in step with the banner if its own opt-in record is missing
-  // (e.g. cleared). The key is _v2 so choices made under the old "essential
-  // cookies only" wording are asked again. Storage can throw (private mode,
-  // blocked site data); the visitor then stays opted out.
-  try {
-    if (localStorage.getItem('spotteq_cookie_consent_v2') === 'accepted' && posthog.has_opted_out_capturing()) {
-      posthog.opt_in_capturing();
-    }
-  } catch {}
+  // (e.g. cleared). No $opt_in event: the visitor accepted earlier.
+  if (hasAcceptedCookies() && posthog.has_opted_out_capturing()) {
+    posthog.opt_in_capturing({ captureEventName: false });
+  }
 }
