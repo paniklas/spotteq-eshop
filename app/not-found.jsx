@@ -1,14 +1,19 @@
 import "@/app/globals.css";
 import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
+import { aeonikProRegular, ttNormsProLight } from '@/fonts/fonts';
 
 // Not force-static: the locale comes from the request (set by the next-intl
-// middleware, as in the root layout), so the page renders per language.
+// middleware), so the page renders per language.
+// Renders its own <html>: it sits under the pass-through root layout, outside
+// app/[locale]/layout.jsx, and replaces the whole document when shown.
 export default async function NotFound() {
   const locale = await getLocale();
   const t = await getTranslations('notFound');
 
   return (
+    <html lang={locale}>
+    <body className={`${aeonikProRegular.variable} ${ttNormsProLight.variable} antialiased bg-black-custom`}>
     <main className="relative min-h-screen bg-white-custom overflow-hidden flex flex-col">
 
       {/* Orange glow — centered background accent */}
@@ -113,5 +118,7 @@ export default async function NotFound() {
       </div>
 
     </main>
+    </body>
+    </html>
   );
 }
