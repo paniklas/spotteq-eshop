@@ -11,6 +11,7 @@ import { validateCouponWithEmail } from "@/app/actions/coupon";
 import OrderSummarySkeleton from "./order-summary-skeleton";
 import { formatPrice } from "@/utils/formatPrice";
 import { effectiveShippingCost } from "@/utils/shippingCost";
+import { PAYMENT_METHODS } from "@/lib/payment-methods";
 
 // Payment icons + footer links — shared between the desktop summary card and
 // the standalone mobile block (rendered at the bottom of the checkout page).
@@ -26,16 +27,19 @@ export const PaymentAndLinks = () => {
     return (
     <>
         {/* Payment icons */}
-        <div className="flex justify-end xl:mt-28">
-            <Image
-                src="/images/payment-icons.png"
-                alt={t("paymentMethodsAlt")}
-                width={240}
-                height={32}
-                unoptimized
-                loading="eager"
-                className="h-5 w-auto object-contain"
-            />
+        <div role="img" aria-label={t("paymentMethodsAlt")} className="flex justify-end gap-1.5 xl:mt-28">
+            {PAYMENT_METHODS.map((p) => (
+                <Image
+                    key={p.label}
+                    src={p.icon}
+                    alt=""
+                    width={p.width}
+                    height={p.height}
+                    unoptimized
+                    loading="eager"
+                    className="h-5 w-auto"
+                />
+            ))}
         </div>
 
         {/* Footer links */}

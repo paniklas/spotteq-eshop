@@ -12,7 +12,8 @@ import { CONSENT_KEY } from "@/lib/cookie-consent";
 // and closing (X) leaves the visitor opted out (the default set in
 // instrumentation-client.js). Essential storage (cart, auth, payments) and
 // UserWay load regardless. Accept/decline persist in localStorage; closing
-// hides it for the session.
+// hides it for the session. The Cookies Policy page reopens it through
+// reopenCookieBanner(); the stored choice stays until Accept or Decline.
 
 // useSyncExternalStore rather than a useEffect-set flag (see use-cart-hydrated):
 // the server snapshot keeps the banner out of the hydration render, and it
@@ -26,13 +27,23 @@ const subscribe = (onStoreChange) => {
         window.removeEventListener("storage", onStoreChange);
     };
 };
-const getSnapshot = () => !localStorage.getItem(CONSENT_KEY) && !sessionStorage.getItem(CONSENT_KEY);
+// Set by reopenCookieBanner(); in memory only, so a reload hides it again.
+let reopened = false;
+const notify = () => listeners.forEach((listener) => listener());
+const getSnapshot = () =>
+    reopened || (!localStorage.getItem(CONSENT_KEY) && !sessionStorage.getItem(CONSENT_KEY));
 const getServerSnapshot = () => false;
 
 const saveChoice = (storage, value) => {
     storage.setItem(CONSENT_KEY, value);
-    listeners.forEach((listener) => listener());
+    reopened = false;
+    notify();
 };
+
+export function reopenCookieBanner() {
+    reopened = true;
+    notify();
+}
 
 export default function CookieBanner() {
     const t = useTranslations("cookieBanner");
