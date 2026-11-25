@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import FooterNewsletter from "./footer-newsletter";
 import ScrollToTopButton from "./scroll-to-top-button";
+import { PAYMENT_METHODS } from "@/lib/payment-methods";
 
 
 // Labels are footer.headings.* / footer.links.* messages. `href` is omitted
@@ -43,15 +44,6 @@ const socialLinks = [
     { icon: "/icons/social-tiktok.svg", label: "TikTok", href: "https://www.tiktok.com/@spotteqcom" },
     { icon: "/icons/social-facebook.svg", label: "Facebook", href: "https://www.facebook.com/spotteqcom/" },
     { icon: "/icons/social-youtube.svg", label: "YouTube", href: "https://www.youtube.com/@spotteqcom" },
-];
-
-// Sizes are the SVGs' viewBoxes (the designer's export size).
-const paymentMethods = [
-    { icon: "/images/pay-stripe.svg", label: "Stripe", width: 102, height: 24 },
-    { icon: "/images/pay-gpay.svg", label: "Google Pay", width: 53, height: 24 },
-    { icon: "/images/pay-apple.svg", label: "Apple Pay", width: 53, height: 24 },
-    { icon: "/images/pay-visa.svg", label: "Visa", width: 53, height: 24 },
-    { icon: "/images/pay-mc.svg", label: "Mastercard", width: 42, height: 24 },
 ];
 
 // `locale` is passed explicitly: on the force-static home page the server
@@ -129,7 +121,7 @@ const Footer = async ({ locale }) => {
 
                 {/* Payment methods */}
                 <div className="flex items-center gap-2">
-                    {paymentMethods.map((p) => (
+                    {PAYMENT_METHODS.map((p) => (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                             key={p.label}
