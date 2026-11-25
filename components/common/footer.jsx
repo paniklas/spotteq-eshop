@@ -45,12 +45,13 @@ const socialLinks = [
     { icon: "/icons/social-youtube.svg", label: "YouTube", href: "https://www.youtube.com/@spotteqcom" },
 ];
 
+// Sizes are the SVGs' viewBoxes (the designer's export size).
 const paymentMethods = [
-    { icon: "/images/pay-stripe.png", label: "Stripe", width: 110, height: 22 },
-    { icon: "/images/pay-gpay.png", label: "Google Pay", width: 55, height: 50 },
-    { icon: "/images/pay-apple.png", label: "Apple Pay", width: 55, height: 65 },
-    { icon: "/images/pay-visa.png", label: "Visa", width: 58, height: 50 },
-    { icon: "/images/pay-mc.png", label: "Mastercard", width: 50, height: 44 },
+    { icon: "/images/pay-stripe.svg", label: "Stripe", width: 102, height: 24 },
+    { icon: "/images/pay-gpay.svg", label: "Google Pay", width: 53, height: 24 },
+    { icon: "/images/pay-apple.svg", label: "Apple Pay", width: 53, height: 24 },
+    { icon: "/images/pay-visa.svg", label: "Visa", width: 53, height: 24 },
+    { icon: "/images/pay-mc.svg", label: "Mastercard", width: 42, height: 24 },
 ];
 
 // `locale` is passed explicitly: on the force-static home page the server

@@ -40,7 +40,8 @@ const components = {
 // at the viewport edge as on the contact page, so from lg the text keeps clear
 // of it, and the min-height keeps a short page (Cookies) tall enough for the
 // whole pattern: top-40 + 476px at lg, top-50 + 643px at xl, plus a gap.
-const LegalPage = ({ heading, body }) => {
+// `children` render below the text (the Cookies page's change-choice button).
+const LegalPage = ({ heading, body, children }) => {
     return (
         <section id="legal-page-section" className="relative w-full bg-white-custom overflow-hidden pt-36 xl:pt-44 pb-20 xl:pb-32 lg:min-h-180 xl:min-h-235">
             <div className="max-w-480 mx-auto page-x">
@@ -56,6 +57,8 @@ const LegalPage = ({ heading, body }) => {
                             <PortableText value={body} components={components} />
                         </div>
                     )}
+
+                    {children}
                 </div>
             </div>
 

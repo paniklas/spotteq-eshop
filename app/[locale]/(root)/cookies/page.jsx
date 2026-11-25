@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getLegalPage } from "@/sanity/getData/getLegalPage";
 import LegalPage from "@/components/legal/legal-page";
+import CookieSettingsButton from "@/components/legal/cookie-settings-button";
 import SpotteqImage from "@/components/home/spotteq-image";
 import { seoMetadata } from "@/lib/seo";
 
@@ -23,7 +24,9 @@ export default async function CookiesPage({ params }) {
 
     return (
         <>
-            <LegalPage heading={page.heading} body={page.body} />
+            <LegalPage heading={page.heading} body={page.body}>
+                <CookieSettingsButton />
+            </LegalPage>
             <SpotteqImage />
         </>
     )

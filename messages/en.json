@@ -174,7 +174,8 @@
         "learnMore": "Learn more",
         "accept": "Accept All",
         "decline": "Decline",
-        "close": "Close"
+        "close": "Close",
+        "changeChoice": "Change cookie choice"
     },
     "home": {
         "hero": {

@@ -123,6 +123,25 @@ test.describe("Cookie banner", () => {
     expect(await page.evaluate((key) => sessionStorage.getItem(key), CONSENT_KEY)).toBe("dismissed");
   });
 
+  test("the Cookies Policy page reopens it to change the choice", async ({ page }) => {
+    const banner = page.getByTestId("cookie-banner");
+    await page.goto("/en/cookies");
+    await banner.getByRole("button", { name: "Accept All" }).click();
+    await expect(banner).toBeHidden();
+
+    // Closing a reopened banner keeps the earlier choice.
+    await page.getByRole("button", { name: "Change cookie choice" }).click();
+    await expect(banner).toBeVisible();
+    await banner.getByRole("button", { name: "Close" }).click();
+    await expect(banner).toBeHidden();
+    expect(await page.evaluate((key) => localStorage.getItem(key), CONSENT_KEY)).toBe("accepted");
+
+    await page.getByRole("button", { name: "Change cookie choice" }).click();
+    await banner.getByRole("button", { name: "Decline" }).click();
+    await expect(banner).toBeHidden();
+    expect(await page.evaluate((key) => localStorage.getItem(key), CONSENT_KEY)).toBe("declined");
+  });
+
   // PostHog requests that carry visitor data (events /e/, /i/, replay /s/,
   // feature flags /flags/ or /decide/, which are disabled) through the
   // /sq-relay proxy. Answered locally so test runs never reach PostHog; the
@@ -241,14 +260,14 @@ test.describe("Footer translations", () => {
 // The menu overlay is always in the DOM (hidden when closed). Only the code-side
 // copy is checked; group, category and bundle names come from Sanity.
 test.describe("Menu translations", () => {
-  for (const { locale, expected, absent } of [
-    { locale: "en", expected: ["View all products", "About", "Who we are and what we stand for", "Get in touch with the SPOTTEQ team", "Shop by ", "SHIPPING & PAYMENTS", "RETURNS POLICY"], absent: "Όλα τα προϊόντα" },
+  for (const { locale, nav, expected, absent } of [
+    { locale: "en", nav: "Site navigation", expected: ["View all products", "About", "Who we are and what we stand for", "Get in touch with the SPOTTEQ team", "Shop by ", "SHIPPING & PAYMENTS", "RETURNS POLICY"], absent: "Όλα τα προϊόντα" },
     // Greek has no "Shop by" prefix: the Sanity group titles read "Ανά Σειρά" / "Ανά Στόχο".
-    { locale: "el", expected: ["Όλα τα προϊόντα", "Σχετικά", "Ποιοι είμαστε και τι πρεσβεύουμε", "Επικοινώνησε με την ομάδα της SPOTTEQ", "Επικοινωνία", "ΑΠΟΣΤΟΛΕΣ & ΠΛΗΡΩΜΕΣ", "ΠΟΛΙΤΙΚΗ ΕΠΙΣΤΡΟΦΩΝ", "ΛΟΓΑΡΙΑΣΜΟΣ"], absent: "Shop by " },
+    { locale: "el", nav: "Πλοήγηση ιστότοπου", expected: ["Όλα τα προϊόντα", "Σχετικά", "Ποιοι είμαστε και τι πρεσβεύουμε", "Επικοινώνησε με την ομάδα της SPOTTEQ", "Επικοινωνία", "ΑΠΟΣΤΟΛΕΣ & ΠΛΗΡΩΜΕΣ", "ΠΟΛΙΤΙΚΗ ΕΠΙΣΤΡΟΦΩΝ", "ΛΟΓΑΡΙΑΣΜΟΣ"], absent: "Shop by " },
   ]) {
     test(`menu on /${locale}`, async ({ page }) => {
       await page.goto(`/${locale}`);
-      const menu = page.locator('[aria-label="Site navigation"]');
+      const menu = page.locator(`[aria-label="${nav}"]`);
       for (const text of expected) await expect(menu).toContainText(text);
       await expect(menu).not.toContainText(absent);
     });
@@ -442,8 +461,9 @@ test("product additional info is shown in Key Features on mobile", async ({ page
 test("mobile menu Bundles opens the bundles page", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 900 });
   await page.goto("/el");
-  await page.getByRole("button", { name: "Open menu" }).click();
-  await page.locator('[aria-label="Site navigation"] a[href="/el/shop/bundles"]').locator("visible=true").click();
+  // /el renders Greek screen-reader labels (en: "Open menu", "Site navigation").
+  await page.getByRole("button", { name: "Άνοιγμα μενού" }).click();
+  await page.locator('[aria-label="Πλοήγηση ιστότοπου"] a[href="/el/shop/bundles"]').locator("visible=true").click();
   await expect(page).toHaveURL(/\/el\/shop\/bundles$/);
 });
 
